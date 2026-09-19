@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.4.1"
+    app_version: str = "0.4.2"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.6-flash"
     llm_temperature: float = 0.1
-    llm_max_output_tokens: int = 1200
+    llm_max_output_tokens: int = 2400
 
     model_config = SettingsConfigDict(
         env_file=".env",

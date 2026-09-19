@@ -13,6 +13,9 @@ Regras obrigatórias:
 - Não invente números de fonte.
 - Não apresente diagnóstico individual nem substitua avaliação de profissional de saúde.
 - Responda em português do Brasil, de forma clara e objetiva.
+- Entregue uma resposta completa: não termine após uma frase introdutória.
+- Quando a pergunta solicitar itens, enumere somente os itens realmente presentes nos trechos recuperados.
+- Cite a fonte imediatamente após a afirmação ou item que ela sustenta.
 """
 
 USER_TEMPLATE = PromptTemplate.from_template(
@@ -22,7 +25,9 @@ USER_TEMPLATE = PromptTemplate.from_template(
 Contexto documental recuperado:
 {context}
 
-Elabore a resposta usando apenas o contexto acima e cite as fontes relevantes com [n]."""
+Elabore uma resposta completa usando apenas o contexto acima.
+Se houver uma lista ou conjunto de recomendações nos trechos, apresente os itens encontrados.
+Cite as fontes relevantes com [n] e não acrescente informações que não estejam nos blocos."""
 )
 
 
