@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.1"
+    app_version: str = "0.5.2"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -27,10 +27,12 @@ class Settings(BaseSettings):
     embedding_cache_dir: Path = Path(".cache/fastembed")
     upsert_batch_size: int = 64
 
-    retrieval_candidate_multiplier: int = 4
+    retrieval_candidate_multiplier: int = 8
     retrieval_score_margin: float = 0.22
     retrieval_merge_same_page: bool = True
     retrieval_max_group_chars: int = 5000
+    retrieval_source_lexical_weight: float = 0.25
+    retrieval_content_lexical_weight: float = 0.05
 
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None

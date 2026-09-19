@@ -18,6 +18,7 @@ class SearchHit:
     page: int | None
     metadata: dict[str, Any]
     chunk_count: int = 1
+    rank_score: float | None = None
 
 
 def deterministic_point_id(document: Document) -> str:
@@ -85,10 +86,7 @@ class QdrantVectorStore:
 
         points: list[models.PointStruct] = []
         for document, vector in zip(documents, vectors, strict=True):
-            payload = {
-                "text": document.page_content,
-                **document.metadata,
-            }
+            payload = {"text": document.page_content, **document.metadata}
             points.append(
                 models.PointStruct(
                     id=deterministic_point_id(document),

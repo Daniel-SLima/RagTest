@@ -4,115 +4,55 @@ Módulo RAG reutilizável via API para Flutter, React Native, Web e outros siste
 
 ## Fase atual — 0.5 Qualidade do Retrieval
 
-Pipeline atual:
+A versão 0.5.2 combina retrieval denso com reranking lexical leve:
 
-```text
-PDF/DOCX
-  -> chunking
-  -> embeddings
-  -> Qdrant
-  -> overfetch de candidatos
-  -> agrupamento por fonte/página
-  -> filtro relativo por score
-  -> contexto final
-  -> Gemini
-  -> resposta + fontes
-```
+    Qdrant dense retrieval
+      -> overfetch
+      -> agrupamento por página
+      -> reranking lexical de metadados/conteúdo
+      -> corte relativo
+      -> contexto final
+      -> Gemini
 
-A fase 0.5 melhora a qualidade do contexto entregue ao LLM sem alterar os vetores já indexados.
+O score semântico original é preservado. Um rank_score separado é usado para ordenar os candidatos e facilitar auditoria.
 
-### Melhorias de retrieval
+Baseline 0.5.1:
 
-- overfetch: busca mais candidatos no Qdrant do que o número final solicitado;
-- agrupamento de chunks da mesma página de PDF;
-- reconstrução do texto respeitando `start_index`;
-- remoção do overlap de chunk quando possível;
-- corte relativo por score em relação ao melhor resultado;
-- `chunk_count` nas fontes para auditoria;
-- parâmetros configuráveis por ambiente.
+    HitRate@5 = 0.857 (6/7)
+    MRR@5     = 0.714
 
-Configuração padrão:
-
-```env
-RETRIEVAL_CANDIDATE_MULTIPLIER=4
-RETRIEVAL_SCORE_MARGIN=0.22
-RETRIEVAL_MERGE_SAME_PAGE=true
-RETRIEVAL_MAX_GROUP_CHARS=5000
-```
-
-O corte relativo evita depender de um threshold global fixo. Por exemplo, com melhor score 0.75 e margem 0.22, resultados abaixo de aproximadamente 0.53 são descartados.
-
-## Avaliação do retrieval
-
-O comando usa por padrão casos de avaliação empacotados com a aplicação:
-
-```cmd
-docker compose run --rm api ragtest-evaluate-retrieval
-```
-
-A cópia editável para testes e experimentos continua em:
-
-```text
-tests/evaluation/retrieval_cases.json
-```
-
-Também é possível apontar um JSON externo:
-
-```cmd
-docker compose run --rm -v "%cd%:/workspace:ro" api ragtest-evaluate-retrieval --cases /workspace/meus-casos.json
-```
-
-A saída informa:
-
-- `HitRate@5`: proporção de perguntas em que uma fonte esperada apareceu no top 5;
-- `MRR@5`: favorece fontes esperadas que aparecem nas primeiras posições.
-
-Essas métricas podem ser ampliadas e usadas na seção experimental do TCC.
-
-## Registro de dificuldades do TCC
-
-Problemas relevantes encontrados durante o desenvolvimento são documentados em:
-
-```text
-docs/dificuldades-tcc.md
-```
-
-Cada caso registra planejamento, observação, diagnóstico, correção e aprendizado técnico.
+Detalhes: docs/avaliacao-retrieval.md
 
 ## Atualizar no Windows CMD
 
-```cmd
-git pull origin main
-docker compose down
-docker compose up --build -d
-```
+    git pull origin main
+    docker compose down
+    docker compose up --build -d
 
-Não é necessário reindexar para a fase 0.5, pois embeddings e chunks armazenados não foram alterados.
+Não é necessário reindexar.
 
-Teste a recuperação:
+Teste o caso que falhou na baseline:
 
-```cmd
-docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?" --audience idoso --limit 5
-```
+    docker compose run --rm api ragtest-search "Quais são os direitos e deveres da pessoa usuária da saúde?" --limit 5
 
-Teste o chat:
+Depois rode a avaliação completa:
 
-```cmd
-docker compose run --rm api ragtest-chat "Quais vacinas são recomendadas para idosos?" --audience idoso
-```
+    docker compose run --rm api ragtest-evaluate-retrieval
+
+Compare HitRate@5 e MRR@5 com a baseline antes de considerar a mudança uma melhoria.
+
+## Dificuldades TCC
+
+Registro em docs/dificuldades-tcc.md. Cada caso contém planejado, observado, diagnóstico, correção e aprendizado.
 
 ## API
 
-- `GET /health`
-- `GET /ready`
-- `POST /v1/search`
-- `POST /v1/chat`
-- Swagger em `http://localhost:8000/docs`
+- GET /health
+- GET /ready
+- POST /v1/search
+- POST /v1/chat
+- Swagger em http://localhost:8000/docs
 
-## Segurança da chave
+## Segurança
 
-Nunca versione a chave do Gemini. Use somente o arquivo local `.env`, que está ignorado pelo Git.
-
-## Próximas etapas
-
-Depois de medir a fase 0.5, os próximos incrementos naturais são reranking com modelo específico, busca híbrida, logs estruturados de auditoria, histórico de sessão e streaming para integração com o aplicativo.
+Nunca versione a chave do Gemini. Use somente o arquivo local .env.

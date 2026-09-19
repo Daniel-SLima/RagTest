@@ -14,15 +14,7 @@ from app.services.qdrant_service import QdrantService
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate RagTest retrieval quality.")
-    parser.add_argument(
-        "--cases",
-        type=Path,
-        default=None,
-        help=(
-            "Optional external JSON file with evaluation cases. "
-            "If omitted, uses the cases packaged with RagTest."
-        ),
-    )
+    parser.add_argument("--cases", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=5)
     return parser.parse_args()
 
@@ -30,7 +22,6 @@ def parse_args() -> argparse.Namespace:
 def _load_cases(cases_path: Path | None) -> list[dict[str, Any]]:
     if cases_path is None:
         return [dict(case) for case in DEFAULT_RETRIEVAL_CASES]
-
     return json.loads(cases_path.read_text(encoding="utf-8"))
 
 
@@ -69,20 +60,14 @@ async def run(cases_path: Path | None, limit: int) -> None:
                 embeddings=embeddings,
                 vector_store=store,
                 limit=limit,
-                category=(
-                    str(case["category"])
-                    if case.get("category") is not None
-                    else None
-                ),
-                audience=(
-                    str(case["audience"])
-                    if case.get("audience") is not None
-                    else None
-                ),
+                category=str(case["category"]) if case.get("category") else None,
+                audience=str(case["audience"]) if case.get("audience") else None,
                 candidate_multiplier=settings.retrieval_candidate_multiplier,
                 score_margin=settings.retrieval_score_margin,
                 merge_same_page=settings.retrieval_merge_same_page,
                 max_group_chars=settings.retrieval_max_group_chars,
+                source_lexical_weight=settings.retrieval_source_lexical_weight,
+                content_lexical_weight=settings.retrieval_content_lexical_weight,
             )
 
             sources = [hit.source for hit in hits]
@@ -99,9 +84,10 @@ async def run(cases_path: Path | None, limit: int) -> None:
             )
             for result_rank, hit in enumerate(hits, start=1):
                 page = f":{hit.page}" if hit.page is not None else ""
+                rank_score = hit.rank_score if hit.rank_score is not None else hit.score
                 print(
                     f"    {result_rank}. {hit.source}{page} "
-                    f"score={hit.score:.4f}"
+                    f"semantic={hit.score:.4f} rank={rank_score:.4f}"
                 )
 
         total = len(cases)

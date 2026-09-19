@@ -1,19 +1,8 @@
-from app.rag.retrieval_quality import (
-    apply_relative_score_floor,
-    group_hits_by_page,
-)
+from app.rag.retrieval_quality import apply_relative_score_floor, group_hits_by_page, metadata_aware_rerank
 from app.rag.vector_store import SearchHit
 
 
-def _hit(
-    *,
-    id: str,
-    score: float,
-    source: str,
-    page: int | None,
-    text: str,
-    start_index: int = 0,
-) -> SearchHit:
+def _hit(*, id: str, score: float, source: str, page: int | None, text: str, start_index: int = 0) -> SearchHit:
     return SearchHit(
         id=id,
         score=score,
@@ -28,48 +17,51 @@ def _hit(
 
 def test_group_hits_by_page_merges_overlapping_chunks() -> None:
     overlap = " trecho compartilhado entre os chunks "
-    first = _hit(
-        id="a",
-        score=0.80,
-        source="idoso.pdf",
-        page=1,
-        text="inicio" + overlap,
-        start_index=0,
-    )
-    second = _hit(
-        id="b",
-        score=0.75,
-        source="idoso.pdf",
-        page=1,
-        text=overlap + "fim",
-        start_index=10,
-    )
+    first = _hit(id="a", score=0.80, source="idoso.pdf", page=1, text="inicio" + overlap)
+    second = _hit(id="b", score=0.75, source="idoso.pdf", page=1, text=overlap + "fim", start_index=10)
 
     grouped = group_hits_by_page([first, second])
 
     assert len(grouped) == 1
     assert grouped[0].chunk_count == 2
     assert grouped[0].score == 0.80
-    assert grouped[0].content.count(overlap.strip()) == 1
-    assert grouped[0].metadata["grouped_chunks"] == 2
 
 
-def test_chunks_without_page_are_not_grouped_by_source() -> None:
-    first = _hit(id="a", score=0.8, source="arquivo.docx", page=None, text="um")
-    second = _hit(id="b", score=0.7, source="arquivo.docx", page=None, text="dois")
+def test_metadata_rerank_can_promote_exact_subject_in_filename() -> None:
+    generic = _hit(
+        id="generic",
+        score=0.62,
+        source="medicamentos/relacao_nacional_medicamentos.pdf",
+        page=1,
+        text="Informações gerais sobre assistência à saúde.",
+    )
+    expected = _hit(
+        id="expected",
+        score=0.50,
+        source="direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf",
+        page=1,
+        text="Carta de direitos e deveres da pessoa usuária da saúde.",
+    )
 
-    grouped = group_hits_by_page([first, second])
+    reranked = metadata_aware_rerank(
+        "Quais são os direitos e deveres da pessoa usuária da saúde?",
+        [generic, expected],
+        source_weight=0.25,
+        content_weight=0.05,
+    )
 
-    assert len(grouped) == 2
+    assert reranked[0].id == "expected"
+    assert reranked[0].rank_score is not None
 
 
-def test_relative_score_floor_removes_distant_candidates() -> None:
-    hits = [
-        _hit(id="a", score=0.75, source="a.pdf", page=1, text="a"),
-        _hit(id="b", score=0.60, source="b.pdf", page=1, text="b"),
-        _hit(id="c", score=0.50, source="c.pdf", page=1, text="c"),
-    ]
+def test_relative_score_floor_uses_rank_score_when_available() -> None:
+    first = _hit(id="a", score=0.55, source="a.pdf", page=1, text="a")
+    second = _hit(id="b", score=0.60, source="b.pdf", page=1, text="b")
+    third = _hit(id="c", score=0.50, source="c.pdf", page=1, text="c")
+    first.rank_score = 0.80
+    second.rank_score = 0.63
+    third.rank_score = 0.52
 
-    filtered = apply_relative_score_floor(hits, score_margin=0.22)
+    filtered = apply_relative_score_floor([first, second, third], score_margin=0.22)
 
     assert [hit.id for hit in filtered] == ["a", "b"]

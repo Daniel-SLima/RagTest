@@ -1,43 +1,55 @@
 # Dificuldades TCC
 
-Registro de situações em que uma hipótese, configuração ou decisão planejada não funcionou como esperado na primeira tentativa. O objetivo é transformar problemas reais do desenvolvimento em evidências para a análise da monografia.
+Registro de situações em que uma hipótese, configuração ou decisão planejada não funcionou como esperado na primeira tentativa.
 
 ## 1. Filtro de categoria reduziu a qualidade da recuperação
 
-**Planejado:** restringir a busca a `category=vacinacao` para aumentar a precisão de perguntas sobre vacinas.
+Planejado: restringir a busca a category=vacinacao.
 
-**Observado:** sem o filtro, o Qdrant colocou no topo a Caderneta da Pessoa Idosa, página 34, que continha conteúdo diretamente relacionado ao calendário vacinal. Com o filtro por categoria, esse documento foi excluído por pertencer a `pessoa_idosa`, e apareceram resultados de criança e gestante.
+Observado: o filtro excluiu a Caderneta da Pessoa Idosa e piorou os resultados.
 
-**Diagnóstico:** categoria documental e público-alvo representam dimensões diferentes. Um filtro de categoria excessivamente restritivo pode causar perda de informação relevante.
+Diagnóstico: categoria documental e público-alvo são dimensões diferentes.
 
-**Correção:** inclusão do metadado `audience` e suporte a filtros como `audience=idoso`, permitindo buscar em categorias diferentes sem misturar públicos.
+Correção: inclusão de audience e filtros por público.
 
-**Aprendizado para o TCC:** metadados de domínio influenciam diretamente a precisão do retrieval. A modelagem do corpus não deve depender apenas da pasta ou do tema principal do documento.
+Aprendizado: metadados de domínio influenciam diretamente a precisão do retrieval.
 
 ## 2. Limite de saída do Gemini interrompeu a primeira resposta
 
-**Planejado:** usar o Gemini como etapa de geração após recuperar os melhores chunks.
+Planejado: gerar a resposta após recuperar os melhores chunks.
 
-**Observado:** a primeira resposta terminou após uma frase introdutória porque a geração atingiu o limite de tokens.
+Observado: a primeira resposta terminou após uma frase introdutória.
 
-**Diagnóstico:** retrieval e contexto estavam corretos; o gargalo estava na configuração de geração do LLM.
+Diagnóstico: a geração atingiu o limite de tokens.
 
-**Correção:** aumento do orçamento de saída e retry automático quando o provider retorna `MAX_TOKENS`, com limite maior na segunda tentativa.
+Correção: aumento do orçamento e retry automático em MAX_TOKENS.
 
-**Aprendizado para o TCC:** a camada de geração também exige resiliência. Um RAG pode recuperar evidência corretamente e ainda entregar uma resposta incompleta por limitações operacionais do LLM.
+Aprendizado: um RAG pode recuperar corretamente e ainda falhar na etapa de geração.
 
 ## 3. Avaliação do retrieval falhou dentro do container
 
-**Planejado:** executar `ragtest-evaluate-retrieval` no mesmo container da API usando o conjunto de casos em `tests/evaluation/retrieval_cases.json`.
+Planejado: executar ragtest-evaluate-retrieval no container.
 
-**Observado:** o comando gerou `FileNotFoundError` porque o arquivo de avaliação não existia dentro da imagem Docker.
+Observado: FileNotFoundError para tests/evaluation/retrieval_cases.json.
 
-**Diagnóstico:** a imagem copiava somente o pacote `app`, enquanto `.dockerignore` excluía o diretório `tests`. O comando de produção dependia indevidamente de um arquivo pertencente à estrutura de testes do repositório.
+Diagnóstico: o runtime dependia de um arquivo excluído da imagem Docker.
 
-**Correção:** os casos padrão de avaliação passaram a fazer parte do pacote da aplicação em `app/evaluation/cases.py`. O JSON em `tests/evaluation` continua útil como artefato de teste, mas não é mais uma dependência de runtime. O parâmetro opcional `--cases` continua permitindo avaliar arquivos JSON externos.
+Correção: casos padrão empacotados em app/evaluation/cases.py.
 
-**Aprendizado para o TCC:** testes, ferramentas de avaliação e runtime têm ciclos de empacotamento diferentes. Recursos necessários em execução devem ser distribuídos com a aplicação ou montados explicitamente, evitando dependência acidental da estrutura local do repositório.
+Aprendizado: recursos de runtime não devem depender acidentalmente da estrutura de testes.
+
+## 4. Busca densa não recuperou a carta de direitos e deveres no top 5
+
+Planejado: a pergunta sobre direitos e deveres deveria recuperar direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf.
+
+Observado: na baseline 0.5.1 o documento não apareceu no top 5; medicamentos e caderneta da pessoa idosa ocuparam as primeiras posições.
+
+Diagnóstico: similaridade vetorial densa pode perder correspondências lexicais explícitas presentes no nome do documento.
+
+Correção experimental: reranking por metadados e conteúdo, rank_score separado do score semântico e overfetch ampliado.
+
+Aprendizado: retrieval puramente denso pode falhar em consultas com terminologia exata; a melhoria deve ser comprovada por HitRate e MRR antes/depois.
 
 ## Como registrar novos casos
 
-Para cada novo problema relevante, registrar: o que estava planejado, o que foi observado, o diagnóstico técnico, a correção aplicada e o aprendizado que pode ser utilizado na discussão da monografia.
+Registrar sempre: planejado, observado, diagnóstico, correção e aprendizado para a monografia.

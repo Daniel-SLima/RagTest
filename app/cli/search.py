@@ -29,10 +29,7 @@ async def run(
     qdrant = QdrantService(settings)
     try:
         embeddings = create_embedding_provider(settings)
-        vector_store = QdrantVectorStore(
-            qdrant.client,
-            settings.qdrant_collection,
-        )
+        vector_store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
 
         hits = await semantic_search(
             query,
@@ -46,6 +43,8 @@ async def run(
             score_margin=settings.retrieval_score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
             max_group_chars=settings.retrieval_max_group_chars,
+            source_lexical_weight=settings.retrieval_source_lexical_weight,
+            content_lexical_weight=settings.retrieval_content_lexical_weight,
         )
 
         print(f'Query: "{query}"')
@@ -55,15 +54,13 @@ async def run(
             excerpt = " ".join(hit.content.split())
             if len(excerpt) > 320:
                 excerpt = excerpt[:317] + "..."
+            rank_score = hit.rank_score if hit.rank_score is not None else hit.score
             print()
             print(
-                f"#{index} score={hit.score:.4f} "
+                f"#{index} semantic={hit.score:.4f} rank={rank_score:.4f} "
                 f"grouped_chunks={hit.chunk_count}"
             )
-            print(
-                f"{hit.source}{page} | "
-                f"audience={hit.audience or '-'}"
-            )
+            print(f"{hit.source}{page} | audience={hit.audience or '-'}")
             print(excerpt)
     finally:
         await qdrant.close()

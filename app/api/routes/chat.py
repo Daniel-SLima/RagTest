@@ -2,11 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.dependencies import (
-    get_embedding_provider,
-    get_llm_provider,
-    get_vector_store,
-)
+from app.api.dependencies import get_embedding_provider, get_llm_provider, get_vector_store
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.rag.chat import answer_with_rag
@@ -17,11 +13,7 @@ from app.schemas.chat import ChatRequest, ChatResponse, ChatSource
 router = APIRouter(prefix="/v1", tags=["chat"])
 
 
-@router.post(
-    "/chat",
-    response_model=ChatResponse,
-    summary="Grounded RAG chat over the indexed document base",
-)
+@router.post("/chat", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
     embeddings: Annotated[EmbeddingProvider, Depends(get_embedding_provider)],
@@ -43,12 +35,11 @@ async def chat(
             score_margin=settings.retrieval_score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
             max_group_chars=settings.retrieval_max_group_chars,
+            source_lexical_weight=settings.retrieval_source_lexical_weight,
+            content_lexical_weight=settings.retrieval_content_lexical_weight,
         )
     except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(exc),
-        ) from exc
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

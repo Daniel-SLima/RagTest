@@ -7,20 +7,12 @@ from app.core.config import Settings, get_settings
 from app.rag.embeddings.base import EmbeddingProvider
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
-from app.schemas.search import (
-    SemanticSearchHit,
-    SemanticSearchRequest,
-    SemanticSearchResponse,
-)
+from app.schemas.search import SemanticSearchHit, SemanticSearchRequest, SemanticSearchResponse
 
 router = APIRouter(prefix="/v1", tags=["retrieval"])
 
 
-@router.post(
-    "/search",
-    response_model=SemanticSearchResponse,
-    summary="Semantic search over indexed source documents",
-)
+@router.post("/search", response_model=SemanticSearchResponse)
 async def search_documents(
     request: SemanticSearchRequest,
     embeddings: Annotated[EmbeddingProvider, Depends(get_embedding_provider)],
@@ -40,18 +32,18 @@ async def search_documents(
             score_margin=settings.retrieval_score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
             max_group_chars=settings.retrieval_max_group_chars,
+            source_lexical_weight=settings.retrieval_source_lexical_weight,
+            content_lexical_weight=settings.retrieval_content_lexical_weight,
         )
     except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(exc),
-        ) from exc
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
     return SemanticSearchResponse(
         query=request.query,
         results=[
             SemanticSearchHit(
                 score=hit.score,
+                rank_score=hit.rank_score,
                 content=hit.content,
                 source=hit.source,
                 category=hit.category,

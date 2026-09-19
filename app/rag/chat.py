@@ -24,10 +24,12 @@ async def answer_with_rag(
     category: str | None = None,
     audience: str | None = None,
     min_score: float | None = None,
-    candidate_multiplier: int = 4,
+    candidate_multiplier: int = 8,
     score_margin: float = 0.22,
     merge_same_page: bool = True,
     max_group_chars: int = 5000,
+    source_lexical_weight: float = 0.25,
+    content_lexical_weight: float = 0.05,
 ) -> ChatResult:
     hits = await semantic_search(
         question,
@@ -41,6 +43,8 @@ async def answer_with_rag(
         score_margin=score_margin,
         merge_same_page=merge_same_page,
         max_group_chars=max_group_chars,
+        source_lexical_weight=source_lexical_weight,
+        content_lexical_weight=content_lexical_weight,
     )
 
     if not hits:
@@ -64,8 +68,4 @@ async def answer_with_rag(
             "disponíveis no campo sources."
         )
 
-    return ChatResult(
-        answer=answer,
-        sources=hits,
-        model=llm.model_name,
-    )
+    return ChatResult(answer=answer, sources=hits, model=llm.model_name)
