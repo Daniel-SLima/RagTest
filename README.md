@@ -2,117 +2,165 @@
 
 Backend modular para experimentar e evoluir um fluxo **RAG (Retrieval-Augmented Generation)** reutilizável por Flutter, React Native, Web ou outros sistemas via API.
 
-## Fase atual — 0.2 Document pipeline
+## Fase atual — 0.3 Retrieval vetorial
 
 Já estão implementados:
 
 - FastAPI e health checks;
-- Qdrant como serviço vetorial;
-- Docker e Docker Compose;
-- configuração por ambiente;
-- descoberta recursiva de PDF e DOCX;
-- extração de texto;
-- metadados de origem, categoria, tipo de arquivo e página para PDFs;
-- chunking com LangChain, overlap e `start_index`;
-- comando de inspeção dos documentos sem imprimir o conteúdo;
-- testes automatizados e CI.
+- Qdrant em Docker;
+- leitura recursiva de PDF e DOCX;
+- chunking com LangChain;
+- metadados por chunk;
+- embeddings locais com FastEmbed;
+- modelo multilíngue adequado para consultas em português;
+- IDs determinísticos para reindexar sem duplicar o mesmo chunk;
+- persistência do cache do modelo em volume Docker;
+- indexação dos chunks no Qdrant;
+- busca semântica por CLI;
+- filtro opcional por categoria;
+- endpoint REST `POST /v1/search`;
+- testes automatizados.
 
-## Fluxo atual
+## Fluxo
 
 ```text
-data/source/**/*.pdf|docx
-          |
-          v
-      loaders
-          |
-          v
-LangChain Documents + metadados
-          |
-          v
-RecursiveCharacterTextSplitter
-          |
-          v
-       chunks
-          |
-          v
-   próxima etapa:
-embeddings -> Qdrant -> retrieval -> LLM
+PDF / DOCX
+    |
+    v
+ loaders
+    |
+    v
+LangChain Documents
+    |
+    v
+chunking
+    |
+    v
+FastEmbed
+    |
+    v
+Qdrant
+    |
+    +---- CLI search
+    |
+    +---- POST /v1/search
+    |
+    v
+próxima fase: prompt + LLM -> POST /v1/chat
 ```
 
-## Executar
+## Atualizar e subir no Windows CMD
 
-```powershell
+```cmd
 git pull origin main
-Copy-Item .env.example .env
-docker compose up --build
+docker compose down
+docker compose up --build -d
 ```
 
-Swagger: `http://localhost:8000/docs`
+Teste:
 
-Health:
-
-```bash
+```cmd
 curl http://localhost:8000/health
 curl http://localhost:8000/ready
 ```
 
-## Inspecionar a base documental
+## Indexar os documentos
 
-Depois de instalar o projeto:
+Na primeira execução o modelo de embeddings será baixado e guardado no volume `fastembed_cache`.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
-ragtest-inspect
+```cmd
+docker compose run --rm api ragtest-ingest
 ```
 
-Ou:
+Para apagar e recriar a collection:
 
-```bash
-python -m app.cli.inspect_documents
+```cmd
+docker compose run --rm api ragtest-ingest --recreate
 ```
 
-O comando mostra quantidade de arquivos, unidades carregadas, chunks, categorias e erros de leitura. Ele não imprime o texto dos documentos.
+Com os 18 documentos atuais, o pipeline deve indexar os mesmos chunks encontrados por `ragtest-inspect`.
 
-Configurações principais:
+## Primeira busca semântica
 
-```env
-SOURCE_DIR=data/source
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
+Depois da ingestão:
+
+```cmd
+docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?"
 ```
 
-## Metadados
+Com filtro:
 
-Exemplo de um chunk vindo de PDF:
+```cmd
+docker compose run --rm api ragtest-search "Quais vacinas são recomendadas?" --category vacinacao --limit 5
+```
+
+A busca retorna score, arquivo, página (quando disponível) e um trecho do chunk.
+
+## API de retrieval
+
+```http
+POST /v1/search
+Content-Type: application/json
+```
+
+Exemplo:
 
 ```json
 {
-  "source": "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
-  "filename": "calendario_nacional_vacinacao_idoso.pdf",
-  "category": "vacinacao",
-  "file_type": "pdf",
-  "page": 1,
-  "start_index": 0
+  "query": "Quais vacinas são recomendadas para idosos?",
+  "limit": 5,
+  "category": "vacinacao"
 }
 ```
 
-Esses metadados serão enviados ao Qdrant e depois retornados como fontes nas respostas do chat.
+A resposta já possui os elementos que outro aplicativo precisa consumir:
 
-## Próxima etapa
+```json
+{
+  "query": "Quais vacinas são recomendadas para idosos?",
+  "results": [
+    {
+      "score": 0.82,
+      "content": "...",
+      "source": "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+      "category": "vacinacao",
+      "page": 1,
+      "metadata": {}
+    }
+  ]
+}
+```
 
-A fase 0.3 implementará:
+Swagger: `http://localhost:8000/docs`
 
-1. interface de embeddings desacoplada;
-2. provider inicial configurável;
-3. collection do Qdrant;
-4. IDs determinísticos para evitar duplicação na reindexação;
-5. comando de ingestão;
-6. busca semântica com filtros por metadados;
-7. testes de integração do índice.
+## Por que FastEmbed nesta fase?
 
-Depois conectaremos o retrieval ao LLM e criaremos `POST /v1/chat`.
+O provider inicial roda localmente em ONNX, sem exigir chave de API. A aplicação usa uma interface `EmbeddingProvider`, então outro provider pode ser adicionado depois sem alterar o restante do pipeline.
+
+Modelo padrão:
+
+```text
+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+```
+
+## Reindexação
+
+Cada chunk recebe um UUID determinístico baseado em origem, página, posição e conteúdo. Rodar a ingestão novamente não cria uma segunda cópia do mesmo chunk.
+
+Se trocar de modelo de embeddings, use:
+
+```cmd
+docker compose run --rm api ragtest-ingest --recreate
+```
+
+## Próxima fase — 0.4 Chat RAG
+
+1. recuperar os melhores chunks;
+2. montar prompt com contexto e regras de citação;
+3. abstrair o provider de LLM;
+4. criar `POST /v1/chat`;
+5. retornar resposta + fontes;
+6. adicionar avaliação para detectar respostas sem suporte documental.
 
 ## Segurança
 

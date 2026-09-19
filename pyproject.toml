@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.2.1"
+version = "0.3.0"
 description = "Backend portável de RAG com FastAPI e Qdrant"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116,<1.0",
+    "fastembed>=0.7,<1.0",
     "fonttools>=4.59,<5.0",
     "langchain-core>=1.0,<2.0",
     "langchain-text-splitters>=1.0,<2.0",
@@ -30,6 +31,8 @@ dev = [
 
 [project.scripts]
 ragtest-inspect = "app.cli.inspect_documents:main"
+ragtest-ingest = "app.cli.ingest:main"
+ragtest-search = "app.cli.search:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

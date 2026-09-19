@@ -7,18 +7,25 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.1.0"
+    app_version: str = "0.3.0"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
 
     qdrant_url: str = "http://qdrant:6333"
     qdrant_api_key: str | None = None
-    qdrant_timeout_seconds: int = 5
+    qdrant_timeout_seconds: int = 10
+    qdrant_collection: str = "ragtest_documents"
 
     source_dir: Path = Path("data/source")
     chunk_size: int = 1000
     chunk_overlap: int = 200
+
+    embedding_provider: str = "fastembed"
+    embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    embedding_batch_size: int = 32
+    embedding_cache_dir: Path = Path(".cache/fastembed")
+    upsert_batch_size: int = 64
 
     model_config = SettingsConfigDict(
         env_file=".env",

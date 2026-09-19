@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.routes.health import router as health_router
+from app.api.routes.search import router as search_router
 from app.core.config import get_settings
 from app.services.qdrant_service import QdrantService
 
@@ -12,6 +13,7 @@ from app.services.qdrant_service import QdrantService
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     app.state.qdrant = QdrantService(settings)
+    app.state.embedding_provider = None
     try:
         yield
     finally:
@@ -27,6 +29,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     application.include_router(health_router)
+    application.include_router(search_router)
 
     @application.get("/", include_in_schema=False)
     async def root() -> dict[str, str]:
