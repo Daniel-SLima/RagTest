@@ -54,13 +54,25 @@ Aprendizado: retrieval puramente denso pode falhar em consultas com terminologia
 
 Planejado: o reranking lexical 0.5.2 deveria promover a carta de direitos e deveres.
 
-Observado: o HitRate@5 permaneceu 0.857, enquanto o MRR@5 subiu de 0.714 para 0.786. A consulta de direitos e deveres continuou sem a fonte esperada.
+Observado: HitRate@5 ficou em 0.857; MRR@5 subiu de 0.714 para 0.786; a fonte esperada continuou ausente.
 
-Diagnóstico: reranking só reorganiza candidatos que já foram recuperados. Se a fonte relevante não entra no conjunto inicial denso, um reranker posterior não consegue recuperá-la.
+Diagnóstico: reranking só reorganiza candidatos já recuperados.
 
-Correção experimental: adicionar retrieval híbrido dense + BM25 em português com Reciprocal Rank Fusion.
+Correção experimental: retrieval híbrido dense + BM25 com RRF.
 
-Aprendizado: ranking e recall são problemas distintos. Melhorar a ordenação não necessariamente aumenta a cobertura de documentos relevantes.
+Aprendizado: ranking e recall são problemas distintos.
+
+## 6. Retrieval híbrido inicial piorou as métricas
+
+Planejado: dense + BM25 deveria aumentar o recall sem perder os casos já corretos.
+
+Observado: a 0.5.3 caiu para HitRate@5=0.714 e MRR@5=0.607. A vacinação na gestação passou a falhar e a carta de direitos/deveres continuou ausente.
+
+Diagnóstico: o BM25 indexava apenas o texto dos chunks, portanto o nome do arquivo não ajudava o recall. Além disso, o corte relativo 0.22, calibrado para score cosseno, foi aplicado após RRF, cuja escala é diferente. Isso eliminou candidatos úteis.
+
+Correção experimental: enriquecer o texto esparso com metadados, equilibrar pesos dense/sparse em 1.0/1.0 e desativar o corte relativo no modo híbrido.
+
+Aprendizado: parâmetros de score não são transferíveis automaticamente entre estratégias de recuperação. Uma mudança de função de ranking exige nova calibração e nova medição.
 
 ## Como registrar novos casos
 

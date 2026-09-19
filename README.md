@@ -2,58 +2,44 @@
 
 Módulo RAG reutilizável via API.
 
-## Fase 0.5.3 — Retrieval híbrido
+## Fase 0.5.4 — ajuste do retrieval híbrido
 
-A 0.5.2 melhorou o MRR de 0.714 para 0.786, mas não aumentou o HitRate@5. O motivo provável é recall: reranking não recupera documentos ausentes do conjunto inicial.
+Resultados já medidos:
 
-A 0.5.3 combina:
+    0.5.1  HitRate@5=0.857  MRR@5=0.714
+    0.5.2  HitRate@5=0.857  MRR@5=0.786
+    0.5.3  HitRate@5=0.714  MRR@5=0.607
 
-    Dense multilingual embedding
-            +
-    BM25 em português
-            |
-            v
-      Reciprocal Rank Fusion
-            |
-            v
-    agrupamento + reranking
-            |
-            v
-          Gemini
+A 0.5.3 não foi aceita como melhoria.
 
-Baseline registrada em docs/avaliacao-retrieval.md.
+A 0.5.4 corrige duas hipóteses do experimento anterior:
 
-### Atualização obrigatória da collection
+- BM25 passa a indexar source, filename, category e audience junto ao conteúdo;
+- RETRIEVAL_SCORE_MARGIN passa a 0.0 no híbrido;
+- dense e sparse usam pesos neutros 1.0 / 1.0.
 
-O schema do Qdrant mudou de um vetor denso único para vetores nomeados dense + sparse. Por isso esta versão exige uma reindexação única:
+## Atualizar no Windows CMD
 
     git pull origin main
     docker compose down
     docker compose up --build -d
+
+No .env use:
+
+    HYBRID_DENSE_WEIGHT=1.0
+    HYBRID_SPARSE_WEIGHT=1.0
+    RETRIEVAL_SCORE_MARGIN=0.0
+
+Como o conteúdo do vetor sparse mudou, recrie a collection:
+
     docker compose run --rm api ragtest-ingest --recreate
 
-Depois:
+Depois teste:
 
     docker compose run --rm api ragtest-search "Quais são os direitos e deveres da pessoa usuária da saúde?" --limit 5
-
-E a avaliação:
-
     docker compose run --rm api ragtest-evaluate-retrieval
 
-Resultados esperados devem ser comparados com:
-
-    0.5.1  HitRate@5=0.857  MRR@5=0.714
-    0.5.2  HitRate@5=0.857  MRR@5=0.786
-
-Não considere a 0.5.3 melhor antes de medir os sete casos.
-
-## API
-
-- GET /health
-- GET /ready
-- POST /v1/search
-- POST /v1/chat
-- Swagger: http://localhost:8000/docs
+A 0.5.4 só deve ser considerada melhor após medir o mesmo conjunto de sete consultas.
 
 ## Dificuldades TCC
 

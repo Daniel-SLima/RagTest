@@ -13,6 +13,21 @@ class IngestionStats:
     collection_created: bool
 
 
+def build_sparse_index_text(document: Document) -> str:
+    metadata = document.metadata
+    header_parts = [
+        str(metadata.get("source", "")),
+        str(metadata.get("filename", "")),
+        str(metadata.get("category", "")),
+        str(metadata.get("audience", "")),
+    ]
+    header = " ".join(part for part in header_parts if part)
+    if not header:
+        return document.page_content
+
+    return f"{header}\n{document.page_content}"
+
+
 async def ingest_chunks(
     chunks: list[Document],
     *,
@@ -36,9 +51,11 @@ async def ingest_chunks(
     indexed = 0
     for start in range(0, len(chunks), upsert_batch_size):
         batch = chunks[start : start + upsert_batch_size]
-        texts = [document.page_content for document in batch]
-        dense_vectors = await embeddings.embed_documents(texts)
-        sparse_vectors = await sparse_embeddings.embed_documents(texts)
+        dense_texts = [document.page_content for document in batch]
+        sparse_texts = [build_sparse_index_text(document) for document in batch]
+
+        dense_vectors = await embeddings.embed_documents(dense_texts)
+        sparse_vectors = await sparse_embeddings.embed_documents(sparse_texts)
         indexed += await vector_store.upsert(
             batch,
             dense_vectors,
