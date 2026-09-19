@@ -1,6 +1,6 @@
 # Avaliação do Retrieval
 
-## Baseline 0.5.1 — 2026-09-19
+## Baseline 0.5.1
 
 - HitRate@5: 0.857 (6/7)
 - MRR@5: 0.714
@@ -10,36 +10,40 @@
 - HitRate@5: 0.857 (6/7)
 - MRR@5: 0.786
 
-O reranking melhorou a posição de algumas fontes, mas não recuperou a carta de direitos e deveres no top 5.
+Melhor resultado medido até aqui.
 
 ## Experimento 0.5.3 — dense + BM25 + RRF
 
 - HitRate@5: 0.714 (5/7)
 - MRR@5: 0.607
 
-O experimento piorou as duas métricas. A consulta sobre vacinação na gestação deixou de encontrar a fonte esperada no top 5 e a carta de direitos/deveres continuou ausente.
-
-Dois fatores foram identificados:
-
-1. O BM25 indexava apenas o conteúdo do chunk, não os metadados documentais. Assim, correspondências explícitas no nome do arquivo não participavam do recall esparso.
-2. O corte relativo de 0.22 foi reaproveitado depois da fusão RRF. A escala do score fusionado é diferente da similaridade cosseno usada anteriormente, então o mesmo corte eliminou candidatos úteis e em alguns casos reduziu a lista final a apenas um resultado.
+Piorou as duas métricas.
 
 ## Experimento 0.5.4 — BM25 enriquecido com metadados
 
-Hipótese:
+- HitRate@5: 0.857 (6/7)
+- MRR@5: 0.690
 
-- indexar source, filename, category e audience junto com o conteúdo no BM25 aumenta o recall lexical;
-- usar pesos neutros dense=1.0 e sparse=1.0 evita favorecer prematuramente o BM25;
-- desativar o corte relativo na etapa híbrida evita aplicar um threshold calibrado em outra escala de score.
+Recuperou o HitRate da baseline, mas ficou abaixo da 0.5.1 e 0.5.2 em MRR. A carta de direitos e deveres continuou ausente do top 5.
 
-Parâmetros:
+Conclusão provisória: novas tentativas de ajuste de ranking devem ser interrompidas até verificar se o documento esperado realmente contribui com texto e chunks para o índice.
 
-    HYBRID_DENSE_WEIGHT=1.0
-    HYBRID_SPARSE_WEIGHT=1.0
-    RETRIEVAL_SCORE_MARGIN=0.0
+## Diagnóstico 0.5.5 — cobertura do corpus
 
-Após reindexar, executar:
+A versão 0.5.5 adiciona auditoria por arquivo ao comando:
 
-    docker compose run --rm api ragtest-evaluate-retrieval
+    docker compose run --rm api ragtest-inspect
 
-Comparar diretamente com 0.5.1, 0.5.2 e 0.5.3.
+E permite filtrar:
+
+    docker compose run --rm api ragtest-inspect --source direitos_saude
+
+Para cada arquivo são exibidos:
+
+- unidades/páginas carregadas;
+- unidades com texto;
+- total de caracteres extraídos;
+- chunks gerados;
+- status de cobertura.
+
+Se a carta de direitos/deveres apresentar NO_TEXT ou NO_CHUNKS, o problema é anterior ao retrieval e deve ser tratado na extração/OCR.

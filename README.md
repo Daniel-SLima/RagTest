@@ -2,44 +2,36 @@
 
 Módulo RAG reutilizável via API.
 
-## Fase 0.5.4 — ajuste do retrieval híbrido
+## Estado experimental
 
-Resultados já medidos:
+Resultados medidos:
 
     0.5.1  HitRate@5=0.857  MRR@5=0.714
     0.5.2  HitRate@5=0.857  MRR@5=0.786
     0.5.3  HitRate@5=0.714  MRR@5=0.607
+    0.5.4  HitRate@5=0.857  MRR@5=0.690
 
-A 0.5.3 não foi aceita como melhoria.
+A 0.5.2 continua sendo o melhor resultado medido. A 0.5.5 não tenta melhorar ranking: ela audita a cobertura do corpus para descobrir por que uma fonte específica nunca aparece.
 
-A 0.5.4 corrige duas hipóteses do experimento anterior:
+## Auditoria de extração
 
-- BM25 passa a indexar source, filename, category e audience junto ao conteúdo;
-- RETRIEVAL_SCORE_MARGIN passa a 0.0 no híbrido;
-- dense e sparse usam pesos neutros 1.0 / 1.0.
-
-## Atualizar no Windows CMD
+Atualize:
 
     git pull origin main
     docker compose down
     docker compose up --build -d
 
-No .env use:
+Depois rode apenas para a categoria problemática:
 
-    HYBRID_DENSE_WEIGHT=1.0
-    HYBRID_SPARSE_WEIGHT=1.0
-    RETRIEVAL_SCORE_MARGIN=0.0
+    docker compose run --rm api ragtest-inspect --source direitos_saude
 
-Como o conteúdo do vetor sparse mudou, recrie a collection:
+Ou para todo o corpus:
 
-    docker compose run --rm api ragtest-ingest --recreate
+    docker compose run --rm api ragtest-inspect
 
-Depois teste:
+A tabela mostra unidades carregadas, unidades com texto, caracteres extraídos, chunks e status.
 
-    docker compose run --rm api ragtest-search "Quais são os direitos e deveres da pessoa usuária da saúde?" --limit 5
-    docker compose run --rm api ragtest-evaluate-retrieval
-
-A 0.5.4 só deve ser considerada melhor após medir o mesmo conjunto de sete consultas.
+Não é necessário reindexar para executar essa auditoria.
 
 ## Dificuldades TCC
 
