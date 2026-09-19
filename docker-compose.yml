@@ -15,7 +15,7 @@ services:
       - qdrant
     environment:
       APP_NAME: ${APP_NAME:-RagTest API}
-      APP_VERSION: ${APP_VERSION:-0.4.0}
+      APP_VERSION: ${APP_VERSION:-0.4.1}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       API_HOST: 0.0.0.0
       API_PORT: 8000
@@ -33,7 +33,7 @@ services:
       UPSERT_BATCH_SIZE: ${UPSERT_BATCH_SIZE:-64}
       FASTEMBED_CACHE_PATH: /app/.cache/fastembed
       LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.1}
       LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-1200}
