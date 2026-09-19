@@ -42,6 +42,10 @@ async def run(
             category=category,
             audience=audience,
             min_score=min_score,
+            candidate_multiplier=settings.retrieval_candidate_multiplier,
+            score_margin=settings.retrieval_score_margin,
+            merge_same_page=settings.retrieval_merge_same_page,
+            max_group_chars=settings.retrieval_max_group_chars,
         )
 
         print(f'Query: "{query}"')
@@ -52,7 +56,10 @@ async def run(
             if len(excerpt) > 320:
                 excerpt = excerpt[:317] + "..."
             print()
-            print(f"#{index} score={hit.score:.4f}")
+            print(
+                f"#{index} score={hit.score:.4f} "
+                f"grouped_chunks={hit.chunk_count}"
+            )
             print(
                 f"{hit.source}{page} | "
                 f"audience={hit.audience or '-'}"

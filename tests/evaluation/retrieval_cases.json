@@ -1,0 +1,49 @@
+[
+  {
+    "query": "Quais vacinas são recomendadas para idosos?",
+    "audience": "idoso",
+    "expected_sources": [
+      "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+      "pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf"
+    ]
+  },
+  {
+    "query": "Quais vacinas são indicadas durante a gestação?",
+    "audience": "gestante",
+    "expected_sources": [
+      "vacinacao/calendario_nacional_vacinacao_gestante.pdf",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "query": "Quais vacinas fazem parte do calendário da criança?",
+    "audience": "crianca",
+    "expected_sources": [
+      "vacinacao/calendario_nacional_vacinacao_crianca.pdf"
+    ]
+  },
+  {
+    "query": "Quais informações existem sobre o DIU de cobre?",
+    "expected_sources": [
+      "saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "query": "Quais informações existem sobre o implante contraceptivo?",
+    "expected_sources": [
+      "saude_sexual_reprodutiva/implante_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "query": "Como utilizar canetas aplicadoras de insulina?",
+    "expected_sources": [
+      "diabetes/cartilha_canetas_insulina_pacientes.pdf"
+    ]
+  },
+  {
+    "query": "Quais são os direitos e deveres da pessoa usuária da saúde?",
+    "expected_sources": [
+      "direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf"
+    ]
+  }
+]

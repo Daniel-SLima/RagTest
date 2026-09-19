@@ -7,6 +7,7 @@ from app.api.dependencies import (
     get_llm_provider,
     get_vector_store,
 )
+from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.rag.chat import answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider
@@ -26,6 +27,7 @@ async def chat(
     embeddings: Annotated[EmbeddingProvider, Depends(get_embedding_provider)],
     vector_store: Annotated[QdrantVectorStore, Depends(get_vector_store)],
     llm: Annotated[LLMProvider, Depends(get_llm_provider)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> ChatResponse:
     try:
         result = await answer_with_rag(
@@ -37,6 +39,10 @@ async def chat(
             category=request.category,
             audience=request.audience,
             min_score=request.min_score,
+            candidate_multiplier=settings.retrieval_candidate_multiplier,
+            score_margin=settings.retrieval_score_margin,
+            merge_same_page=settings.retrieval_merge_same_page,
+            max_group_chars=settings.retrieval_max_group_chars,
         )
     except RuntimeError as exc:
         raise HTTPException(
@@ -60,6 +66,7 @@ async def chat(
                 category=hit.category,
                 audience=hit.audience,
                 page=hit.page,
+                chunk_count=hit.chunk_count,
                 excerpt=" ".join(hit.content.split())[:500],
             )
             for index, hit in enumerate(result.sources, start=1)

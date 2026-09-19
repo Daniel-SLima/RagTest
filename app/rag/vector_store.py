@@ -17,6 +17,7 @@ class SearchHit:
     audience: str | None
     page: int | None
     metadata: dict[str, Any]
+    chunk_count: int = 1
 
 
 def deterministic_point_id(document: Document) -> str:

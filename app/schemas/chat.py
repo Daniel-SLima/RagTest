@@ -16,6 +16,7 @@ class ChatSource(BaseModel):
     category: str | None = None
     audience: str | None = None
     page: int | None = None
+    chunk_count: int = 1
     excerpt: str
 
 

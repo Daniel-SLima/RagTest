@@ -24,6 +24,10 @@ async def answer_with_rag(
     category: str | None = None,
     audience: str | None = None,
     min_score: float | None = None,
+    candidate_multiplier: int = 4,
+    score_margin: float = 0.22,
+    merge_same_page: bool = True,
+    max_group_chars: int = 5000,
 ) -> ChatResult:
     hits = await semantic_search(
         question,
@@ -33,6 +37,10 @@ async def answer_with_rag(
         category=category,
         audience=audience,
         min_score=min_score,
+        candidate_multiplier=candidate_multiplier,
+        score_margin=score_margin,
+        merge_same_page=merge_same_page,
+        max_group_chars=max_group_chars,
     )
 
     if not hits:

@@ -40,6 +40,10 @@ async def run(args: argparse.Namespace) -> None:
             category=args.category,
             audience=args.audience,
             min_score=args.min_score,
+            candidate_multiplier=settings.retrieval_candidate_multiplier,
+            score_margin=settings.retrieval_score_margin,
+            merge_same_page=settings.retrieval_merge_same_page,
+            max_group_chars=settings.retrieval_max_group_chars,
         )
 
         print()
@@ -52,7 +56,8 @@ async def run(args: argparse.Namespace) -> None:
             page = f", page {hit.page}" if hit.page is not None else ""
             print(
                 f"[{index}] {hit.source}{page} "
-                f"(score={hit.score:.4f}, audience={hit.audience or '-'})"
+                f"(score={hit.score:.4f}, audience={hit.audience or '-'}, "
+                f"grouped_chunks={hit.chunk_count})"
             )
     finally:
         await qdrant.close()

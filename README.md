@@ -2,49 +2,76 @@
 
 Módulo RAG reutilizável via API para Flutter, React Native, Web e outros sistemas.
 
-## Fase atual — 0.4 Chat RAG
+## Fase atual — 0.5 Qualidade do Retrieval
 
-Pipeline funcional:
+Pipeline atual:
 
 ```text
 PDF/DOCX
-  -> loader
-  -> chunking (LangChain)
-  -> embeddings locais (FastEmbed)
+  -> chunking
+  -> embeddings
   -> Qdrant
-  -> retrieval semântico + filtros
-  -> prompt grounded
+  -> overfetch de candidatos
+  -> agrupamento por fonte/página
+  -> filtro relativo por score
+  -> contexto final
   -> Gemini
   -> resposta + fontes
 ```
 
-## O que já funciona
+A fase 0.5 melhora a qualidade do contexto entregue ao LLM sem alterar os vetores já indexados.
 
-- FastAPI;
-- Qdrant em Docker;
-- ingestão de PDF/DOCX;
-- 699 chunks para a base de teste atual;
-- embeddings multilíngues;
-- busca semântica;
-- metadados de origem, categoria, página e público;
-- filtro por `category` e `audience`;
-- LangChain para chunking e montagem de prompt;
-- provider de LLM desacoplado;
-- Gemini como primeiro provider;
-- `POST /v1/search`;
-- `POST /v1/chat`;
-- resposta estruturada com fontes;
-- testes automatizados.
+### Melhorias de retrieval
 
-## Segurança da chave
+- overfetch: busca mais candidatos no Qdrant do que o número final solicitado;
+- agrupamento de chunks da mesma página de PDF;
+- reconstrução do texto respeitando `start_index`;
+- remoção do overlap de chunk quando possível;
+- corte relativo por score em relação ao melhor resultado;
+- `chunk_count` nas fontes para auditoria;
+- parâmetros configuráveis por ambiente.
 
-Nunca versione a chave do Gemini. Crie um arquivo local `.env`, que já está ignorado pelo Git:
+Configuração padrão:
 
 ```env
-GEMINI_API_KEY=SUA_NOVA_CHAVE
+RETRIEVAL_CANDIDATE_MULTIPLIER=4
+RETRIEVAL_SCORE_MARGIN=0.22
+RETRIEVAL_MERGE_SAME_PAGE=true
+RETRIEVAL_MAX_GROUP_CHARS=5000
 ```
 
-Se uma chave tiver sido publicada em chat, commit, print ou outro local, revogue-a e gere outra antes de usar.
+O corte relativo evita depender de um threshold global fixo. Por exemplo, com melhor score 0.75 e margem 0.22, resultados abaixo de aproximadamente 0.53 são descartados.
+
+## Avaliação do retrieval
+
+Foi adicionado um pequeno conjunto inicial de avaliação em:
+
+```text
+tests/evaluation/retrieval_cases.json
+```
+
+Execute:
+
+```cmd
+docker compose run --rm api ragtest-evaluate-retrieval
+```
+
+A saída informa:
+
+- `HitRate@5`: proporção de perguntas em que uma fonte esperada apareceu no top 5;
+- `MRR@5`: favorece fontes esperadas que aparecem nas primeiras posições.
+
+Essas métricas podem ser ampliadas e usadas na seção experimental do TCC.
+
+## Registro de dificuldades do TCC
+
+Problemas relevantes encontrados durante o desenvolvimento são documentados em:
+
+```text
+docs/dificuldades-tcc.md
+```
+
+Cada caso registra planejamento, observação, diagnóstico, correção e aprendizado técnico.
 
 ## Atualizar no Windows CMD
 
@@ -54,126 +81,32 @@ docker compose down
 docker compose up --build -d
 ```
 
-Confira:
+Não é necessário reindexar para a fase 0.5, pois embeddings e chunks armazenados não foram alterados.
 
-```cmd
-curl http://localhost:8000/health
-curl http://localhost:8000/ready
-docker compose ps
-```
-
-Swagger:
-
-```text
-http://localhost:8000/docs
-```
-
-## Reindexar com o novo metadado de público
-
-A fase 0.4 adiciona o metadado `audience`. Portanto, depois de atualizar, recrie a collection:
-
-```cmd
-docker compose run --rm api ragtest-ingest --recreate
-```
-
-Exemplos de público:
-
-- `idoso`
-- `gestante`
-- `crianca`
-- `adolescente_jovem`
-- `adulto`
-
-## Testar retrieval
-
-Sem filtro:
-
-```cmd
-docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?"
-```
-
-Com filtro de público:
+Teste a recuperação:
 
 ```cmd
 docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?" --audience idoso --limit 5
 ```
 
-Você também pode combinar filtros:
-
-```cmd
-docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?" --category vacinacao --audience idoso --limit 5
-```
-
-## Testar o chat RAG
-
-Com uma nova chave configurada em `.env`:
+Teste o chat:
 
 ```cmd
 docker compose run --rm api ragtest-chat "Quais vacinas são recomendadas para idosos?" --audience idoso
 ```
 
-O modelo recebe apenas os trechos recuperados e é instruído a citar `[1]`, `[2]`, etc.
+## API
 
-## API do chat
+- `GET /health`
+- `GET /ready`
+- `POST /v1/search`
+- `POST /v1/chat`
+- Swagger em `http://localhost:8000/docs`
 
-```http
-POST /v1/chat
-Content-Type: application/json
-```
+## Segurança da chave
 
-Exemplo:
-
-```json
-{
-  "message": "Quais vacinas são recomendadas para idosos?",
-  "limit": 5,
-  "audience": "idoso"
-}
-```
-
-Resposta:
-
-```json
-{
-  "answer": "De acordo com os documentos recuperados... [1]",
-  "model": "gemini-2.5-flash",
-  "sources": [
-    {
-      "citation_id": 1,
-      "score": 0.74,
-      "source": "pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf",
-      "category": "pessoa_idosa",
-      "audience": "idoso",
-      "page": 34,
-      "excerpt": "..."
-    }
-  ]
-}
-```
-
-## Integração com outro aplicativo
-
-O cliente não precisa conhecer FastEmbed, Qdrant ou Gemini. Ele consome apenas a API:
-
-```text
-Aplicativo existente
-      |
-      | POST /v1/chat
-      v
-RagTest API
-      |
-      +-- retrieval
-      +-- LLM
-      +-- fontes
-```
-
-Isso permite trocar o frontend ou o provider de IA sem reescrever o pipeline inteiro.
+Nunca versione a chave do Gemini. Use somente o arquivo local `.env`, que está ignorado pelo Git.
 
 ## Próximas etapas
 
-- histórico de conversa desacoplado;
-- WebSocket/streaming;
-- avaliação automática do retrieval;
-- reranking e busca híbrida;
-- autenticação da API;
-- empacotamento/documentação para integração em outro projeto.
+Depois de medir a fase 0.5, os próximos incrementos naturais são reranking com modelo específico, busca híbrida, logs estruturados de auditoria, histórico de sessão e streaming para integração com o aplicativo.
