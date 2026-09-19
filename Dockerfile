@@ -5,7 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN addgroup --system app && adduser --system --ingroup app app
+# Fixed UID/GID keeps writable Docker volumes predictable across hosts.
+RUN addgroup --gid 10001 app \
+    && adduser --uid 10001 --gid 10001 --disabled-password --gecos "" app \
+    && mkdir -p /app/.cache/fastembed \
+    && chown -R app:app /app/.cache
 
 COPY pyproject.toml README.md ./
 COPY app ./app
