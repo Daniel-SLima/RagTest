@@ -1,49 +1,51 @@
 # RagTest
 
-Módulo RAG reutilizável via API para Flutter, React Native, Web e outros sistemas.
+Módulo RAG reutilizável via API.
 
-## Fase atual — 0.5 Qualidade do Retrieval
+## Fase 0.5.3 — Retrieval híbrido
 
-A versão 0.5.2 combina retrieval denso com reranking lexical leve:
+A 0.5.2 melhorou o MRR de 0.714 para 0.786, mas não aumentou o HitRate@5. O motivo provável é recall: reranking não recupera documentos ausentes do conjunto inicial.
 
-    Qdrant dense retrieval
-      -> overfetch
-      -> agrupamento por página
-      -> reranking lexical de metadados/conteúdo
-      -> corte relativo
-      -> contexto final
-      -> Gemini
+A 0.5.3 combina:
 
-O score semântico original é preservado. Um rank_score separado é usado para ordenar os candidatos e facilitar auditoria.
+    Dense multilingual embedding
+            +
+    BM25 em português
+            |
+            v
+      Reciprocal Rank Fusion
+            |
+            v
+    agrupamento + reranking
+            |
+            v
+          Gemini
 
-Baseline 0.5.1:
+Baseline registrada em docs/avaliacao-retrieval.md.
 
-    HitRate@5 = 0.857 (6/7)
-    MRR@5     = 0.714
+### Atualização obrigatória da collection
 
-Detalhes: docs/avaliacao-retrieval.md
-
-## Atualizar no Windows CMD
+O schema do Qdrant mudou de um vetor denso único para vetores nomeados dense + sparse. Por isso esta versão exige uma reindexação única:
 
     git pull origin main
     docker compose down
     docker compose up --build -d
+    docker compose run --rm api ragtest-ingest --recreate
 
-Não é necessário reindexar.
-
-Teste o caso que falhou na baseline:
+Depois:
 
     docker compose run --rm api ragtest-search "Quais são os direitos e deveres da pessoa usuária da saúde?" --limit 5
 
-Depois rode a avaliação completa:
+E a avaliação:
 
     docker compose run --rm api ragtest-evaluate-retrieval
 
-Compare HitRate@5 e MRR@5 com a baseline antes de considerar a mudança uma melhoria.
+Resultados esperados devem ser comparados com:
 
-## Dificuldades TCC
+    0.5.1  HitRate@5=0.857  MRR@5=0.714
+    0.5.2  HitRate@5=0.857  MRR@5=0.786
 
-Registro em docs/dificuldades-tcc.md. Cada caso contém planejado, observado, diagnóstico, correção e aprendizado.
+Não considere a 0.5.3 melhor antes de medir os sete casos.
 
 ## API
 
@@ -51,8 +53,12 @@ Registro em docs/dificuldades-tcc.md. Cada caso contém planejado, observado, di
 - GET /ready
 - POST /v1/search
 - POST /v1/chat
-- Swagger em http://localhost:8000/docs
+- Swagger: http://localhost:8000/docs
+
+## Dificuldades TCC
+
+Registro contínuo em docs/dificuldades-tcc.md.
 
 ## Segurança
 
-Nunca versione a chave do Gemini. Use somente o arquivo local .env.
+Nunca versione GEMINI_API_KEY. Use apenas .env local.

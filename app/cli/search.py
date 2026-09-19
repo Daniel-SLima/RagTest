@@ -2,14 +2,17 @@ import argparse
 import asyncio
 
 from app.core.config import get_settings
-from app.rag.embeddings.factory import create_embedding_provider
+from app.rag.embeddings.factory import (
+    create_embedding_provider,
+    create_sparse_embedding_provider,
+)
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run semantic search in RagTest.")
+    parser = argparse.ArgumentParser(description="Run hybrid search in RagTest.")
     parser.add_argument("query", help="Natural-language search query.")
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--category", default=None)
@@ -29,11 +32,13 @@ async def run(
     qdrant = QdrantService(settings)
     try:
         embeddings = create_embedding_provider(settings)
+        sparse_embeddings = create_sparse_embedding_provider(settings)
         vector_store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
 
         hits = await semantic_search(
             query,
             embeddings=embeddings,
+            sparse_embeddings=sparse_embeddings,
             vector_store=vector_store,
             limit=limit,
             category=category,
@@ -45,6 +50,8 @@ async def run(
             max_group_chars=settings.retrieval_max_group_chars,
             source_lexical_weight=settings.retrieval_source_lexical_weight,
             content_lexical_weight=settings.retrieval_content_lexical_weight,
+            hybrid_dense_weight=settings.hybrid_dense_weight,
+            hybrid_sparse_weight=settings.hybrid_sparse_weight,
         )
 
         print(f'Query: "{query}"')
@@ -55,10 +62,12 @@ async def run(
             if len(excerpt) > 320:
                 excerpt = excerpt[:317] + "..."
             rank_score = hit.rank_score if hit.rank_score is not None else hit.score
+            dense = f"{hit.dense_score:.4f}" if hit.dense_score is not None else "-"
+            sparse = f"{hit.sparse_score:.4f}" if hit.sparse_score is not None else "-"
             print()
             print(
-                f"#{index} semantic={hit.score:.4f} rank={rank_score:.4f} "
-                f"grouped_chunks={hit.chunk_count}"
+                f"#{index} fusion={hit.score:.4f} rank={rank_score:.4f} "
+                f"dense={dense} sparse={sparse} grouped_chunks={hit.chunk_count}"
             )
             print(f"{hit.source}{page} | audience={hit.audience or '-'}")
             print(excerpt)

@@ -15,6 +15,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     app.state.qdrant = QdrantService(settings)
     app.state.embedding_provider = None
+    app.state.sparse_embedding_provider = None
     app.state.llm_provider = None
     try:
         yield

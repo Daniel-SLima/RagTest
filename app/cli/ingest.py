@@ -3,7 +3,10 @@ import asyncio
 
 from app.core.config import get_settings
 from app.rag.chunking import split_documents
-from app.rag.embeddings.factory import create_embedding_provider
+from app.rag.embeddings.factory import (
+    create_embedding_provider,
+    create_sparse_embedding_provider,
+)
 from app.rag.ingestion import ingest_chunks
 from app.rag.loaders import load_source_documents
 from app.rag.vector_store import QdrantVectorStore
@@ -43,21 +46,20 @@ async def run(recreate: bool) -> None:
             raise RuntimeError("Qdrant is unavailable.")
 
         embeddings = create_embedding_provider(settings)
-        vector_store = QdrantVectorStore(
-            qdrant.client,
-            settings.qdrant_collection,
-        )
+        sparse_embeddings = create_sparse_embedding_provider(settings)
+        vector_store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
 
         print("RagTest ingestion")
         print(f"Files loaded     : {report.files_loaded}/{report.files_scanned}")
         print(f"Chunks to index  : {len(chunks)}")
-        print(f"Embedding model  : {embeddings.model_name}")
+        print(f"Dense model      : {embeddings.model_name}")
+        print(f"Sparse model     : {sparse_embeddings.model_name}")
         print(f"Collection       : {settings.qdrant_collection}")
-        print("First execution may download the embedding model...")
 
         stats = await ingest_chunks(
             chunks,
             embeddings=embeddings,
+            sparse_embeddings=sparse_embeddings,
             vector_store=vector_store,
             upsert_batch_size=settings.upsert_batch_size,
             recreate=recreate,
@@ -69,7 +71,7 @@ async def run(recreate: bool) -> None:
             "Collection       : "
             + ("created/recreated" if stats.collection_created else "reused")
         )
-        print("Ingestion complete.")
+        print("Hybrid ingestion complete.")
     finally:
         await qdrant.close()
 

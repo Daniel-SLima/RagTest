@@ -6,7 +6,10 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.evaluation import DEFAULT_RETRIEVAL_CASES
-from app.rag.embeddings.factory import create_embedding_provider
+from app.rag.embeddings.factory import (
+    create_embedding_provider,
+    create_sparse_embedding_provider,
+)
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
@@ -38,6 +41,7 @@ async def run(cases_path: Path | None, limit: int) -> None:
     settings = get_settings()
     qdrant = QdrantService(settings)
     embeddings = create_embedding_provider(settings)
+    sparse_embeddings = create_sparse_embedding_provider(settings)
     store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
 
     hits_count = 0
@@ -46,7 +50,7 @@ async def run(cases_path: Path | None, limit: int) -> None:
     try:
         print("RagTest retrieval evaluation")
         print(
-            f"Cases: {len(cases)} | k={limit} | "
+            f"Cases: {len(cases)} | k={limit} | mode=hybrid-dense-bm25 | "
             f"source={'external JSON' if cases_path else 'packaged defaults'}"
         )
         print()
@@ -58,6 +62,7 @@ async def run(cases_path: Path | None, limit: int) -> None:
             hits = await semantic_search(
                 query,
                 embeddings=embeddings,
+                sparse_embeddings=sparse_embeddings,
                 vector_store=store,
                 limit=limit,
                 category=str(case["category"]) if case.get("category") else None,
@@ -68,6 +73,8 @@ async def run(cases_path: Path | None, limit: int) -> None:
                 max_group_chars=settings.retrieval_max_group_chars,
                 source_lexical_weight=settings.retrieval_source_lexical_weight,
                 content_lexical_weight=settings.retrieval_content_lexical_weight,
+                hybrid_dense_weight=settings.hybrid_dense_weight,
+                hybrid_sparse_weight=settings.hybrid_sparse_weight,
             )
 
             sources = [hit.source for hit in hits]
@@ -87,7 +94,7 @@ async def run(cases_path: Path | None, limit: int) -> None:
                 rank_score = hit.rank_score if hit.rank_score is not None else hit.score
                 print(
                     f"    {result_rank}. {hit.source}{page} "
-                    f"semantic={hit.score:.4f} rank={rank_score:.4f}"
+                    f"fusion={hit.score:.4f} rank={rank_score:.4f}"
                 )
 
         total = len(cases)

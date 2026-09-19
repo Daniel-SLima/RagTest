@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.2"
+    app_version: str = "0.5.3"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     embedding_batch_size: int = 32
     embedding_cache_dir: Path = Path(".cache/fastembed")
     upsert_batch_size: int = 64
+
+    sparse_embedding_provider: str = "fastembed_bm25"
+    sparse_embedding_model: str = "Qdrant/bm25"
+    sparse_embedding_language: str = "portuguese"
+    hybrid_dense_weight: float = 1.0
+    hybrid_sparse_weight: float = 1.2
 
     retrieval_candidate_multiplier: int = 8
     retrieval_score_margin: float = 0.22

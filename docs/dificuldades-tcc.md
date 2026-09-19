@@ -40,15 +40,27 @@ Aprendizado: recursos de runtime não devem depender acidentalmente da estrutura
 
 ## 4. Busca densa não recuperou a carta de direitos e deveres no top 5
 
-Planejado: a pergunta sobre direitos e deveres deveria recuperar direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf.
+Planejado: recuperar direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf.
 
-Observado: na baseline 0.5.1 o documento não apareceu no top 5; medicamentos e caderneta da pessoa idosa ocuparam as primeiras posições.
+Observado: na baseline 0.5.1 o documento não apareceu no top 5.
 
-Diagnóstico: similaridade vetorial densa pode perder correspondências lexicais explícitas presentes no nome do documento.
+Diagnóstico: similaridade vetorial densa pode perder correspondências lexicais explícitas.
 
-Correção experimental: reranking por metadados e conteúdo, rank_score separado do score semântico e overfetch ampliado.
+Correção experimental: reranking por metadados e conteúdo.
 
-Aprendizado: retrieval puramente denso pode falhar em consultas com terminologia exata; a melhoria deve ser comprovada por HitRate e MRR antes/depois.
+Aprendizado: retrieval puramente denso pode falhar em consultas com terminologia exata.
+
+## 5. Reranking melhorou o MRR, mas não resolveu a falha de recall
+
+Planejado: o reranking lexical 0.5.2 deveria promover a carta de direitos e deveres.
+
+Observado: o HitRate@5 permaneceu 0.857, enquanto o MRR@5 subiu de 0.714 para 0.786. A consulta de direitos e deveres continuou sem a fonte esperada.
+
+Diagnóstico: reranking só reorganiza candidatos que já foram recuperados. Se a fonte relevante não entra no conjunto inicial denso, um reranker posterior não consegue recuperá-la.
+
+Correção experimental: adicionar retrieval híbrido dense + BM25 em português com Reciprocal Rank Fusion.
+
+Aprendizado: ranking e recall são problemas distintos. Melhorar a ordenação não necessariamente aumenta a cobertura de documentos relevantes.
 
 ## Como registrar novos casos
 

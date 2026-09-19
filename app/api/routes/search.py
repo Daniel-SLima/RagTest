@@ -2,9 +2,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.dependencies import get_embedding_provider, get_vector_store
+from app.api.dependencies import (
+    get_embedding_provider,
+    get_sparse_embedding_provider,
+    get_vector_store,
+)
 from app.core.config import Settings, get_settings
-from app.rag.embeddings.base import EmbeddingProvider
+from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.schemas.search import SemanticSearchHit, SemanticSearchRequest, SemanticSearchResponse
@@ -16,6 +20,10 @@ router = APIRouter(prefix="/v1", tags=["retrieval"])
 async def search_documents(
     request: SemanticSearchRequest,
     embeddings: Annotated[EmbeddingProvider, Depends(get_embedding_provider)],
+    sparse_embeddings: Annotated[
+        SparseEmbeddingProvider,
+        Depends(get_sparse_embedding_provider),
+    ],
     vector_store: Annotated[QdrantVectorStore, Depends(get_vector_store)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> SemanticSearchResponse:
@@ -23,6 +31,7 @@ async def search_documents(
         hits = await semantic_search(
             request.query,
             embeddings=embeddings,
+            sparse_embeddings=sparse_embeddings,
             vector_store=vector_store,
             limit=request.limit,
             category=request.category,
@@ -34,6 +43,8 @@ async def search_documents(
             max_group_chars=settings.retrieval_max_group_chars,
             source_lexical_weight=settings.retrieval_source_lexical_weight,
             content_lexical_weight=settings.retrieval_content_lexical_weight,
+            hybrid_dense_weight=settings.hybrid_dense_weight,
+            hybrid_sparse_weight=settings.hybrid_sparse_weight,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
@@ -44,6 +55,8 @@ async def search_documents(
             SemanticSearchHit(
                 score=hit.score,
                 rank_score=hit.rank_score,
+                dense_score=hit.dense_score,
+                sparse_score=hit.sparse_score,
                 content=hit.content,
                 source=hit.source,
                 category=hit.category,

@@ -76,10 +76,11 @@ def group_hits_by_page(
     groups: OrderedDict[tuple[str, str, int | str], list[SearchHit]] = OrderedDict()
 
     for hit in hits:
-        if hit.page is None:
-            key = ("chunk", hit.source, hit.id)
-        else:
-            key = ("page", hit.source, hit.page)
+        key = (
+            ("chunk", hit.source, hit.id)
+            if hit.page is None
+            else ("page", hit.source, hit.page)
+        )
         groups.setdefault(key, []).append(hit)
 
     merged_hits: list[SearchHit] = []
@@ -105,6 +106,14 @@ def group_hits_by_page(
             SearchHit(
                 id=best.id,
                 score=best.score,
+                dense_score=max(
+                    (item.dense_score for item in members if item.dense_score is not None),
+                    default=None,
+                ),
+                sparse_score=max(
+                    (item.sparse_score for item in members if item.sparse_score is not None),
+                    default=None,
+                ),
                 content=merged_content,
                 source=best.source,
                 category=best.category,

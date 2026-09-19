@@ -14,6 +14,8 @@ class SemanticSearchRequest(BaseModel):
 class SemanticSearchHit(BaseModel):
     score: float
     rank_score: float | None = None
+    dense_score: float | None = None
+    sparse_score: float | None = None
     content: str
     source: str
     category: str | None = None

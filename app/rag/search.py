@@ -1,4 +1,4 @@
-from app.rag.embeddings.base import EmbeddingProvider
+from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_quality import (
     apply_relative_score_floor,
     group_hits_by_page,
@@ -11,6 +11,7 @@ async def semantic_search(
     query: str,
     *,
     embeddings: EmbeddingProvider,
+    sparse_embeddings: SparseEmbeddingProvider | None = None,
     vector_store: QdrantVectorStore,
     limit: int = 5,
     category: str | None = None,
@@ -22,16 +23,26 @@ async def semantic_search(
     max_group_chars: int = 5000,
     source_lexical_weight: float = 0.25,
     content_lexical_weight: float = 0.05,
+    hybrid_dense_weight: float = 1.0,
+    hybrid_sparse_weight: float = 1.2,
 ) -> list[SearchHit]:
     query_vector = await embeddings.embed_query(query)
+    sparse_query_vector = (
+        await sparse_embeddings.embed_query(query)
+        if sparse_embeddings is not None
+        else None
+    )
 
     candidate_limit = max(limit, limit * max(candidate_multiplier, 1))
     hits = await vector_store.search(
         query_vector,
+        sparse_query_vector=sparse_query_vector,
         limit=candidate_limit,
         category=category,
         audience=audience,
         min_score=min_score,
+        dense_weight=hybrid_dense_weight,
+        sparse_weight=hybrid_sparse_weight,
     )
 
     if merge_same_page:

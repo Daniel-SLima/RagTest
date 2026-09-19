@@ -5,8 +5,11 @@ from fastapi import Depends, HTTPException, Request, status
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.llm.factory import create_llm_provider
-from app.rag.embeddings.base import EmbeddingProvider
-from app.rag.embeddings.factory import create_embedding_provider
+from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
+from app.rag.embeddings.factory import (
+    create_embedding_provider,
+    create_sparse_embedding_provider,
+)
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
 
@@ -26,6 +29,17 @@ def get_embedding_provider(
     if provider is None:
         provider = create_embedding_provider(settings)
         request.app.state.embedding_provider = provider
+    return provider
+
+
+def get_sparse_embedding_provider(
+    request: Request,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> SparseEmbeddingProvider:
+    provider = getattr(request.app.state, "sparse_embedding_provider", None)
+    if provider is None:
+        provider = create_sparse_embedding_provider(settings)
+        request.app.state.sparse_embedding_provider = provider
     return provider
 
 

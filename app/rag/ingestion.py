@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from langchain_core.documents import Document
 
-from app.rag.embeddings.base import EmbeddingProvider
+from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.vector_store import QdrantVectorStore
 
 
@@ -17,6 +17,7 @@ async def ingest_chunks(
     chunks: list[Document],
     *,
     embeddings: EmbeddingProvider,
+    sparse_embeddings: SparseEmbeddingProvider,
     vector_store: QdrantVectorStore,
     upsert_batch_size: int,
     recreate: bool = False,
@@ -35,10 +36,14 @@ async def ingest_chunks(
     indexed = 0
     for start in range(0, len(chunks), upsert_batch_size):
         batch = chunks[start : start + upsert_batch_size]
-        vectors = await embeddings.embed_documents(
-            [document.page_content for document in batch]
+        texts = [document.page_content for document in batch]
+        dense_vectors = await embeddings.embed_documents(texts)
+        sparse_vectors = await sparse_embeddings.embed_documents(texts)
+        indexed += await vector_store.upsert(
+            batch,
+            dense_vectors,
+            sparse_vectors,
         )
-        indexed += await vector_store.upsert(batch, vectors)
 
     return IngestionStats(
         chunks_indexed=indexed,

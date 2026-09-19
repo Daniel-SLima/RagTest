@@ -1,11 +1,12 @@
 from langchain_core.documents import Document
 import pytest
 
+from app.rag.embeddings.base import SparseVectorData
 from app.rag.ingestion import ingest_chunks
 
 
 class FakeEmbeddings:
-    model_name = "fake"
+    model_name = "fake-dense"
 
     async def dimension(self) -> int:
         return 3
@@ -15,6 +16,16 @@ class FakeEmbeddings:
 
     async def embed_query(self, text: str) -> list[float]:
         return [float(len(text)), 0.0, 1.0]
+
+
+class FakeSparseEmbeddings:
+    model_name = "fake-sparse"
+
+    async def embed_documents(self, texts: list[str]) -> list[SparseVectorData]:
+        return [SparseVectorData(indices=[1], values=[1.0]) for _ in texts]
+
+    async def embed_query(self, text: str) -> SparseVectorData:
+        return SparseVectorData(indices=[1], values=[1.0])
 
 
 class FakeVectorStore:
@@ -29,9 +40,10 @@ class FakeVectorStore:
     async def upsert(
         self,
         documents: list[Document],
-        vectors: list[list[float]],
+        dense_vectors: list[list[float]],
+        sparse_vectors: list[SparseVectorData],
     ) -> int:
-        assert len(documents) == len(vectors)
+        assert len(documents) == len(dense_vectors) == len(sparse_vectors)
         self.batches.append(len(documents))
         return len(documents)
 
@@ -44,6 +56,7 @@ async def test_ingestion_batches_chunks_and_counts_points() -> None:
     stats = await ingest_chunks(
         chunks,
         embeddings=FakeEmbeddings(),
+        sparse_embeddings=FakeSparseEmbeddings(),
         vector_store=store,
         upsert_batch_size=2,
     )
