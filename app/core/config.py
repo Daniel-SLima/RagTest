@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.3.0"
+    app_version: str = "0.4.0"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     embedding_cache_dir: Path = Path(".cache/fastembed")
     upsert_batch_size: int = 64
 
+    llm_provider: str = "gemini"
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
+    llm_temperature: float = 0.1
+    llm_max_output_tokens: int = 1200
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -34,9 +40,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @field_validator("qdrant_api_key", mode="before")
+    @field_validator("qdrant_api_key", "gemini_api_key", mode="before")
     @classmethod
-    def empty_api_key_is_none(cls, value: object) -> object:
+    def empty_secret_is_none(cls, value: object) -> object:
         if value == "":
             return None
         return value

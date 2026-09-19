@@ -13,10 +13,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("query", help="Natural-language search query.")
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--category", default=None)
+    parser.add_argument("--audience", default=None)
+    parser.add_argument("--min-score", type=float, default=None)
     return parser.parse_args()
 
 
-async def run(query: str, limit: int, category: str | None) -> None:
+async def run(
+    query: str,
+    limit: int,
+    category: str | None,
+    audience: str | None,
+    min_score: float | None,
+) -> None:
     settings = get_settings()
     qdrant = QdrantService(settings)
     try:
@@ -32,6 +40,8 @@ async def run(query: str, limit: int, category: str | None) -> None:
             vector_store=vector_store,
             limit=limit,
             category=category,
+            audience=audience,
+            min_score=min_score,
         )
 
         print(f'Query: "{query}"')
@@ -43,7 +53,10 @@ async def run(query: str, limit: int, category: str | None) -> None:
                 excerpt = excerpt[:317] + "..."
             print()
             print(f"#{index} score={hit.score:.4f}")
-            print(f"{hit.source}{page}")
+            print(
+                f"{hit.source}{page} | "
+                f"audience={hit.audience or '-'}"
+            )
             print(excerpt)
     finally:
         await qdrant.close()
@@ -51,7 +64,15 @@ async def run(query: str, limit: int, category: str | None) -> None:
 
 def main() -> None:
     args = parse_args()
-    asyncio.run(run(args.query, args.limit, args.category))
+    asyncio.run(
+        run(
+            args.query,
+            args.limit,
+            args.category,
+            args.audience,
+            args.min_score,
+        )
+    )
 
 
 if __name__ == "__main__":

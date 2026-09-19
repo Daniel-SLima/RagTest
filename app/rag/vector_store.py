@@ -14,6 +14,7 @@ class SearchHit:
     content: str
     source: str
     category: str | None
+    audience: str | None
     page: int | None
     metadata: dict[str, Any]
 
@@ -63,7 +64,7 @@ class QdrantVectorStore:
             ),
         )
 
-        for field_name in ("category", "source", "file_type"):
+        for field_name in ("category", "audience", "source", "file_type"):
             await self._client.create_payload_index(
                 collection_name=self.collection_name,
                 field_name=field_name,
@@ -110,22 +111,31 @@ class QdrantVectorStore:
         *,
         limit: int = 5,
         category: str | None = None,
+        audience: str | None = None,
+        min_score: float | None = None,
     ) -> list[SearchHit]:
         if not await self._client.collection_exists(self.collection_name):
             raise RuntimeError(
                 "Qdrant collection does not exist yet. Run ragtest-ingest first."
             )
 
-        query_filter = None
+        conditions: list[models.FieldCondition] = []
         if category:
-            query_filter = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="category",
-                        match=models.MatchValue(value=category),
-                    )
-                ]
+            conditions.append(
+                models.FieldCondition(
+                    key="category",
+                    match=models.MatchValue(value=category),
+                )
             )
+        if audience:
+            conditions.append(
+                models.FieldCondition(
+                    key="audience",
+                    match=models.MatchValue(value=audience),
+                )
+            )
+
+        query_filter = models.Filter(must=conditions) if conditions else None
 
         response = await self._client.query_points(
             collection_name=self.collection_name,
@@ -134,6 +144,7 @@ class QdrantVectorStore:
             limit=limit,
             with_payload=True,
             with_vectors=False,
+            score_threshold=min_score,
         )
 
         hits: list[SearchHit] = []
@@ -149,6 +160,11 @@ class QdrantVectorStore:
                     category=(
                         str(payload["category"])
                         if payload.get("category") is not None
+                        else None
+                    ),
+                    audience=(
+                        str(payload["audience"])
+                        if payload.get("audience") is not None
                         else None
                     ),
                     page=int(page) if isinstance(page, int) else None,

@@ -4,14 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.3.0"
-description = "Backend portável de RAG com FastAPI e Qdrant"
+version = "0.4.0"
+description = "Backend portável de RAG com FastAPI, Qdrant e Gemini"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116,<1.0",
     "fastembed>=0.7,<1.0",
     "fonttools>=4.59,<5.0",
+    "google-genai>=1.33,<2.0",
     "langchain-core>=1.0,<2.0",
     "langchain-text-splitters>=1.0,<2.0",
     "pydantic-settings>=2.10,<3.0",
@@ -33,6 +34,7 @@ dev = [
 ragtest-inspect = "app.cli.inspect_documents:main"
 ragtest-ingest = "app.cli.ingest:main"
 ragtest-search = "app.cli.search:main"
+ragtest-chat = "app.cli.chat:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+import unicodedata
 
 from docx import Document as DocxDocument
 from langchain_core.documents import Document
@@ -33,15 +34,44 @@ def discover_source_files(source_dir: Path) -> list[Path]:
     )
 
 
+def _normalized(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    return "".join(character for character in normalized if not unicodedata.combining(character)).lower()
+
+
+def infer_audience(relative_path: Path) -> str | None:
+    value = _normalized(relative_path.as_posix())
+
+    if "pessoa_idosa/" in value or "idoso" in value:
+        return "idoso"
+    if "gestacao/" in value or "gestante" in value:
+        return "gestante"
+    if "crianca" in value:
+        return "crianca"
+    if "adolescent" in value or "jovens" in value:
+        return "adolescente_jovem"
+    if "calendario_nacional_vacinacao_adulto" in value:
+        return "adulto"
+
+    return None
+
+
 def _base_metadata(path: Path, source_dir: Path) -> dict[str, str]:
     relative_path = path.relative_to(source_dir)
     category = relative_path.parts[0] if len(relative_path.parts) > 1 else "uncategorized"
-    return {
+
+    metadata = {
         "source": relative_path.as_posix(),
         "filename": path.name,
         "category": category,
         "file_type": path.suffix.lower().lstrip("."),
     }
+
+    audience = infer_audience(relative_path)
+    if audience:
+        metadata["audience"] = audience
+
+    return metadata
 
 
 def load_pdf(path: Path, source_dir: Path) -> list[Document]:

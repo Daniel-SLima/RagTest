@@ -32,6 +32,8 @@ async def search_documents(
             vector_store=vector_store,
             limit=request.limit,
             category=request.category,
+            audience=request.audience,
+            min_score=request.min_score,
         )
     except RuntimeError as exc:
         raise HTTPException(
@@ -47,6 +49,7 @@ async def search_documents(
                 content=hit.content,
                 source=hit.source,
                 category=hit.category,
+                audience=hit.audience,
                 page=hit.page,
                 metadata=hit.metadata,
             )

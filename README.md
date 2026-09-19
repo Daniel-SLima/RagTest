@@ -1,55 +1,52 @@
 # RagTest
 
-Backend modular para experimentar e evoluir um fluxo **RAG (Retrieval-Augmented Generation)** reutilizável por Flutter, React Native, Web ou outros sistemas via API.
+Módulo RAG reutilizável via API para Flutter, React Native, Web e outros sistemas.
 
-## Fase atual — 0.3 Retrieval vetorial
+## Fase atual — 0.4 Chat RAG
 
-Já estão implementados:
-
-- FastAPI e health checks;
-- Qdrant em Docker;
-- leitura recursiva de PDF e DOCX;
-- chunking com LangChain;
-- metadados por chunk;
-- embeddings locais com FastEmbed;
-- modelo multilíngue adequado para consultas em português;
-- IDs determinísticos para reindexar sem duplicar o mesmo chunk;
-- persistência do cache do modelo em volume Docker;
-- indexação dos chunks no Qdrant;
-- busca semântica por CLI;
-- filtro opcional por categoria;
-- endpoint REST `POST /v1/search`;
-- testes automatizados.
-
-## Fluxo
+Pipeline funcional:
 
 ```text
-PDF / DOCX
-    |
-    v
- loaders
-    |
-    v
-LangChain Documents
-    |
-    v
-chunking
-    |
-    v
-FastEmbed
-    |
-    v
-Qdrant
-    |
-    +---- CLI search
-    |
-    +---- POST /v1/search
-    |
-    v
-próxima fase: prompt + LLM -> POST /v1/chat
+PDF/DOCX
+  -> loader
+  -> chunking (LangChain)
+  -> embeddings locais (FastEmbed)
+  -> Qdrant
+  -> retrieval semântico + filtros
+  -> prompt grounded
+  -> Gemini
+  -> resposta + fontes
 ```
 
-## Atualizar e subir no Windows CMD
+## O que já funciona
+
+- FastAPI;
+- Qdrant em Docker;
+- ingestão de PDF/DOCX;
+- 699 chunks para a base de teste atual;
+- embeddings multilíngues;
+- busca semântica;
+- metadados de origem, categoria, página e público;
+- filtro por `category` e `audience`;
+- LangChain para chunking e montagem de prompt;
+- provider de LLM desacoplado;
+- Gemini como primeiro provider;
+- `POST /v1/search`;
+- `POST /v1/chat`;
+- resposta estruturada com fontes;
+- testes automatizados.
+
+## Segurança da chave
+
+Nunca versione a chave do Gemini. Crie um arquivo local `.env`, que já está ignorado pelo Git:
+
+```env
+GEMINI_API_KEY=SUA_NOVA_CHAVE
+```
+
+Se uma chave tiver sido publicada em chat, commit, print ou outro local, revogue-a e gere outra antes de usar.
+
+## Atualizar no Windows CMD
 
 ```cmd
 git pull origin main
@@ -57,49 +54,70 @@ docker compose down
 docker compose up --build -d
 ```
 
-Teste:
+Confira:
 
 ```cmd
 curl http://localhost:8000/health
 curl http://localhost:8000/ready
+docker compose ps
 ```
 
-## Indexar os documentos
+Swagger:
 
-Na primeira execução o modelo de embeddings será baixado e guardado no volume `fastembed_cache`.
-
-```cmd
-docker compose run --rm api ragtest-ingest
+```text
+http://localhost:8000/docs
 ```
 
-Para apagar e recriar a collection:
+## Reindexar com o novo metadado de público
+
+A fase 0.4 adiciona o metadado `audience`. Portanto, depois de atualizar, recrie a collection:
 
 ```cmd
 docker compose run --rm api ragtest-ingest --recreate
 ```
 
-Com os 18 documentos atuais, o pipeline deve indexar os mesmos chunks encontrados por `ragtest-inspect`.
+Exemplos de público:
 
-## Primeira busca semântica
+- `idoso`
+- `gestante`
+- `crianca`
+- `adolescente_jovem`
+- `adulto`
 
-Depois da ingestão:
+## Testar retrieval
+
+Sem filtro:
 
 ```cmd
 docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?"
 ```
 
-Com filtro:
+Com filtro de público:
 
 ```cmd
-docker compose run --rm api ragtest-search "Quais vacinas são recomendadas?" --category vacinacao --limit 5
+docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?" --audience idoso --limit 5
 ```
 
-A busca retorna score, arquivo, página (quando disponível) e um trecho do chunk.
+Você também pode combinar filtros:
 
-## API de retrieval
+```cmd
+docker compose run --rm api ragtest-search "Quais vacinas são recomendadas para idosos?" --category vacinacao --audience idoso --limit 5
+```
+
+## Testar o chat RAG
+
+Com uma nova chave configurada em `.env`:
+
+```cmd
+docker compose run --rm api ragtest-chat "Quais vacinas são recomendadas para idosos?" --audience idoso
+```
+
+O modelo recebe apenas os trechos recuperados e é instruído a citar `[1]`, `[2]`, etc.
+
+## API do chat
 
 ```http
-POST /v1/search
+POST /v1/chat
 Content-Type: application/json
 ```
 
@@ -107,61 +125,55 @@ Exemplo:
 
 ```json
 {
-  "query": "Quais vacinas são recomendadas para idosos?",
+  "message": "Quais vacinas são recomendadas para idosos?",
   "limit": 5,
-  "category": "vacinacao"
+  "audience": "idoso"
 }
 ```
 
-A resposta já possui os elementos que outro aplicativo precisa consumir:
+Resposta:
 
 ```json
 {
-  "query": "Quais vacinas são recomendadas para idosos?",
-  "results": [
+  "answer": "De acordo com os documentos recuperados... [1]",
+  "model": "gemini-2.5-flash",
+  "sources": [
     {
-      "score": 0.82,
-      "content": "...",
-      "source": "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
-      "category": "vacinacao",
-      "page": 1,
-      "metadata": {}
+      "citation_id": 1,
+      "score": 0.74,
+      "source": "pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf",
+      "category": "pessoa_idosa",
+      "audience": "idoso",
+      "page": 34,
+      "excerpt": "..."
     }
   ]
 }
 ```
 
-Swagger: `http://localhost:8000/docs`
+## Integração com outro aplicativo
 
-## Por que FastEmbed nesta fase?
-
-O provider inicial roda localmente em ONNX, sem exigir chave de API. A aplicação usa uma interface `EmbeddingProvider`, então outro provider pode ser adicionado depois sem alterar o restante do pipeline.
-
-Modelo padrão:
+O cliente não precisa conhecer FastEmbed, Qdrant ou Gemini. Ele consome apenas a API:
 
 ```text
-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+Aplicativo existente
+      |
+      | POST /v1/chat
+      v
+RagTest API
+      |
+      +-- retrieval
+      +-- LLM
+      +-- fontes
 ```
 
-## Reindexação
+Isso permite trocar o frontend ou o provider de IA sem reescrever o pipeline inteiro.
 
-Cada chunk recebe um UUID determinístico baseado em origem, página, posição e conteúdo. Rodar a ingestão novamente não cria uma segunda cópia do mesmo chunk.
+## Próximas etapas
 
-Se trocar de modelo de embeddings, use:
-
-```cmd
-docker compose run --rm api ragtest-ingest --recreate
-```
-
-## Próxima fase — 0.4 Chat RAG
-
-1. recuperar os melhores chunks;
-2. montar prompt com contexto e regras de citação;
-3. abstrair o provider de LLM;
-4. criar `POST /v1/chat`;
-5. retornar resposta + fontes;
-6. adicionar avaliação para detectar respostas sem suporte documental.
-
-## Segurança
-
-Não versione nem indexe documentos com dados pessoais ou clínicos identificáveis. Use materiais públicos, sintéticos ou anonimizados.
+- histórico de conversa desacoplado;
+- WebSocket/streaming;
+- avaliação automática do retrieval;
+- reranking e busca híbrida;
+- autenticação da API;
+- empacotamento/documentação para integração em outro projeto.
