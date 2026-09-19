@@ -2,63 +2,44 @@
 
 Módulo RAG reutilizável via API.
 
-## Fase 0.5.6 — OCR seletivo
+## Estado atual
 
-A auditoria do corpus encontrou a causa da consulta de direitos/deveres:
+O OCR seletivo corrigiu a cobertura do corpus:
 
-    direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf
-    28 páginas
-    0 páginas com texto
-    0 caracteres
-    0 chunks
+- Carta dos Direitos e Deveres: 28/28 páginas via OCR;
+- 41.237 caracteres;
+- 62 chunks;
+- corpus total: 767 chunks;
+- HitRate@5 observado no modo híbrido: 1.000 (7/7);
+- MRR@5 observado no modo híbrido: 0.821.
 
-A versão 0.5.6 adiciona fallback de OCR local somente para páginas onde a extração normal retorna vazio.
+## Fase 0.5.7 — benchmark justo de retrieval
 
-Stack de OCR:
+Os resultados anteriores a 0.5.6 foram obtidos com um corpus incompleto. A 0.5.7 compara as estratégias sobre a mesma collection corrigida:
 
-- Tesseract OCR;
-- language pack português;
-- PyMuPDF para renderização;
-- pytesseract;
-- metadata extraction_method para auditoria.
+    dense
+    dense-rerank
+    hybrid
 
-## Atualizar
+Atualize e execute:
 
-No .env adicione:
-
-    PDF_OCR_ENABLED=true
-    PDF_OCR_LANGUAGE=por
-    PDF_OCR_DPI=200
-    PDF_OCR_TIMEOUT_SECONDS=60
-
-Depois:
-
-    git pull origin main
+    git pull origin feature/retrieval-benchmark-0.5.7
     docker compose down
     docker compose up --build -d
-
-Primeiro audite sem reindexar:
-
-    docker compose run --rm api ragtest-inspect --source direitos_saude
-
-A coluna OCR deve mostrar quantas páginas precisaram de reconhecimento.
-
-Se houver texto/chunks:
-
-    docker compose run --rm api ragtest-ingest --recreate
-
-Depois:
-
-    docker compose run --rm api ragtest-search "Quais são os direitos e deveres da pessoa usuária da saúde?" --limit 5
     docker compose run --rm api ragtest-evaluate-retrieval
 
-O OCR é executado localmente no container. Nenhuma página é enviada ao Gemini durante a extração.
+Não é necessário recriar a collection: os 767 chunks da 0.5.6 já contêm vetores dense e sparse.
 
-## Histórico experimental
+Para testar um perfil isolado:
 
-    0.5.1  HitRate@5=0.857  MRR@5=0.714
-    0.5.2  HitRate@5=0.857  MRR@5=0.786
-    0.5.3  HitRate@5=0.714  MRR@5=0.607
-    0.5.4  HitRate@5=0.857  MRR@5=0.690
+    docker compose run --rm api ragtest-evaluate-retrieval --mode dense
+    docker compose run --rm api ragtest-evaluate-retrieval --mode dense-rerank
+    docker compose run --rm api ragtest-evaluate-retrieval --mode hybrid
 
-Os resultados anteriores foram obtidos com a carta de direitos fora do índice; isso deve ser explicitado na análise do TCC.
+## Dificuldades TCC
+
+Registro contínuo em docs/dificuldades-tcc.md.
+
+## Segurança
+
+Nunca versione GEMINI_API_KEY. Use apenas .env local.
