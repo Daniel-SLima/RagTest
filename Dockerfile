@@ -9,6 +9,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        tesseract-ocr \
+        tesseract-ocr-por \
+    && rm -rf /var/lib/apt/lists/*
+
 # Fixed UID/GID keeps writable Docker volumes predictable across hosts.
 RUN addgroup --gid 10001 app \
     && adduser --uid 10001 --gid 10001 --disabled-password --gecos "" app \

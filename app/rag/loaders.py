@@ -4,7 +4,9 @@ import unicodedata
 
 from docx import Document as DocxDocument
 from langchain_core.documents import Document
+import pymupdf
 from pypdf import PdfReader
+import pytesseract
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx"}
 
@@ -36,7 +38,9 @@ def discover_source_files(source_dir: Path) -> list[Path]:
 
 def _normalized(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value)
-    return "".join(character for character in normalized if not unicodedata.combining(character)).lower()
+    return "".join(
+        character for character in normalized if not unicodedata.combining(character)
+    ).lower()
 
 
 def infer_audience(relative_path: Path) -> str | None:
@@ -58,7 +62,11 @@ def infer_audience(relative_path: Path) -> str | None:
 
 def _base_metadata(path: Path, source_dir: Path) -> dict[str, str]:
     relative_path = path.relative_to(source_dir)
-    category = relative_path.parts[0] if len(relative_path.parts) > 1 else "uncategorized"
+    category = (
+        relative_path.parts[0]
+        if len(relative_path.parts) > 1
+        else "uncategorized"
+    )
 
     metadata = {
         "source": relative_path.as_posix(),
@@ -74,18 +82,70 @@ def _base_metadata(path: Path, source_dir: Path) -> dict[str, str]:
     return metadata
 
 
-def load_pdf(path: Path, source_dir: Path) -> list[Document]:
+def _ocr_pdf_page(
+    render_document: pymupdf.Document,
+    page_index: int,
+    *,
+    language: str,
+    dpi: int,
+    timeout_seconds: int,
+) -> str:
+    page = render_document.load_page(page_index)
+    pixmap = page.get_pixmap(dpi=dpi, alpha=False)
+    image = pixmap.pil_image()
+
+    return pytesseract.image_to_string(
+        image,
+        lang=language,
+        timeout=timeout_seconds,
+    ).strip()
+
+
+def load_pdf(
+    path: Path,
+    source_dir: Path,
+    *,
+    pdf_ocr_enabled: bool = False,
+    pdf_ocr_language: str = "por",
+    pdf_ocr_dpi: int = 200,
+    pdf_ocr_timeout_seconds: int = 60,
+) -> list[Document]:
     reader = PdfReader(path)
     base_metadata = _base_metadata(path, source_dir)
-    documents: list[Document] = []
+    extracted_texts = [(page.extract_text() or "").strip() for page in reader.pages]
 
-    for page_number, page in enumerate(reader.pages, start=1):
-        documents.append(
-            Document(
-                page_content=page.extract_text() or "",
-                metadata={**base_metadata, "page": page_number},
+    render_document: pymupdf.Document | None = None
+    if pdf_ocr_enabled and any(not text for text in extracted_texts):
+        render_document = pymupdf.open(path)
+
+    documents: list[Document] = []
+    try:
+        for page_number, text in enumerate(extracted_texts, start=1):
+            extraction_method = "text" if text else "empty"
+
+            if not text and render_document is not None:
+                text = _ocr_pdf_page(
+                    render_document,
+                    page_number - 1,
+                    language=pdf_ocr_language,
+                    dpi=pdf_ocr_dpi,
+                    timeout_seconds=pdf_ocr_timeout_seconds,
+                )
+                extraction_method = "ocr" if text else "empty"
+
+            documents.append(
+                Document(
+                    page_content=text,
+                    metadata={
+                        **base_metadata,
+                        "page": page_number,
+                        "extraction_method": extraction_method,
+                    },
+                )
             )
-        )
+    finally:
+        if render_document is not None:
+            render_document.close()
 
     return documents
 
@@ -101,12 +161,22 @@ def load_docx(path: Path, source_dir: Path) -> list[Document]:
     return [
         Document(
             page_content=text,
-            metadata=_base_metadata(path, source_dir),
+            metadata={
+                **_base_metadata(path, source_dir),
+                "extraction_method": "docx",
+            },
         )
     ]
 
 
-def load_source_documents(source_dir: Path) -> LoadReport:
+def load_source_documents(
+    source_dir: Path,
+    *,
+    pdf_ocr_enabled: bool = False,
+    pdf_ocr_language: str = "por",
+    pdf_ocr_dpi: int = 200,
+    pdf_ocr_timeout_seconds: int = 60,
+) -> LoadReport:
     source_dir = source_dir.resolve()
     files = discover_source_files(source_dir)
     report = LoadReport(files_scanned=len(files))
@@ -114,7 +184,14 @@ def load_source_documents(source_dir: Path) -> LoadReport:
     for path in files:
         try:
             if path.suffix.lower() == ".pdf":
-                loaded = load_pdf(path, source_dir)
+                loaded = load_pdf(
+                    path,
+                    source_dir,
+                    pdf_ocr_enabled=pdf_ocr_enabled,
+                    pdf_ocr_language=pdf_ocr_language,
+                    pdf_ocr_dpi=pdf_ocr_dpi,
+                    pdf_ocr_timeout_seconds=pdf_ocr_timeout_seconds,
+                )
             elif path.suffix.lower() == ".docx":
                 loaded = load_docx(path, source_dir)
             else:

@@ -1,49 +1,58 @@
 # Avaliação do Retrieval
 
-## Baseline 0.5.1
+## 0.5.1 — baseline dense
 
 - HitRate@5: 0.857 (6/7)
 - MRR@5: 0.714
 
-## Experimento 0.5.2 — reranking lexical
+## 0.5.2 — reranking lexical
 
 - HitRate@5: 0.857 (6/7)
 - MRR@5: 0.786
 
-Melhor resultado medido até aqui.
+Melhor resultado medido antes da correção de ingestão.
 
-## Experimento 0.5.3 — dense + BM25 + RRF
+## 0.5.3 — dense + BM25 + RRF
 
 - HitRate@5: 0.714 (5/7)
 - MRR@5: 0.607
 
-Piorou as duas métricas.
-
-## Experimento 0.5.4 — BM25 enriquecido com metadados
+## 0.5.4 — BM25 enriquecido com metadados
 
 - HitRate@5: 0.857 (6/7)
 - MRR@5: 0.690
 
-Recuperou o HitRate da baseline, mas ficou abaixo da 0.5.1 e 0.5.2 em MRR. A carta de direitos e deveres continuou ausente do top 5.
-
-Conclusão provisória: novas tentativas de ajuste de ranking devem ser interrompidas até verificar se o documento esperado realmente contribui com texto e chunks para o índice.
-
 ## Diagnóstico 0.5.5 — cobertura do corpus
 
-A versão 0.5.5 adiciona auditoria por arquivo ao comando:
+A auditoria comprovou que:
 
-    docker compose run --rm api ragtest-inspect
+- direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:
+  28 páginas, 0 páginas com texto, 0 caracteres e 0 chunks.
+- caderneta_gestante_8ed_rev.pdf:
+  50 páginas, 47 com texto.
+- caderneta_saude_pessoa_idosa_5ed_1re.pdf:
+  64 páginas, 63 com texto.
 
-E permite filtrar:
+A consulta 7 não era um teste válido de qualidade do retrieval porque a fonte esperada não fazia parte do índice.
+
+## 0.5.6 — OCR seletivo local
+
+A versão 0.5.6 adiciona OCR somente nas páginas em que o extrator normal não encontrou texto.
+
+Tecnologia:
+
+- Tesseract OCR;
+- idioma por;
+- PyMuPDF para renderizar a página;
+- OCR executado localmente no container;
+- metadata extraction_method identifica text, ocr, empty ou docx.
+
+Após atualizar, executar primeiro:
 
     docker compose run --rm api ragtest-inspect --source direitos_saude
 
-Para cada arquivo são exibidos:
+Se o PDF passar a gerar texto, recriar a collection:
 
-- unidades/páginas carregadas;
-- unidades com texto;
-- total de caracteres extraídos;
-- chunks gerados;
-- status de cobertura.
+    docker compose run --rm api ragtest-ingest --recreate
 
-Se a carta de direitos/deveres apresentar NO_TEXT ou NO_CHUNKS, o problema é anterior ao retrieval e deve ser tratado na extração/OCR.
+Depois repetir a avaliação. Como o corpus terá mudado, os resultados posteriores não devem ser comparados como se fossem exatamente a mesma condição experimental das versões anteriores; deve-se registrar que houve correção da cobertura do corpus.

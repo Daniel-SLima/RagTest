@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.5"
+    app_version: str = "0.5.6"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     source_dir: Path = Path("data/source")
     chunk_size: int = 1000
     chunk_overlap: int = 200
+
+    pdf_ocr_enabled: bool = True
+    pdf_ocr_language: str = "por"
+    pdf_ocr_dpi: int = 200
+    pdf_ocr_timeout_seconds: int = 60
 
     embedding_provider: str = "fastembed"
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"

@@ -22,7 +22,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     settings = get_settings()
-    report = load_source_documents(settings.source_dir)
+    report = load_source_documents(
+        settings.source_dir,
+        pdf_ocr_enabled=settings.pdf_ocr_enabled,
+        pdf_ocr_language=settings.pdf_ocr_language,
+        pdf_ocr_dpi=settings.pdf_ocr_dpi,
+        pdf_ocr_timeout_seconds=settings.pdf_ocr_timeout_seconds,
+    )
     chunks = split_documents(
         report.documents,
         chunk_size=settings.chunk_size,
@@ -46,6 +52,9 @@ def main() -> None:
 
     print("RagTest document inspection")
     print(f"Source directory : {settings.source_dir}")
+    print(f"OCR fallback     : {'enabled' if settings.pdf_ocr_enabled else 'disabled'}")
+    print(f"OCR language     : {settings.pdf_ocr_language}")
+    print(f"OCR DPI          : {settings.pdf_ocr_dpi}")
     print(f"Files scanned    : {report.files_scanned}")
     print(f"Files loaded     : {report.files_loaded}")
     print(f"Page/doc units   : {len(report.documents)}")
@@ -54,7 +63,7 @@ def main() -> None:
     print(f"File types       : {dict(sorted(file_types.items()))}")
 
     print("\nPer-file extraction coverage:")
-    print("STATUS        UNITS  TEXT  CHARS      CHUNKS  SOURCE")
+    print("STATUS        UNITS  TEXT   OCR  CHARS      CHUNKS  SOURCE")
     for row in coverage:
         if args.source and args.source.lower() not in row.source.lower():
             continue
@@ -62,6 +71,7 @@ def main() -> None:
             f"{row.status:<13} "
             f"{row.units:>5}  "
             f"{row.nonempty_units:>4}  "
+            f"{row.ocr_units:>4}  "
             f"{row.text_chars:>9}  "
             f"{row.chunks:>6}  "
             f"{row.source}"
@@ -74,7 +84,7 @@ def main() -> None:
         print(
             f"- {row.status}: {row.source} "
             f"(units={row.units}, text_units={row.nonempty_units}, "
-            f"chars={row.text_chars}, chunks={row.chunks})"
+            f"ocr_units={row.ocr_units}, chars={row.text_chars}, chunks={row.chunks})"
         )
 
     if report.errors:

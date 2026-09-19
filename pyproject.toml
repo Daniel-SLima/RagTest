@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.5.5"
-description = "Backend portável de RAG híbrido com FastAPI, Qdrant e Gemini"
+version = "0.5.6"
+description = "Backend portável de RAG híbrido com FastAPI, Qdrant, OCR e Gemini"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -15,8 +15,11 @@ dependencies = [
     "google-genai>=1.33,<2.0",
     "langchain-core>=1.0,<2.0",
     "langchain-text-splitters>=1.0,<2.0",
+    "pillow>=11,<13",
     "pydantic-settings>=2.10,<3.0",
+    "pymupdf>=1.26,<2.0",
     "pypdf>=6.0,<7.0",
+    "pytesseract>=0.3.13,<1.0",
     "python-docx>=1.2,<2.0",
     "qdrant-client>=1.15,<2.0",
     "uvicorn[standard]>=0.35,<1.0",

@@ -42,49 +42,55 @@ Aprendizado: recursos de runtime não devem depender acidentalmente da estrutura
 
 Planejado: recuperar direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf.
 
-Observado: na baseline 0.5.1 o documento não apareceu no top 5.
+Observado: a fonte não apareceu.
 
-Diagnóstico inicial: similaridade vetorial densa poderia estar perdendo correspondências lexicais explícitas.
+Diagnóstico inicial: poderia ser uma limitação do retrieval denso.
 
-Correção experimental: reranking por metadados e conteúdo.
+Correção experimental: reranking e depois busca híbrida.
 
-Aprendizado: a causa de uma falha de retrieval precisa ser isolada antes de aumentar a complexidade do ranking.
+Aprendizado: a causa de uma falha de retrieval precisa ser isolada antes de aumentar a complexidade.
 
 ## 5. Reranking melhorou o MRR, mas não resolveu a falha de recall
 
-Planejado: o reranking lexical 0.5.2 deveria promover a carta de direitos e deveres.
+Planejado: o reranking lexical deveria promover a carta.
 
-Observado: HitRate@5 ficou em 0.857; MRR@5 subiu para 0.786; a fonte esperada continuou ausente.
+Observado: MRR melhorou, mas a fonte continuou ausente.
 
 Diagnóstico: reranking só reorganiza candidatos já recuperados.
-
-Correção experimental: retrieval híbrido dense + BM25 com RRF.
 
 Aprendizado: ranking e recall são problemas distintos.
 
 ## 6. Retrieval híbrido inicial piorou as métricas
 
-Planejado: dense + BM25 deveria aumentar o recall sem perder os casos já corretos.
+Planejado: dense + BM25 deveria aumentar o recall.
 
-Observado: a 0.5.3 caiu para HitRate@5=0.714 e MRR@5=0.607.
+Observado: HitRate@5 caiu para 0.714 e MRR@5 para 0.607.
 
-Diagnóstico: o BM25 não usava metadados e o corte relativo 0.22 foi aplicado em uma nova escala de score.
-
-Correção experimental: enriquecer BM25 com metadados, neutralizar pesos e retirar o corte relativo.
+Diagnóstico: BM25 sem metadados e threshold reaproveitado em uma escala de score diferente.
 
 Aprendizado: parâmetros de score não são transferíveis automaticamente entre estratégias.
 
 ## 7. BM25 enriquecido recuperou a baseline, mas não a fonte problemática
 
-Planejado: a 0.5.4 deveria aumentar o recall lexical da carta de direitos/deveres por meio de source e filename.
+Planejado: source e filename no BM25 deveriam recuperar a carta.
 
-Observado: HitRate@5 voltou a 0.857, mas MRR@5 caiu para 0.690 e a fonte esperada continuou ausente.
+Observado: HitRate@5 voltou a 0.857, mas a carta continuou ausente.
 
-Diagnóstico: como nem o BM25 enriquecido com o próprio nome do arquivo trouxe a fonte, a investigação precisa voltar uma etapa. A hipótese a verificar é se esse PDF realmente produz texto extraível e chunks indexáveis.
+Diagnóstico: a investigação precisou retornar à etapa de ingestão.
 
-Correção em investigação: adicionar auditoria de cobertura do corpus antes de qualquer novo ajuste de retrieval.
+Aprendizado: quando várias estratégias falham para a mesma fonte, a cobertura do corpus deve ser auditada.
 
-Aprendizado: quando várias estratégias de ranking falham para a mesma fonte, é necessário validar a qualidade de ingestão antes de continuar calibrando o mecanismo de busca.
+## 8. A fonte esperada tinha zero texto e zero chunks
+
+Planejado: usar a carta de direitos e deveres como fonte esperada na avaliação do retrieval.
+
+Observado: a auditoria 0.5.5 mostrou 28 páginas, 0 páginas com texto extraído, 0 caracteres e 0 chunks.
+
+Diagnóstico: o PDF não possui uma camada de texto utilizável pelo extrator atual; portanto ele nunca participou do índice vetorial ou esparso. A falha observada nas versões anteriores não poderia ser corrigida apenas por ranking.
+
+Correção: OCR seletivo local com Tesseract nas páginas sem texto, mantendo a extração normal quando ela funciona.
+
+Aprendizado: métricas de retrieval só são interpretáveis se as fontes esperadas realmente estiverem presentes no índice. A validação do corpus deve anteceder a avaliação do mecanismo de recuperação.
 
 ## Como registrar novos casos
 

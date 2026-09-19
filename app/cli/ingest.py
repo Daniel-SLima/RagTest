@@ -25,7 +25,13 @@ def parse_args() -> argparse.Namespace:
 
 async def run(recreate: bool) -> None:
     settings = get_settings()
-    report = load_source_documents(settings.source_dir)
+    report = load_source_documents(
+        settings.source_dir,
+        pdf_ocr_enabled=settings.pdf_ocr_enabled,
+        pdf_ocr_language=settings.pdf_ocr_language,
+        pdf_ocr_dpi=settings.pdf_ocr_dpi,
+        pdf_ocr_timeout_seconds=settings.pdf_ocr_timeout_seconds,
+    )
 
     if report.errors:
         print("Document load warnings:")
@@ -52,6 +58,7 @@ async def run(recreate: bool) -> None:
         print("RagTest ingestion")
         print(f"Files loaded     : {report.files_loaded}/{report.files_scanned}")
         print(f"Chunks to index  : {len(chunks)}")
+        print(f"OCR fallback     : {'enabled' if settings.pdf_ocr_enabled else 'disabled'}")
         print(f"Dense model      : {embeddings.model_name}")
         print(f"Sparse model     : {sparse_embeddings.model_name}")
         print(f"Collection       : {settings.qdrant_collection}")

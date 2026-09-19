@@ -10,6 +10,7 @@ class CorpusCoverage:
     source: str
     units: int
     nonempty_units: int
+    ocr_units: int
     text_chars: int
     chunks: int
 
@@ -40,6 +41,12 @@ def build_corpus_coverage(
         for document in documents
         if document.page_content.strip()
     )
+    ocr_units = Counter(
+        str(document.metadata.get("source", ""))
+        for document in documents
+        if document.metadata.get("extraction_method") == "ocr"
+    )
+
     text_chars: Counter[str] = Counter()
     for document in documents:
         source = str(document.metadata.get("source", ""))
@@ -55,6 +62,7 @@ def build_corpus_coverage(
                 source=source,
                 units=units[source],
                 nonempty_units=nonempty_units[source],
+                ocr_units=ocr_units[source],
                 text_chars=text_chars[source],
                 chunks=chunk_counts[source],
             )

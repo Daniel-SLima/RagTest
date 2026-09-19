@@ -14,11 +14,19 @@ def test_corpus_audit_detects_file_without_extractable_text(tmp_path: Path) -> N
     documents = [
         Document(
             page_content="",
-            metadata={"source": "scan.pdf", "page": 1},
+            metadata={
+                "source": "scan.pdf",
+                "page": 1,
+                "extraction_method": "empty",
+            },
         ),
         Document(
             page_content="",
-            metadata={"source": "scan.pdf", "page": 2},
+            metadata={
+                "source": "scan.pdf",
+                "page": 2,
+                "extraction_method": "empty",
+            },
         ),
     ]
 
@@ -33,29 +41,30 @@ def test_corpus_audit_detects_file_without_extractable_text(tmp_path: Path) -> N
     assert rows[0].status == "NO_TEXT"
     assert rows[0].units == 2
     assert rows[0].nonempty_units == 0
+    assert rows[0].ocr_units == 0
     assert rows[0].chunks == 0
 
 
-def test_corpus_audit_reports_partial_text_and_chunks(tmp_path: Path) -> None:
+def test_corpus_audit_counts_ocr_units(tmp_path: Path) -> None:
     source_dir = tmp_path / "source"
     source_dir.mkdir()
-    file_path = source_dir / "mixed.pdf"
+    file_path = source_dir / "scan.pdf"
     file_path.write_bytes(b"fake")
 
     documents = [
         Document(
-            page_content="conteudo",
-            metadata={"source": "mixed.pdf", "page": 1},
-        ),
-        Document(
-            page_content="",
-            metadata={"source": "mixed.pdf", "page": 2},
-        ),
+            page_content="texto reconhecido",
+            metadata={
+                "source": "scan.pdf",
+                "page": 1,
+                "extraction_method": "ocr",
+            },
+        )
     ]
     chunks = [
         Document(
-            page_content="conteudo",
-            metadata={"source": "mixed.pdf", "page": 1},
+            page_content="texto reconhecido",
+            metadata={"source": "scan.pdf", "page": 1},
         )
     ]
 
@@ -66,6 +75,7 @@ def test_corpus_audit_reports_partial_text_and_chunks(tmp_path: Path) -> None:
         chunks,
     )
 
-    assert rows[0].status == "PARTIAL_TEXT"
-    assert rows[0].text_chars == len("conteudo")
+    assert rows[0].status == "OK"
+    assert rows[0].ocr_units == 1
+    assert rows[0].text_chars == len("texto reconhecido")
     assert rows[0].chunks == 1
