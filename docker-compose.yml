@@ -15,7 +15,6 @@ services:
       - qdrant
     environment:
       APP_NAME: ${APP_NAME:-RagTest API}
-      APP_VERSION: ${APP_VERSION:-0.5.0}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       API_HOST: 0.0.0.0
       API_PORT: 8000

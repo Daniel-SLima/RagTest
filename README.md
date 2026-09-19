@@ -44,16 +44,22 @@ O corte relativo evita depender de um threshold global fixo. Por exemplo, com me
 
 ## Avaliação do retrieval
 
-Foi adicionado um pequeno conjunto inicial de avaliação em:
+O comando usa por padrão casos de avaliação empacotados com a aplicação:
+
+```cmd
+docker compose run --rm api ragtest-evaluate-retrieval
+```
+
+A cópia editável para testes e experimentos continua em:
 
 ```text
 tests/evaluation/retrieval_cases.json
 ```
 
-Execute:
+Também é possível apontar um JSON externo:
 
 ```cmd
-docker compose run --rm api ragtest-evaluate-retrieval
+docker compose run --rm -v "%cd%:/workspace:ro" api ragtest-evaluate-retrieval --cases /workspace/meus-casos.json
 ```
 
 A saída informa:

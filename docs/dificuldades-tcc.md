@@ -26,6 +26,18 @@ Registro de situações em que uma hipótese, configuração ou decisão planeja
 
 **Aprendizado para o TCC:** a camada de geração também exige resiliência. Um RAG pode recuperar evidência corretamente e ainda entregar uma resposta incompleta por limitações operacionais do LLM.
 
+## 3. Avaliação do retrieval falhou dentro do container
+
+**Planejado:** executar `ragtest-evaluate-retrieval` no mesmo container da API usando o conjunto de casos em `tests/evaluation/retrieval_cases.json`.
+
+**Observado:** o comando gerou `FileNotFoundError` porque o arquivo de avaliação não existia dentro da imagem Docker.
+
+**Diagnóstico:** a imagem copiava somente o pacote `app`, enquanto `.dockerignore` excluía o diretório `tests`. O comando de produção dependia indevidamente de um arquivo pertencente à estrutura de testes do repositório.
+
+**Correção:** os casos padrão de avaliação passaram a fazer parte do pacote da aplicação em `app/evaluation/cases.py`. O JSON em `tests/evaluation` continua útil como artefato de teste, mas não é mais uma dependência de runtime. O parâmetro opcional `--cases` continua permitindo avaliar arquivos JSON externos.
+
+**Aprendizado para o TCC:** testes, ferramentas de avaliação e runtime têm ciclos de empacotamento diferentes. Recursos necessários em execução devem ser distribuídos com a aplicação ou montados explicitamente, evitando dependência acidental da estrutura local do repositório.
+
 ## Como registrar novos casos
 
 Para cada novo problema relevante, registrar: o que estava planejado, o que foi observado, o diagnóstico técnico, a correção aplicada e o aprendizado que pode ser utilizado na discussão da monografia.
