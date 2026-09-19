@@ -15,7 +15,7 @@ services:
       - qdrant
     environment:
       APP_NAME: ${APP_NAME:-RagTest API}
-      APP_VERSION: ${APP_VERSION:-0.3.0}
+      APP_VERSION: ${APP_VERSION:-0.3.1}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       API_HOST: 0.0.0.0
       API_PORT: 8000
@@ -32,6 +32,10 @@ services:
       EMBEDDING_CACHE_DIR: /app/.cache/fastembed
       UPSERT_BATCH_SIZE: ${UPSERT_BATCH_SIZE:-64}
       FASTEMBED_CACHE_PATH: /app/.cache/fastembed
+      HOME: /home/app
+      XDG_CACHE_HOME: /app/.cache
+      HF_HOME: /app/.cache/huggingface
+      HF_HUB_DISABLE_XET: "1"
     ports:
       - "8000:8000"
     volumes:
