@@ -1,93 +1,119 @@
 # RagTest
 
-Backend modular para experimentar e evoluir um fluxo **RAG (Retrieval-Augmented Generation)** que possa ser usado neste ambiente de homologação e integrado a outros aplicativos via API.
+Backend modular para experimentar e evoluir um fluxo **RAG (Retrieval-Augmented Generation)** reutilizável por Flutter, React Native, Web ou outros sistemas via API.
 
-## Fase atual — 0.1 Foundation
+## Fase atual — 0.2 Document pipeline
 
-A fundação contém FastAPI, Qdrant, configuração por ambiente, Docker Compose, health checks, testes automatizados e CI. Os documentos em `data/source/` são montados no container como volume somente leitura.
+Já estão implementados:
 
-A ingestão, embeddings, LangChain e o endpoint de chat entram na próxima etapa.
+- FastAPI e health checks;
+- Qdrant como serviço vetorial;
+- Docker e Docker Compose;
+- configuração por ambiente;
+- descoberta recursiva de PDF e DOCX;
+- extração de texto;
+- metadados de origem, categoria, tipo de arquivo e página para PDFs;
+- chunking com LangChain, overlap e `start_index`;
+- comando de inspeção dos documentos sem imprimir o conteúdo;
+- testes automatizados e CI.
 
-## Arquitetura
+## Fluxo atual
 
 ```text
-Flutter / React Native / Web / sistema existente
-                    |
-                    | HTTP / futuro WebSocket
-                    v
-              FastAPI (RagTest)
-                    |
-             pipeline RAG
-                    |
-           +--------+--------+
-           |                 |
-        Qdrant          provedor LLM
+data/source/**/*.pdf|docx
+          |
+          v
+      loaders
+          |
+          v
+LangChain Documents + metadados
+          |
+          v
+RecursiveCharacterTextSplitter
+          |
+          v
+       chunks
+          |
+          v
+   próxima etapa:
+embeddings -> Qdrant -> retrieval -> LLM
 ```
 
-O RAG fica desacoplado do frontend. Outro sistema precisa apenas conhecer o contrato HTTP do módulo.
-
-## Executar com Docker
-
-Opcionalmente:
+## Executar
 
 ```powershell
+git pull origin main
 Copy-Item .env.example .env
-```
-
-Suba tudo:
-
-```bash
 docker compose up --build
 ```
 
-Acesse:
+Swagger: `http://localhost:8000/docs`
 
-- API: `http://localhost:8000`
-- Swagger: `http://localhost:8000/docs`
-- Qdrant: `http://localhost:6333`
-
-## Health checks
+Health:
 
 ```bash
 curl http://localhost:8000/health
 curl http://localhost:8000/ready
 ```
 
-`/health` verifica se a API está viva. `/ready` também verifica a conectividade com o Qdrant.
+## Inspecionar a base documental
 
-## Executar sem Docker
-
-Requer Python 3.12+.
+Depois de instalar o projeto:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
-$env:QDRANT_URL="http://localhost:6333"
-uvicorn app.main:app --reload
+ragtest-inspect
 ```
 
-## Testes
+Ou:
 
 ```bash
-pytest
-ruff check .
+python -m app.cli.inspect_documents
 ```
 
-Os testes unitários de readiness simulam o Qdrant e não dependem de um banco externo em execução.
+O comando mostra quantidade de arquivos, unidades carregadas, chunks, categorias e erros de leitura. Ele não imprime o texto dos documentos.
 
-## Próximas etapas
+Configurações principais:
 
-1. loader recursivo para PDF e DOCX;
-2. metadados por documento/chunk;
-3. chunking configurável;
-4. embeddings;
-5. criação e atualização da collection no Qdrant;
-6. LangChain para retrieval → prompt → LLM;
-7. `POST /v1/chat` com resposta e fontes;
-8. testes de avaliação do retrieval;
-9. contrato de integração para Flutter/React Native e outros sistemas.
+```env
+SOURCE_DIR=data/source
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+```
 
-## Segurança dos documentos
+## Metadados
 
-Não versione arquivos contendo dados clínicos ou pessoais identificáveis. Para testes, use documentos públicos, sintéticos ou previamente anonimizados.
+Exemplo de um chunk vindo de PDF:
+
+```json
+{
+  "source": "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+  "filename": "calendario_nacional_vacinacao_idoso.pdf",
+  "category": "vacinacao",
+  "file_type": "pdf",
+  "page": 1,
+  "start_index": 0
+}
+```
+
+Esses metadados serão enviados ao Qdrant e depois retornados como fontes nas respostas do chat.
+
+## Próxima etapa
+
+A fase 0.3 implementará:
+
+1. interface de embeddings desacoplada;
+2. provider inicial configurável;
+3. collection do Qdrant;
+4. IDs determinísticos para evitar duplicação na reindexação;
+5. comando de ingestão;
+6. busca semântica com filtros por metadados;
+7. testes de integração do índice.
+
+Depois conectaremos o retrieval ao LLM e criaremos `POST /v1/chat`.
+
+## Segurança
+
+Não versione nem indexe documentos com dados pessoais ou clínicos identificáveis. Use materiais públicos, sintéticos ou anonimizados.

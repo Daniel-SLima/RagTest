@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,6 +15,10 @@ class Settings(BaseSettings):
     qdrant_url: str = "http://qdrant:6333"
     qdrant_api_key: str | None = None
     qdrant_timeout_seconds: int = 5
+
+    source_dir: Path = Path("data/source")
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -15,13 +15,16 @@ services:
       - qdrant
     environment:
       APP_NAME: ${APP_NAME:-RagTest API}
-      APP_VERSION: ${APP_VERSION:-0.1.0}
+      APP_VERSION: ${APP_VERSION:-0.2.0}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       API_HOST: 0.0.0.0
       API_PORT: 8000
       QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
       QDRANT_TIMEOUT_SECONDS: ${QDRANT_TIMEOUT_SECONDS:-5}
       QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      SOURCE_DIR: /app/data/source
+      CHUNK_SIZE: ${CHUNK_SIZE:-1000}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-200}
     ports:
       - "8000:8000"
     volumes:
