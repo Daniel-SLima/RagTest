@@ -601,10 +601,10 @@ hybrid        HitRate@5=1.000 / MRR@5=0.821
 Pausado em:
 o fluxo real da 0.5.11 foi validado com Gemini: `grounded=true`, `citation_ids=[1,2,3]`, `citation_retry_count=0`, e todas as citações referenciam fontes realmente retornadas. O modelo também recusou inventar deveres que não estavam detalhados nos três trechos recuperados.
 
-A Dificuldade TCC #11 foi parcialmente isolada: a busca específica por deveres recuperou `direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf` página 13 em rank 1, com outras páginas relevantes em seguida. Portanto, os deveres estão extraídos/indexados e são recuperáveis. A limitação está na consulta composta e/ou no corte top-k=3 usado pelo chat.
+A Dificuldade TCC #11 foi melhor isolada: a busca específica por deveres recuperou a página 13 em rank 1, mas a consulta composta com `--limit 5` continuou sem trazer essa página. Logo, o problema não é apenas o corte top 3 do primeiro teste. A hipótese atual é que a subintenção "deveres" esteja sendo diluída no ranking da pergunta composta ou apareça apenas abaixo do top 5.
 
 Próxima ação ao receber "continuar":
-executar a consulta composta por `ragtest-search` com `--limit 5` para verificar se a página de deveres aparece fora do top 3. Não alterar pesos e não reindexar Qdrant.
+executar a mesma consulta composta com `--limit 10` e localizar a página 13 antes de decidir entre aumentar contexto e implementar decomposição/multi-query. Não alterar pesos e não reindexar Qdrant.
 ```
 
 
