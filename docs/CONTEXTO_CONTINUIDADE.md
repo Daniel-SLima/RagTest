@@ -397,7 +397,7 @@ Suites:
 
 O holdout cobre alimentação, vacinação de adulto/adolescente/criança/idoso/gestante, saúde bucal na gestação, cadernetas, medicamentos, contracepção e paráfrases das consultas centrais.
 
-Status: **implementado e aguardando a primeira execução local do holdout**.
+Status: **implementado, PR #3 aberto como draft e aguardando a primeira execução local do holdout**.
 
 ---
 
@@ -527,6 +527,9 @@ feature/holdout-evaluation-0.5.9
 
 Dataset:
 2026-09-20-v1 — dev=7, holdout=15, all=22
+
+PR:
+#3 draft — Adiciona avaliação holdout congelada na 0.5.9
 
 0.5.7 validada:
 dense         HitRate@5=1.000 / MRR@5=0.857
