@@ -647,6 +647,9 @@ Branch:
 feature/incremental-ingestion-0.5.16
 
 PR:
+#10 draft — Adiciona planejamento seguro da ingestão incremental 0.5.16
+
+PR:
 #9 draft — Adiciona fingerprint de runtime na 0.5.15
 
 PR:
