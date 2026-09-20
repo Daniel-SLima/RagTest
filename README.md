@@ -57,3 +57,14 @@ A primeira saída do holdout deve ser preservada como resultado experimental. Se
 ## Segurança
 
 Nunca versione GEMINI_API_KEY. Use apenas .env local.
+
+
+## Documentação de decisões
+
+Mudanças de arquitetura, comportamento padrão e metodologia são registradas em:
+
+    docs/decisoes-tecnicas.md
+
+Problemas e correções continuam sendo registrados separadamente em:
+
+    docs/dificuldades-tcc.md

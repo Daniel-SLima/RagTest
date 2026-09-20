@@ -486,6 +486,7 @@ Adicionar logs/auditoria estruturada, sessões, histórico, streaming e integra�
 8. Não expor chaves ou segredos.
 9. Não enviar dados de saúde identificáveis a serviços externos.
 10. Atualizar **este arquivo** ao final de toda tarefa relevante.
+11. Quando uma decisão alterar arquitetura, provider, estratégia padrão, segurança, armazenamento ou metodologia de avaliação, registrar também em `docs/decisoes-tecnicas.md`.
 
 ---
 
@@ -515,6 +516,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 - `docs/CONTEXTO_CONTINUIDADE.md` — este arquivo; estado geral e ponto de retomada;
 - `docs/dificuldades-tcc.md` — problemas, diagnósticos, correções e aprendizados;
+- `docs/decisoes-tecnicas.md` — registro curto das decisões que mudam arquitetura, comportamento padrão ou metodologia;
 - `docs/avaliacao-retrieval.md` — histórico de métricas e experimentos;
 - `README.md` — uso e estado funcional do projeto.
 
