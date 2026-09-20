@@ -79,3 +79,20 @@ A próxima evolução do avaliador mantém HitRate/MRR e acrescenta:
     unique_sources por consulta
 
 O retrieval não muda e a collection de 767 chunks não precisa ser recriada.
+
+
+### Validação da 0.5.10
+
+Runtime verificado:
+
+    HOLDOUT
+    dense         HitRate=1.000 MRR=0.889 SourceRecall=1.000 SourceNDCG=0.917
+    dense-rerank  HitRate=1.000 MRR=0.933 SourceRecall=1.000 SourceNDCG=0.941
+    hybrid        HitRate=1.000 MRR=0.878 SourceRecall=0.967 SourceNDCG=0.885
+
+    DEV
+    dense         HitRate=1.000 MRR=0.857 SourceRecall=1.000 SourceNDCG=0.903
+    dense-rerank  HitRate=1.000 MRR=0.929 SourceRecall=1.000 SourceNDCG=0.936
+    hybrid        HitRate=1.000 MRR=0.821 SourceRecall=1.000 SourceNDCG=0.869
+
+A nova métrica mostrou uma perda de cobertura no modo hybrid que o HitRate isolado não evidenciava.

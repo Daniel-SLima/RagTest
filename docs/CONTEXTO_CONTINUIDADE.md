@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.9`  
-**Trabalho em andamento:** `0.5.10` em `feature/source-metrics-0.5.10`; métricas source-level implementadas e aguardando validação local.
+**Trabalho em andamento:** `0.5.10` em `feature/source-metrics-0.5.10`; métricas source-level validadas em runtime. PR #4 aguarda autorização de merge.
 
 ---
 
@@ -456,13 +456,13 @@ Não recriar a collection: os 767 chunks continuam compatíveis.
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — validar as métricas da 0.5.10
+### Passo 1 — mesclar a 0.5.10 após autorização
 
-Executar holdout e dev e confirmar que HitRate/MRR permanecem iguais enquanto SourceRecall/SourceNDCG aparecem no relatório.
+A validação de runtime foi concluída. Aguardar autorização explícita do usuário para mesclar o PR #4.
 
 ### Passo 2 — analisar diversidade e cobertura por fonte
 
-Usar os novos números para identificar consultas em que várias páginas da mesma fonte ocupam o top k e escondem outras fontes relevantes.
+Os novos números mostram que o perfil hybrid perdeu uma das duas fontes esperadas em um caso do holdout (SourceRecall@5 agregado=0.967), enquanto dense e dense-rerank mantiveram 1.000. Usar isso como evidência na análise, sem alterar o holdout.
 
 ### Passo 3 — preparar relevância preferencial
 
@@ -574,10 +574,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.10 implementada na branch `feature/source-metrics-0.5.10`, aguardando validação das novas métricas. O retrieval continua dense-rerank e o corpus continua com 767 chunks.
+0.5.10 validada em runtime. Holdout manteve as métricas históricas e adicionou: dense SourceRecall@5=1.000 / SourceNDCG@5=0.917; dense-rerank 1.000 / 0.941; hybrid 0.967 / 0.885. Suite dev: dense 1.000 / 0.903; dense-rerank 1.000 / 0.936; hybrid 1.000 / 0.869.
 
 Próxima ação ao receber "continuar":
-validar `/health` 0.5.10 e executar o avaliador em holdout e dev, conferindo HitRate/MRR antigos e os novos SourceRecall/SourceNDCG; não reindexar Qdrant.
+confirmar o estado do PR #4 e, se houver autorização do usuário, mesclar a 0.5.10. Os testes unitários adicionados ainda não foram executados em CI/container de desenvolvimento; não afirmar que passaram.
 ```
 
 
