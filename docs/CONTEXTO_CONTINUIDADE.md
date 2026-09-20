@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.15`  
-**Trabalho em andamento:** `0.5.16` em `feature/incremental-ingestion-0.5.16`; sincronização incremental validada de ponta a ponta: plano read-only, no-op seguro na collection principal e insert/delete real em collection Qdrant temporária. Collection principal permaneceu 767/767. CI verde com 58 testes. PR #10 aguarda autorização explícita de merge.
+**Estado validado e mesclado no main:** `0.5.16`  
+**Trabalho em andamento:** `0.5.17` em `feature/docx-structure-audit-0.5.17`; auditoria estrutural metadata-only de DOCX implementada e aguardando validação sobre os arquivos locais.
 
 ---
 
@@ -631,7 +631,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.15
+Main validado/mesclado: 0.5.16
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -641,10 +641,10 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.16 sincronização segura da ingestão
+0.5.17 auditoria estrutural de DOCX
 
 Branch:
-feature/incremental-ingestion-0.5.16
+feature/docx-structure-audit-0.5.17
 
 PR:
 #10 draft — Adiciona planejamento seguro da ingestão incremental 0.5.16
@@ -667,10 +667,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a 0.5.16 foi validada de ponta a ponta. O plano somente leitura confirmou 18/18 fontes e 767/767 pontos. O `ragtest-sync-ingestion --apply` fez no-op seguro na collection principal já sincronizada. O self-check isolado em Qdrant simulou alteração, adição e remoção reais e passou em todos os checks. O fingerprint posterior confirmou que a collection principal permaneceu 767/767. A CI passou com Ruff verde e `58 passed, 4 warnings`.
+a 0.5.16 foi mesclada. A 0.5.17 inicia a robustez documental com uma auditoria metadata-only da estrutura dos DOCX. O objetivo é descobrir se existem tabelas, cabeçalhos ou rodapés com conteúdo que o loader atual ignora, sem imprimir texto dos arquivos CHATSCM e sem alterar o Qdrant.
 
 Próxima ação ao receber "continuar":
-aguardar autorização explícita do usuário para merge do PR #10. Após o merge, iniciar a próxima fase de robustez documental/loader sem recriar a collection principal até que a mudança de corpus seja deliberadamente validada.
+atualizar/rebuildar a branch 0.5.17, validar `/health` e executar `ragtest-audit-docx-structure`. Usar somente as contagens estruturais para decidir se o loader deve ser ampliado. Não reindexar a collection nesta primeira etapa.
 ```
 
 

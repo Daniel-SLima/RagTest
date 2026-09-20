@@ -152,3 +152,11 @@ Impacto:
 **Mudança:** a ingestão incremental passa a ser desenvolvida em duas etapas. Primeiro, um comando somente leitura compara os chunks atuais do corpus com os IDs determinísticos já indexados no Qdrant e identifica pontos ausentes, obsoletos e fontes órfãs. A exclusão automática só será adicionada depois dessa comparação ser validada.  
 **Motivo:** o upsert atual adiciona/substitui IDs determinísticos, mas não remove chunks antigos quando um arquivo muda ou é excluído. Apagar automaticamente sem um plano auditável criaria risco desnecessário para a collection validada de 767 pontos.  
 **Impacto:** `ragtest-plan-ingestion-sync` oferece uma prévia segura da sincronização e não altera o Qdrant. Após a prévia ter sido validada em 18/18 fontes e 767/767 pontos, a segunda etapa adiciona `ragtest-sync-ingestion --apply`. A aplicação recusa corpus vazio ou qualquer erro de carregamento, faz upsert dos pontos ausentes antes de remover pontos obsoletos e verifica novamente o estado final. Sem `--apply`, não há escrita.
+
+
+## D016 — Auditar a estrutura dos DOCX antes de ampliar a extração
+
+**Data:** 2026-09-20  
+**Mudança:** antes de alterar o loader DOCX, a 0.5.17 adiciona uma auditoria estrutural que conta parágrafos, tabelas, células, cabeçalhos e rodapés sem imprimir o conteúdo textual.  
+**Motivo:** o loader atual indexa somente `document.paragraphs`. Incluir tabelas/cabeçalhos/rodapés pode mudar o corpus e a contagem de chunks; a existência e a relevância estrutural desses elementos devem ser medidas primeiro.  
+**Impacto:** `ragtest-audit-docx-structure` é somente leitura e não altera a collection. A saída orientará se a segunda etapa da 0.5.17 precisa ampliar o loader e, nesse caso, a mudança de corpus será tratada deliberadamente via sincronização incremental.

@@ -421,3 +421,23 @@ CI final da branch:
     pytest: 58 passed, 4 warnings
 
 Com isso, a sincronização incremental ficou validada nos três cenários: planejamento read-only, no-op seguro na collection real e insert/delete real em collection temporária.
+
+
+## Fase 0.5.17 — auditoria estrutural de DOCX
+
+O loader atual extrai apenas parágrafos do corpo do DOCX. Antes de incluir tabelas, cabeçalhos ou rodapés e alterar o corpus, a 0.5.17 mede a estrutura real dos arquivos.
+
+Novo comando:
+
+    ragtest-audit-docx-structure
+
+A auditoria informa apenas contagens estruturais:
+
+- parágrafos do corpo;
+- tabelas, linhas e células;
+- células não vazias;
+- seções;
+- parágrafos/tabelas em cabeçalhos;
+- parágrafos/tabelas em rodapés.
+
+Por privacidade, o comando não imprime o conteúdo dos documentos. Ele não modifica Qdrant e não exige reindexação.
