@@ -2,7 +2,9 @@ from dataclasses import dataclass
 
 from app.llm.base import LLMProvider
 from app.rag.citations import validate_citations
+from app.rag.decomposition import decompose_question
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
+from app.rag.multi_query import multi_query_search
 from app.rag.prompting import (
     SYSTEM_PROMPT,
     build_citation_repair_prompt,
@@ -20,6 +22,9 @@ class ChatResult:
     grounded: bool
     citation_ids: list[int]
     citation_retry_count: int = 0
+    multi_query_used: bool = False
+    retrieval_queries: list[str] | None = None
+    decomposition_status: str = "not-needed"
 
 
 _GROUNDING_FALLBACK = (
@@ -73,25 +78,57 @@ async def answer_with_rag(
     content_lexical_weight: float = 0.05,
     hybrid_dense_weight: float = 1.0,
     hybrid_sparse_weight: float = 1.2,
+    auto_decompose: bool = True,
+    max_subqueries: int = 3,
 ) -> ChatResult:
-    hits = await semantic_search(
+    decomposition = await decompose_question(
         question,
-        embeddings=embeddings,
-        sparse_embeddings=sparse_embeddings,
-        vector_store=vector_store,
-        limit=limit,
-        category=category,
-        audience=audience,
-        min_score=min_score,
-        candidate_multiplier=candidate_multiplier,
-        score_margin=score_margin,
-        merge_same_page=merge_same_page,
-        max_group_chars=max_group_chars,
-        source_lexical_weight=source_lexical_weight,
-        content_lexical_weight=content_lexical_weight,
-        hybrid_dense_weight=hybrid_dense_weight,
-        hybrid_sparse_weight=hybrid_sparse_weight,
+        llm=llm,
+        enabled=auto_decompose,
+        max_subqueries=max_subqueries,
     )
+
+    if decomposition.used:
+        retrieval_queries, _, fused = await multi_query_search(
+            list(decomposition.subqueries),
+            embeddings=embeddings,
+            sparse_embeddings=sparse_embeddings,
+            vector_store=vector_store,
+            limit=limit,
+            per_query_limit=limit,
+            category=category,
+            audience=audience,
+            min_score=min_score,
+            candidate_multiplier=candidate_multiplier,
+            score_margin=score_margin,
+            merge_same_page=merge_same_page,
+            max_group_chars=max_group_chars,
+            source_lexical_weight=source_lexical_weight,
+            content_lexical_weight=content_lexical_weight,
+            hybrid_dense_weight=hybrid_dense_weight,
+            hybrid_sparse_weight=hybrid_sparse_weight,
+        )
+        hits = [item.hit for item in fused]
+    else:
+        retrieval_queries = [question]
+        hits = await semantic_search(
+            question,
+            embeddings=embeddings,
+            sparse_embeddings=sparse_embeddings,
+            vector_store=vector_store,
+            limit=limit,
+            category=category,
+            audience=audience,
+            min_score=min_score,
+            candidate_multiplier=candidate_multiplier,
+            score_margin=score_margin,
+            merge_same_page=merge_same_page,
+            max_group_chars=max_group_chars,
+            source_lexical_weight=source_lexical_weight,
+            content_lexical_weight=content_lexical_weight,
+            hybrid_dense_weight=hybrid_dense_weight,
+            hybrid_sparse_weight=hybrid_sparse_weight,
+        )
 
     if not hits:
         return ChatResult(
@@ -103,6 +140,9 @@ async def answer_with_rag(
             model=llm.model_name,
             grounded=False,
             citation_ids=[],
+            multi_query_used=decomposition.used,
+            retrieval_queries=list(retrieval_queries),
+            decomposition_status=decomposition.status,
         )
 
     answer, grounded, citation_ids, retry_count = await _generate_with_validated_citations(
@@ -118,4 +158,7 @@ async def answer_with_rag(
         grounded=grounded,
         citation_ids=citation_ids,
         citation_retry_count=retry_count,
+        multi_query_used=decomposition.used,
+        retrieval_queries=list(retrieval_queries),
+        decomposition_status=decomposition.status,
     )

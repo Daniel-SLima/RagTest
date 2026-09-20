@@ -7,6 +7,7 @@ class ChatRequest(BaseModel):
     category: str | None = Field(default=None, max_length=100)
     audience: str | None = Field(default=None, max_length=100)
     min_score: float | None = Field(default=None, ge=-1.0, le=1.0)
+    auto_decompose: bool | None = None
 
 
 class ChatSource(BaseModel):
@@ -26,4 +27,7 @@ class ChatResponse(BaseModel):
     grounded: bool
     citation_ids: list[int]
     citation_retry_count: int
+    multi_query_used: bool
+    retrieval_queries: list[str]
+    decomposition_status: str
     sources: list[ChatSource]

@@ -2,13 +2,13 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.12"
+    app_version: str = "0.5.13"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     retrieval_mode: Literal["dense", "dense-rerank", "hybrid"] = "dense-rerank"
     retrieval_merge_same_page: bool = True
     retrieval_max_group_chars: int = 5000
+    retrieval_auto_decompose: bool = True
+    retrieval_max_subqueries: int = Field(default=3, ge=2, le=3)
 
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
