@@ -1,58 +1,72 @@
 # Avaliação do Retrieval
 
-## 0.5.1 — baseline dense
+## Experimentos antes da correção de ingestão
 
-- HitRate@5: 0.857 (6/7)
-- MRR@5: 0.714
+| Versão | Estratégia | HitRate@5 | MRR@5 |
+| --- | --- | ---: | ---: |
+| 0.5.1 | dense | 0.857 | 0.714 |
+| 0.5.2 | dense + reranking lexical | 0.857 | 0.786 |
+| 0.5.3 | dense + BM25 + RRF | 0.714 | 0.607 |
+| 0.5.4 | BM25 enriquecido com metadados | 0.857 | 0.690 |
 
-## 0.5.2 — reranking lexical
+Esses resultados foram obtidos quando a Carta dos Direitos e Deveres tinha 0 chunks e não devem ser comparados diretamente com experimentos posteriores como se o corpus fosse idêntico.
 
-- HitRate@5: 0.857 (6/7)
-- MRR@5: 0.786
+## 0.5.5 — diagnóstico da cobertura
 
-Melhor resultado medido antes da correção de ingestão.
+A auditoria identificou a Carta dos Direitos e Deveres com 28 páginas, 0 páginas com texto, 0 caracteres e 0 chunks.
 
-## 0.5.3 — dense + BM25 + RRF
+## 0.5.6 — corpus corrigido por OCR seletivo
 
-- HitRate@5: 0.714 (5/7)
-- MRR@5: 0.607
+Resultados observados em 2026-09-19:
 
-## 0.5.4 — BM25 enriquecido com metadados
+- Carta dos Direitos e Deveres: 28/28 páginas recuperadas por OCR;
+- 41.237 caracteres extraídos;
+- 62 chunks gerados somente para esse documento;
+- corpus total: 767 chunks, contra 699 antes do OCR;
+- caderneta da gestante: 50/50 páginas com texto, incluindo 3 páginas recuperadas por OCR;
+- HitRate@5: 1.000 (7/7);
+- MRR@5: 0.821.
 
-- HitRate@5: 0.857 (6/7)
-- MRR@5: 0.690
+A consulta de direitos/deveres passou a recuperar a carta esperada no rank 1.
 
-## Diagnóstico 0.5.5 — cobertura do corpus
+Este resultado é a primeira baseline pós-correção de cobertura, mas usa a estratégia híbrida da 0.5.4. Para separar o efeito do OCR do efeito da estratégia de retrieval, a 0.5.7 compara várias estratégias sobre exatamente a mesma collection de 767 chunks.
 
-A auditoria comprovou que:
+## 0.5.7 — benchmark no mesmo corpus
 
-- direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:
-  28 páginas, 0 páginas com texto, 0 caracteres e 0 chunks.
-- caderneta_gestante_8ed_rev.pdf:
-  50 páginas, 47 com texto.
-- caderneta_saude_pessoa_idosa_5ed_1re.pdf:
-  64 páginas, 63 com texto.
+Perfis avaliados:
 
-A consulta 7 não era um teste válido de qualidade do retrieval porque a fonte esperada não fazia parte do índice.
+- dense: sem BM25 e sem boost lexical;
+- dense-rerank: dense + reranking lexical;
+- hybrid: dense + BM25 + RRF + reranking lexical.
 
-## 0.5.6 — OCR seletivo local
+Todos rodam sobre o mesmo corpus já corrigido por OCR.
 
-A versão 0.5.6 adiciona OCR somente nas páginas em que o extrator normal não encontrou texto.
+Executar:
 
-Tecnologia:
+    docker compose run --rm api ragtest-evaluate-retrieval
 
-- Tesseract OCR;
-- idioma por;
-- PyMuPDF para renderizar a página;
-- OCR executado localmente no container;
-- metadata extraction_method identifica text, ocr, empty ou docx.
+Ou um perfil isolado:
 
-Após atualizar, executar primeiro:
+    docker compose run --rm api ragtest-evaluate-retrieval --mode dense
+    docker compose run --rm api ragtest-evaluate-retrieval --mode dense-rerank
+    docker compose run --rm api ragtest-evaluate-retrieval --mode hybrid
 
-    docker compose run --rm api ragtest-inspect --source direitos_saude
+A comparação 0.5.7 é metodologicamente mais adequada para decidir a estratégia de retrieval, pois mantém o corpus constante.
 
-Se o PDF passar a gerar texto, recriar a collection:
+### Resultado verificado da 0.5.7
 
-    docker compose run --rm api ragtest-ingest --recreate
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 (7/7) | 0.857 |
+| dense-rerank | 1.000 (7/7) | 0.929 |
+| hybrid | 1.000 (7/7) | 0.821 |
 
-Depois repetir a avaliação. Como o corpus terá mudado, os resultados posteriores não devem ser comparados como se fossem exatamente a mesma condição experimental das versões anteriores; deve-se registrar que houve correção da cobertura do corpus.
+Todos os perfis recuperaram pelo menos uma fonte esperada no top 5. A diferença observada ficou na ordenação.
+
+No conjunto atual de sete consultas, `dense-rerank` obteve o maior MRR@5. Exemplos:
+
+- vacinação durante a gestação: fonte esperada foi de rank 2 no dense para rank 1 no dense-rerank;
+- direitos e deveres: fonte esperada permaneceu em rank 1;
+- implante contraceptivo: fonte esperada ficou em rank 2 no dense-rerank e rank 4 no hybrid.
+
+Conclusão experimental: `dense-rerank` é a estratégia com melhor resultado medido neste benchmark controlado. Isso ainda não deve ser generalizado como superioridade definitiva, pois o conjunto de avaliação possui apenas sete consultas e os julgamentos de relevância ainda são majoritariamente por fonte esperada.
