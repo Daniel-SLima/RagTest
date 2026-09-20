@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.10`  
-**Trabalho em andamento:** `0.5.11` em `feature/grounded-citations-0.5.11`; build, health/ready, self-check e fluxo real `/v1/chat` validados. A execução revelou a Dificuldade TCC #11 sobre cobertura parcial de perguntas compostas.
+**Estado validado e mesclado no main:** `0.5.11`  
+**Trabalho em andamento:** `0.5.12` em `feature/multi-query-retrieval-0.5.12`; experimento controlado de multi-query implementado e aguardando validação.
 
 ---
 
@@ -371,7 +371,27 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.11 — groundedness e citações verificáveis
+### Fase 0.5.12 — experimento controlado de multi-query
+
+A 0.5.11 foi validada e mesclada no `main`.
+
+Objetivo atual:
+
+- provar o mecanismo de multi-query antes de automatizar a decomposição;
+- executar a consulta original e subconsultas explícitas;
+- preservar `dense-rerank` em cada busca;
+- deduplicar resultados por fonte/página;
+- fundir rankings por RRF;
+- verificar se a página 13 de deveres volta ao top 5 no caso diagnóstico;
+- não alterar pesos, corpus ou endpoint `/v1/chat` nesta etapa.
+
+Branch ativa:
+
+`feature/multi-query-retrieval-0.5.12`
+
+Status: **implementado e aguardando validação local**.
+
+### Histórico — fase 0.5.11 — groundedness e citações verificáveis
 
 A 0.5.10 foi validada e mesclada no `main`.
 
@@ -570,7 +590,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.10
+Main validado/mesclado: 0.5.11
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -580,13 +600,10 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.11 groundedness/citações
+0.5.12 experimento controlado multi-query
 
 Branch:
-feature/grounded-citations-0.5.11
-
-PR:
-#5 draft — Adiciona groundedness e validação de citações na 0.5.11
+feature/multi-query-retrieval-0.5.12
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
@@ -603,14 +620,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o fluxo real da 0.5.11 foi validado com Gemini: `grounded=true`, `citation_ids=[1,2,3]`, `citation_retry_count=0`, e todas as citações referenciam fontes realmente retornadas. O modelo também recusou inventar deveres que não estavam detalhados nos três trechos recuperados.
-
-A Dificuldade TCC #11 foi isolada: a página 13, que ficou em rank 1 na busca específica por deveres, apareceu apenas em rank 10 na consulta composta sobre direitos e deveres. Isso confirma diluição de subintenção em perguntas multi-intent.
-
-Decisão registrada em `docs/decisoes-tecnicas.md` como D011: não aumentar o top-k global para 10; tratar perguntas compostas em uma fase própria de decomposição/multi-query, preservando `dense-rerank` como base.
+0.5.12 implementada como experimento controlado. O novo `ragtest-search-multi` recebe a pergunta original e subconsultas explícitas, executa `dense-rerank` em cada uma e combina páginas por RRF. O `ragtest-check-multi-query` valida a lógica de fusão sem Qdrant/Gemini.
 
 Próxima ação ao receber "continuar":
-considerar a 0.5.11 funcionalmente validada dentro de seu escopo de groundedness; aguardar autorização explícita para merge do PR #5 e, depois, iniciar a fase de decomposição/multi-query. Não reindexar Qdrant.
+atualizar a branch local, rebuildar a imagem 0.5.12, executar `ragtest-check-multi-query` e depois o caso direitos+deveres com duas subconsultas. Não reindexar Qdrant.
 ```
 
 

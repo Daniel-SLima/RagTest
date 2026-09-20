@@ -130,3 +130,24 @@ Verificado localmente:
     citation_retry_count=0
 
 O teste real confirmou que as citações retornadas correspondem às fontes disponíveis. Também revelou uma limitação separada: uma pergunta composta sobre direitos e deveres recuperou contexto suficiente para direitos, mas não para detalhar deveres. Isso foi registrado como Dificuldade TCC #11 e será investigado sem alterar o retrieval nesta fase.
+
+
+## Fase 0.5.12 — experimento controlado de multi-query
+
+Antes de automatizar a decomposição de perguntas compostas, a 0.5.12 valida o mecanismo de recuperação com subconsultas explícitas.
+
+Novo comando:
+
+    ragtest-search-multi
+
+Exemplo diagnóstico:
+
+    ragtest-search-multi "Quais são os direitos e deveres da pessoa usuária da saúde?" --subquery "Quais são os direitos da pessoa usuária da saúde?" --subquery "Quais são os deveres da pessoa usuária da saúde?" --category direitos_saude --limit 5 --per-query-limit 5
+
+Cada consulta usa o perfil `dense-rerank` já validado. Os resultados por página são deduplicados e combinados por Reciprocal Rank Fusion (RRF).
+
+Self-check determinístico:
+
+    ragtest-check-multi-query
+
+Nesta fase, o endpoint `/v1/chat` ainda não decompõe perguntas automaticamente. O objetivo é verificar primeiro se a fusão das subconsultas corrige a cobertura observada na Dificuldade TCC #11.
