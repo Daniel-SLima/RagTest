@@ -5,6 +5,11 @@ from app.evaluation.cases import (
     HOLDOUT_RETRIEVAL_CASES,
     select_retrieval_cases,
 )
+from app.evaluation.labels import (
+    SourceJudgments,
+    parse_source_judgments,
+    source_label_summary,
+)
 
 __all__ = [
     "DEFAULT_RETRIEVAL_CASES",
@@ -16,5 +21,3 @@ __all__ = [
     "select_retrieval_cases",
     "source_label_summary",
 ]
-
-from app.evaluation.labels import SourceJudgments, parse_source_judgments, source_label_summary
