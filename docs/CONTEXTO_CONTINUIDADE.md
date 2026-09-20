@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.11`  
-**Trabalho em andamento:** `0.5.12` em `feature/multi-query-retrieval-0.5.12`; correção da Dificuldade TCC #12 validada. A página 13 de deveres passou para rank 2 no multi-query corrigido. PR #6 aguarda autorização de merge.
+**Estado validado e mesclado no main:** `0.5.12`  
+**Trabalho em andamento:** `0.5.13` em `feature/automatic-decomposition-0.5.13`; decomposição automática integrada ao chat e aguardando validação.
 
 ---
 
@@ -372,7 +372,27 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.12 — experimento controlado de multi-query
+### Fase 0.5.13 — decomposição automática no chat
+
+A 0.5.12 foi validada e mesclada no `main`.
+
+Objetivo atual:
+
+- detectar perguntas potencialmente compostas;
+- usar o LLM apenas como planejador de subconsultas quando necessário;
+- limitar a decomposição a 2-3 consultas autossuficientes;
+- usar o multi-query/RRF validado na 0.5.12;
+- preservar single-query para perguntas simples;
+- fazer fallback seguro para single-query quando o planejamento falhar;
+- expor diagnóstico da estratégia na resposta da API.
+
+Branch ativa:
+
+`feature/automatic-decomposition-0.5.13`
+
+Status: **implementado, PR #7 aberto como draft e aguardando validação local**.
+
+### Histórico — fase 0.5.12 — experimento controlado de multi-query
 
 A 0.5.11 foi validada e mesclada no `main`.
 
@@ -591,7 +611,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.11
+Main validado/mesclado: 0.5.12
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -601,13 +621,13 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.12 experimento controlado multi-query
+0.5.13 decomposição automática no chat
 
 Branch:
-feature/multi-query-retrieval-0.5.12
+feature/automatic-decomposition-0.5.13
 
 PR:
-#6 draft — Adiciona experimento multi-query controlado na 0.5.12
+#7 draft — Integra decomposição automática no chat 0.5.13
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
@@ -624,10 +644,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a correção da Dificuldade TCC #12 foi validada. O `ragtest-check-multi-query` passou em todos os checks. No experimento real, usando apenas as subconsultas como votos do RRF, a página 13 de deveres passou para rank 2; antes ela estava em rank 10 na consulta composta original e fora do top 5 na primeira fusão.
+0.5.13 implementada. O chat agora tenta decompor automaticamente perguntas potencialmente compostas, mas preserva single-query para perguntas simples e usa fallback quando o planejador não produz ao menos duas subconsultas válidas.
 
 Próxima ação ao receber "continuar":
-considerar a 0.5.12 validada dentro do escopo experimental e aguardar autorização explícita para merge do PR #6. Depois do merge, iniciar a fase de decomposição automática no chat, mantendo o mecanismo multi-query validado. Não reindexar Qdrant.
+atualizar a branch local, rebuildar 0.5.13, executar `ragtest-check-decomposition` e testar o `/v1/chat` com direitos+deveres sem fornecer subconsultas manualmente. Confirmar `multi_query_used=true`, duas retrieval queries e presença da página 13 entre as fontes. Não reindexar Qdrant.
 ```
 
 
