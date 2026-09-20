@@ -212,7 +212,7 @@ Self-check:
 Não exige reindexação.
 
 
-### Validação parcial da 0.5.13
+### Validação da 0.5.13
 
 Verificado localmente:
 
@@ -226,4 +226,4 @@ Verificado localmente:
     grounded=true
     citation_retry_count=0
 
-O caminho composto passou a responder direitos e deveres na mesma chamada. Antes do merge, falta apenas validar uma pergunta simples pelo endpoint real para confirmar o caminho single-query sem decomposição.
+O caminho composto passou a responder direitos e deveres na mesma chamada. O caminho simples também foi validado no endpoint real: pergunta sobre vacinação de idosos retornou `multi_query_used=false`, `decomposition_status=not-needed`, uma única `retrieval_query`, `grounded=true` e `citation_retry_count=0`.

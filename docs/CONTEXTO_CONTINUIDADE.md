@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.12`  
-**Trabalho em andamento:** `0.5.13` em `feature/automatic-decomposition-0.5.13`; caminho multi-query automático validado em runtime. Falta apenas confirmar o caminho single-query em uma chamada real do `/v1/chat` antes do merge.
+**Trabalho em andamento:** `0.5.13` em `feature/automatic-decomposition-0.5.13`; caminhos multi-query e single-query validados em runtime. PR #7 aguarda autorização explícita de merge.
 
 ---
 
@@ -390,7 +390,7 @@ Branch ativa:
 
 `feature/automatic-decomposition-0.5.13`
 
-Status: **multi-query automático validado em runtime: health/ready ok, self-check PASS, duas subconsultas geradas automaticamente, página 13 recuperada e resposta grounded cobrindo direitos e deveres. PR #7 permanece draft; falta um teste real de pergunta simples/single-query.**
+Status: **validado em runtime nos dois caminhos: multi-query automático para pergunta composta e single-query para pergunta simples. PR #7 permanece draft aguardando autorização explícita de merge.**
 
 ### Histórico — fase 0.5.12 — experimento controlado de multi-query
 
@@ -644,10 +644,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o caminho multi-query automático da 0.5.13 foi validado em runtime. `/health` retornou 0.5.13, `/ready` retornou Qdrant ok, `ragtest-check-decomposition` passou em todos os checks e a chamada real do `/v1/chat` gerou automaticamente duas subconsultas (direitos/deveres), retornou `multi_query_used=true`, `decomposition_status=multi-query`, incluiu a página 13 entre as fontes e produziu resposta `grounded=true` cobrindo as duas intenções.
+a 0.5.13 foi validada em runtime nos dois caminhos. Pergunta composta: decomposição automática em direitos/deveres, `multi_query_used=true`, página 13 presente e resposta grounded. Pergunta simples sobre vacinas para idosos: `multi_query_used=false`, `decomposition_status=not-needed`, uma única retrieval query, `grounded=true` e `citation_retry_count=0`.
 
 Próxima ação ao receber "continuar":
-executar uma pergunta simples no `/v1/chat` para confirmar em runtime `multi_query_used=false`, `decomposition_status=not-needed` e uma única `retrieval_query`. Depois, se passar, a 0.5.13 fica pronta para autorização de merge. Não reindexar Qdrant.
+aguardar autorização explícita para merge do PR #7. Depois do merge, iniciar a próxima fase sem reindexar Qdrant.
 ```
 
 
