@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-3.6-flash"
     llm_temperature: float = 0.1
     llm_max_output_tokens: int = 2400
+    llm_service_retry_attempts: int = Field(default=2, ge=0, le=5)
+    llm_service_retry_base_delay_seconds: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=30.0,
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

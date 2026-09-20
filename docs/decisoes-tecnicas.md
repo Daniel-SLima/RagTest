@@ -176,3 +176,11 @@ Impacto:
 **Mudança:** a 0.5.19 adiciona uma validação determinística de cobertura estrutural das citações por bloco informativo. Ela complementa a validação sintática já existente, que apenas verificava se havia ao menos uma citação válida e se os IDs estavam no intervalo disponível.  
 **Motivo:** uma resposta pode passar na validação sintática mesmo contendo várias afirmações sem citação. Ao mesmo tempo, usar imediatamente um LLM externo como juiz de entailment poderia reenviar trechos recuperados, inclusive de fontes CHATSCM ainda não revisadas manualmente quanto à privacidade.  
 **Impacto:** `ragtest-check-grounding-coverage` mede se cada bloco informativo contém ao menos uma citação válida, sem chamar LLM externo. Após o self-check determinístico passar, a segunda etapa promove essa cobertura a gate do runtime: uma resposta com citação válida em apenas parte dos blocos é reparada uma vez; se a segunda tentativa continuar com cobertura incompleta, o chat usa o fallback seguro e retorna `grounded=false`. Essa checagem continua estrutural e não prova que a fonte citada sustenta semanticamente a afirmação. Qualquer juiz semântico externo permanece adiado até existir política adequada de privacidade para os CHATSCM.
+
+
+## D019 — Retry de aplicação somente para indisponibilidade transitória do LLM
+
+**Data:** 2026-09-20  
+**Mudança:** o provider Gemini passa a executar até 2 retries adicionais de aplicação, com backoff exponencial curto, somente para códigos transitórios 429/500/502/503/504.  
+**Motivo:** no teste real da 0.5.19, o SDK propagou 503 UNAVAILABLE por alta demanda mesmo após sua política interna de retry.  
+**Impacto:** falhas transitórias recebem uma segunda janela limitada de recuperação. Após esgotamento, o provider levanta `LLMServiceUnavailableError`; a API responde 503 e o CLI mostra mensagem amigável. Erros 4xx não transitórios não são repetidos. Os parâmetros são configuráveis por `LLM_SERVICE_RETRY_ATTEMPTS` e `LLM_SERVICE_RETRY_BASE_DELAY_SECONDS`. Essa mudança não altera retrieval, corpus ou Qdrant.

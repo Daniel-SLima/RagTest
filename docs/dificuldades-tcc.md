@@ -170,6 +170,18 @@ Correção: fazer o teste comparar a versão retornada com `get_settings().app_v
 
 Aprendizado técnico: testes de contratos que incluem metadados evolutivos devem validar a fonte de configuração correspondente, e não duplicar valores que mudam a cada versão.
 
+## 15. Gemini ficou indisponível por alta demanda no teste real do gate de grounding
+
+Planejado: validar o novo gate de cobertura de citações em uma pergunta real restrita à categoria oficial `direitos_saude`.
+
+Observado: os self-checks determinísticos de grounding e cobertura passaram, mas a chamada real ao Gemini terminou antes da validação do gate com `503 UNAVAILABLE` e mensagem de alta demanda temporária do modelo.
+
+Diagnóstico: retrieval e validação estrutural não chegaram a falhar; a exceção ocorreu na dependência externa de geração. O SDK já executa sua política interna de retry, mas ainda propagou o 503 após esgotá-la. O provider do RagTest não possuía uma política de resiliência de aplicação nem convertia indisponibilidade transitória em erro de domínio amigável.
+
+Correção: adicionar retries de aplicação limitados para códigos transitórios 429/500/502/503/504, com backoff exponencial curto e configurável. Após esgotar os retries, converter a falha em `LLMServiceUnavailableError`; o endpoint responde HTTP 503 e o CLI encerra com mensagem curta em vez de traceback completo. Erros não transitórios continuam sem retry.
+
+Aprendizado técnico: mesmo quando retrieval e grounding estão corretos, um RAG depende da disponibilidade do provedor de geração. Resiliência de produção exige distinguir erros transitórios de erros permanentes e limitar retries para evitar loops, latência imprevisível e tempestades de requisições.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

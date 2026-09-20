@@ -20,4 +20,6 @@ def create_llm_provider(settings: Settings) -> LLMProvider:
         model_name=settings.gemini_model,
         temperature=settings.llm_temperature,
         max_output_tokens=settings.llm_max_output_tokens,
+        service_retry_attempts=settings.llm_service_retry_attempts,
+        service_retry_base_delay_seconds=settings.llm_service_retry_base_delay_seconds,
     )

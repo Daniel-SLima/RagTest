@@ -983,3 +983,26 @@ Com base nisso, a cobertura estrutural foi promovida ao gate de geração do cha
 - nenhuma mudança no retrieval/corpus/Qdrant.
 
 Próximo passo: validar a nova CI e executar novamente os self-checks de grounding/cobertura. Depois, testar um chat real apenas com fonte oficial para observar o gate em runtime sem expor CHATSCM ao Gemini.
+
+
+### Falha real observada e correção — Gemini 503
+
+Na validação real da etapa 2 da 0.5.19:
+
+- `ragtest-check-grounding`: PASS;
+- `ragtest-check-grounding-coverage`: PASS;
+- chat real com `--category direitos_saude --no-decompose`: falhou antes do gate com `google.genai.errors.ServerError: 503 UNAVAILABLE`, alta demanda temporária.
+
+Registrado como Dificuldade TCC #15.
+
+Correção implementada na mesma branch:
+
+- retry de aplicação somente para 429/500/502/503/504;
+- até 2 retries adicionais por padrão;
+- backoff exponencial curto e configurável;
+- erro de domínio `LLMServiceUnavailableError` após esgotamento;
+- API responde HTTP 503;
+- CLI mostra mensagem curta, sem traceback;
+- erros não transitórios não recebem retry.
+
+Próximo passo: aguardar CI, rebuildar e repetir exatamente o chat oficial de direitos. Não reindexar Qdrant.

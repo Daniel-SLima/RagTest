@@ -2,6 +2,7 @@ import argparse
 import asyncio
 
 from app.core.config import get_settings
+from app.llm.base import LLMServiceUnavailableError
 from app.llm.factory import create_llm_provider
 from app.rag.chat import answer_with_rag
 from app.rag.embeddings.factory import (
@@ -96,7 +97,10 @@ async def run(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
-    asyncio.run(run(parse_args()))
+    try:
+        asyncio.run(run(parse_args()))
+    except LLMServiceUnavailableError as exc:
+        raise SystemExit(f"LLM temporariamente indisponível: {exc}") from None
 
 
 if __name__ == "__main__":

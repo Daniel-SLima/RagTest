@@ -574,3 +574,26 @@ Após o self-check estrutural passar, a 0.5.19 passa a usar a cobertura de cita�
 O retry existente continua limitado a uma tentativa. Não há chamada adicional a um juiz externo; a segunda chamada é a própria regeneração já prevista pelo fluxo de correção de citações.
 
 O critério continua sendo estrutural. Uma citação presente no bloco não é prova de entailment semântico.
+
+
+### Resiliência a indisponibilidade transitória do Gemini — 0.5.19
+
+O teste real do gate encontrou uma falha externa antes da validação de grounding:
+
+    503 UNAVAILABLE
+    This model is currently experiencing high demand.
+
+A aplicação agora complementa o retry interno do SDK com uma política limitada:
+
+    429 / 500 / 502 / 503 / 504
+      -> até 2 retries adicionais
+      -> backoff exponencial curto
+      -> se recuperar, segue o fluxo normal
+      -> se esgotar, LLMServiceUnavailableError
+
+Na API, a indisponibilidade persistente retorna HTTP 503. No CLI, a falha é apresentada como mensagem curta em vez de traceback completo. Erros não transitórios não recebem retry.
+
+Configuração opcional:
+
+    LLM_SERVICE_RETRY_ATTEMPTS=2
+    LLM_SERVICE_RETRY_BASE_DELAY_SECONDS=1.0
