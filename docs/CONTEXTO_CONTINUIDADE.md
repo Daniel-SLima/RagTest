@@ -647,6 +647,9 @@ Branch:
 feature/evaluation-label-semantics-0.5.18
 
 PR:
+#12 draft — Explicita semântica dos rótulos de avaliação na 0.5.18
+
+PR:
 #11 draft — Adiciona auditoria estrutural de DOCX na 0.5.17
 
 PR:
