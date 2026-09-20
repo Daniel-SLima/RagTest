@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.14`  
-**Trabalho em andamento:** `0.5.15` em `feature/runtime-reproducibility-0.5.15`; fingerprint local capturado e pins exatos de FastEmbed/qdrant-client/Qdrant Server aplicados. Aguardando rebuild para confirmar que o runtime permanece idêntico.
+**Trabalho em andamento:** `0.5.15` em `feature/runtime-reproducibility-0.5.15`; validação pós-pinning concluída. Runtime permaneceu idêntico, collection segue 767/767 e CI passou com Ruff verde + 53 testes aprovados. PR #9 aguarda autorização explícita de merge.
 
 ---
 
@@ -664,10 +664,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o fingerprint da 0.5.15 foi executado localmente e confirmou FastEmbed 0.8.0, qdrant-client 1.19.1, Qdrant Server 1.19.1, 767 pontos e schema dense 384/Cosine + sparse IDF. Com base nessa evidência, os pins exatos foram aplicados e a imagem padrão deixou de usar `latest`.
+a validação pós-pinning da 0.5.15 foi concluída. O runtime continuou com FastEmbed 0.8.0, qdrant-client 1.19.1 e Qdrant Server 1.19.1 no mesmo commit do servidor. A collection permaneceu 767/767, dense 384/Cosine e sparse IDF. A CI passou com `All checks passed!` no Ruff e `53 passed, 4 warnings` no pytest.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, rebuildar sem reindexar e executar novamente `ragtest-runtime-info`. Confirmar FastEmbed 0.8.0, qdrant-client 1.19.1, Qdrant Server 1.19.1 e 767/767 pontos.
+aguardar autorização explícita para merge do PR #9. Depois do merge, iniciar a fase 0.5.16 de robustez de ingestão sem reindexar até que a nova estratégia seja definida e validada.
 ```
 
 
