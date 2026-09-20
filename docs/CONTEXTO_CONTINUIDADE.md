@@ -1006,3 +1006,37 @@ Correção implementada na mesma branch:
 - erros não transitórios não recebem retry.
 
 Próximo passo: aguardar CI, rebuildar e repetir exatamente o chat oficial de direitos. Não reindexar Qdrant.
+
+
+### Missão secundária 0.5.19 — provider local Ollama
+
+Ambiente local validado:
+
+    Ollama: 0.34.2
+    qwen3:4b: instalado, 2.5 GB, 100% GPU em contexto 4096
+    qwen3:8b: instalado, 5.2 GB, Q4_K_M, 8.2B parâmetros
+    qwen3:8b contexto 4096: 30% CPU / 70% GPU
+    qwen3:8b contexto 8192: 36% CPU / 64% GPU
+    Docker -> Ollama: acesso confirmado em http://host.docker.internal:11434
+
+O qwen3:4b vazou reasoning no `message.content` mesmo com `think=false` e `/no_think`; registrado como Dificuldade #16.
+
+O qwen3:8b respeitou `think=false` no CLI e na API e respondeu normalmente em contexto 8192. Ele passa a ser o baseline local.
+
+D020: integração por provider explícito:
+
+    LLM_PROVIDER=gemini
+    ou
+    LLM_PROVIDER=ollama
+
+Ollama defaults:
+
+    OLLAMA_BASE_URL=http://host.docker.internal:11434
+    OLLAMA_MODEL=qwen3:8b
+    OLLAMA_CONTEXT_WINDOW=8192
+    OLLAMA_THINK=false
+    OLLAMA_REQUEST_TIMEOUT_SECONDS=180
+
+Sem fallback automático nesta etapa. A intenção é permitir comparação controlada do mesmo RAG entre Gemini e Qwen3 8B.
+
+Próximo teste após CI/rebuild: definir `LLM_PROVIDER=ollama`, executar `ragtest-runtime-info --skip-qdrant` e repetir a pergunta oficial de direitos com `--category direitos_saude --no-decompose`. Não reindexar.

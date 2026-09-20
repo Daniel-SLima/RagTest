@@ -182,6 +182,18 @@ Correção: adicionar retries de aplicação limitados para códigos transitóri
 
 Aprendizado técnico: mesmo quando retrieval e grounding estão corretos, um RAG depende da disponibilidade do provedor de geração. Resiliência de produção exige distinguir erros transitórios de erros permanentes e limitar retries para evitar loops, latência imprevisível e tempestades de requisições.
 
+## 16. Qwen3 4B expôs reasoning mesmo com thinking desativado
+
+Planejado: usar `qwen3:4b` local no Ollama com `think=false` para gerar somente a resposta final do RAG.
+
+Observado: tanto no CLI quanto na API, o modelo incluiu o raciocínio interno no conteúdo textual e terminou o bloco com `</think>`, apesar de `think=false` e do teste adicional com `/no_think`.
+
+Diagnóstico: na combinação local validada de Ollama 0.34.2 + `qwen3:4b`, a desativação de thinking não produziu o contrato de saída necessário ao gate estrutural do RagTest. Esse conteúdo extra poderia ser interpretado como blocos informativos sem citação.
+
+Correção: testar `qwen3:8b` no mesmo ambiente. O 8B respeitou `think=false` tanto no CLI quanto na API. O modelo foi validado com contexto 8192 e acesso a partir do container Docker; o provider local passa a usar `qwen3:8b` como padrão e rejeita explicitamente vazamento de `</think>` quando thinking está desativado.
+
+Aprendizado técnico: modelos da mesma família podem apresentar contratos de saída diferentes no mesmo runtime. Antes de integrar um LLM a guardrails estruturais, é necessário validar o payload real da API e não apenas a capacidade declarada do modelo.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

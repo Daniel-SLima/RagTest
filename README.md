@@ -597,3 +597,34 @@ Configuração opcional:
 
     LLM_SERVICE_RETRY_ATTEMPTS=2
     LLM_SERVICE_RETRY_BASE_DELAY_SECONDS=1.0
+
+
+### Provider local com Ollama / Qwen3 8B — 0.5.19
+
+O RagTest pode usar o Gemini ou um modelo local no Ollama sem alterar retrieval, embeddings ou Qdrant.
+
+Baseline local validada no Windows/Docker:
+
+    Ollama 0.34.2
+    modelo: qwen3:8b
+    quantização: Q4_K_M
+    think: false
+    context: 8192
+    endpoint visto pelo container: http://host.docker.internal:11434
+
+Configuração local:
+
+    LLM_PROVIDER=ollama
+    OLLAMA_BASE_URL=http://host.docker.internal:11434
+    OLLAMA_MODEL=qwen3:8b
+    OLLAMA_CONTEXT_WINDOW=8192
+    OLLAMA_THINK=false
+    OLLAMA_REQUEST_TIMEOUT_SECONDS=180
+
+Para voltar ao Gemini:
+
+    LLM_PROVIDER=gemini
+
+A seleção é deliberadamente explícita. Não existe fallback automático entre providers nesta fase, para que testes e métricas não misturem modelos sem rastreabilidade.
+
+O `qwen3:4b` foi testado, mas não é o baseline local: ele expôs reasoning no campo `content` mesmo com thinking desativado. O provider local rejeita esse padrão quando `OLLAMA_THINK=false`.

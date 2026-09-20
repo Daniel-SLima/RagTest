@@ -184,3 +184,12 @@ Impacto:
 **Mudança:** o provider Gemini passa a executar até 2 retries adicionais de aplicação, com backoff exponencial curto, somente para códigos transitórios 429/500/502/503/504.  
 **Motivo:** no teste real da 0.5.19, o SDK propagou 503 UNAVAILABLE por alta demanda mesmo após sua política interna de retry.  
 **Impacto:** falhas transitórias recebem uma segunda janela limitada de recuperação. Após esgotamento, o provider levanta `LLMServiceUnavailableError`; a API responde 503 e o CLI mostra mensagem amigável. Erros 4xx não transitórios não são repetidos. Os parâmetros são configuráveis por `LLM_SERVICE_RETRY_ATTEMPTS` e `LLM_SERVICE_RETRY_BASE_DELAY_SECONDS`. Essa mudança não altera retrieval, corpus ou Qdrant.
+
+
+## D020 — Ollama como provider local explícito, sem fallback automático entre modelos
+
+**Data:** 2026-09-20  
+**Mudança:** adicionar `OllamaProvider` à interface existente de LLM e permitir seleção explícita por `LLM_PROVIDER=ollama`, usando `qwen3:8b`, `think=false` e contexto 8192 como baseline local inicial.  
+**Motivo:** o Gemini ficou temporariamente indisponível durante a validação da 0.5.19, e o notebook local confirmou execução do Qwen3 8B com API acessível a partir do container Docker.  
+**Evidência local:** `qwen3:8b` Q4_K_M, 8.2B parâmetros, resposta sem reasoning com `think=false`, contexto 8192, carga observada de aproximadamente 36% CPU / 64% GPU nesse contexto e acesso via `http://host.docker.internal:11434`.  
+**Impacto:** o mesmo retrieval, corpus, Qdrant e gate de grounding podem ser testados com Gemini ou Ollama sem reindexação. A troca é explícita para preservar rastreabilidade experimental; não há fallback automático Gemini→Ollama nesta etapa. O provider rejeita vazamento de `</think>` quando thinking está desativado.

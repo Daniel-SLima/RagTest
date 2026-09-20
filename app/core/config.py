@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.6-flash"
+    ollama_base_url: str = "http://host.docker.internal:11434"
+    ollama_model: str = "qwen3:8b"
+    ollama_context_window: int = Field(default=8192, ge=2048, le=65536)
+    ollama_think: bool = False
+    ollama_request_timeout_seconds: float = Field(default=180.0, ge=1.0, le=600.0)
     llm_temperature: float = 0.1
     llm_max_output_tokens: int = 2400
     llm_service_retry_attempts: int = Field(default=2, ge=0, le=5)
