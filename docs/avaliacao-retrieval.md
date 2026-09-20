@@ -85,3 +85,34 @@ Mudanças:
 - collection permanece com dense + sparse, portanto não há reindexação.
 
 Status: validado localmente. A busca padrão informou `Mode: dense-rerank`, a consulta de vacinação na gestação manteve a fonte esperada no rank 1 e o benchmark reproduziu exatamente: dense 1.000/0.857, dense-rerank 1.000/0.929 e hybrid 1.000/0.821 (HitRate@5/MRR@5).
+
+
+## 0.5.9 — suite holdout congelada
+
+A 0.5.9 amplia a avaliação sem alterar os parâmetros dos perfis de retrieval.
+
+Dataset versionado:
+
+    2026-09-20-v1
+
+Divisão:
+
+- dev: 7 consultas já utilizadas ao longo do desenvolvimento;
+- holdout: 15 consultas novas, congeladas antes da primeira execução;
+- all: 22 consultas.
+
+Objetivo metodológico: medir generalização e reduzir o risco de concluir qualidade com base apenas nos mesmos casos usados para orientar os ajustes anteriores.
+
+O primeiro teste deve ser:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode dense-rerank
+
+Em seguida:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
+
+E a regressão histórica:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
+
+Regra experimental: a primeira execução do holdout deve ser preservada. Se forem observadas falhas, elas podem orientar novos experimentos, mas o mesmo holdout deixa de ser considerado totalmente não visto para uma nova alegação de validação independente.
