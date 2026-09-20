@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.7`  
-**Trabalho em andamento:** `0.5.8` em `feature/default-dense-rerank-0.5.8`, validada localmente e aguardando autorização de merge do PR #2.
+**Estado validado e mesclado no main:** `0.5.8`  
+**Trabalho em andamento:** `0.5.9` em `feature/holdout-evaluation-0.5.9`, implementada e aguardando a primeira execução do holdout.
 
 ---
 
@@ -369,79 +369,80 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.8 — consolidar dense-rerank como candidato padrão
+### Fase 0.5.9 — avaliação holdout congelada
 
-O PR #1 da 0.5.7 foi autorizado pelo usuário e mesclado no `main`.
+O PR #2 da 0.5.8 foi autorizado pelo usuário e mesclado no `main`.
 
 Objetivo atual:
 
-- usar `dense-rerank` como modo padrão de busca e chat;
-- garantir que o runtime use exatamente o perfil validado no benchmark;
-- manter `dense` e `hybrid` disponíveis para benchmark e diagnóstico;
-- evitar que um `.env` antigo altere silenciosamente os parâmetros do perfil validado.
+- ampliar a avaliação sem alterar os parâmetros do retrieval;
+- separar as 7 consultas usadas no desenvolvimento de um conjunto novo;
+- congelar um holdout antes da primeira execução;
+- verificar se o `dense-rerank` generaliza para perguntas e domínios não usados no ajuste;
+- preservar a primeira execução do holdout como evidência experimental.
 
 ### Branch ativa
 
-`feature/default-dense-rerank-0.5.8`
+`feature/holdout-evaluation-0.5.9`
 
-### Implementação atual
+### Dataset versionado
 
-- `RETRIEVAL_MODE=dense-rerank` por padrão;
-- perfis de retrieval movidos para `app/rag/retrieval_profiles.py`;
-- API de busca e chat usam o perfil selecionado;
-- CLI de busca e chat aceitam `--mode` para diagnóstico;
-- benchmark continua comparando os três perfis;
-- parâmetros do perfil são versionados no código;
-- não exige reindexação da collection de 767 chunks.
+`2026-09-20-v1`
 
-Status: **implementado e validado localmente; PR #2 permanece aberto aguardando autorização de merge**.
+Suites:
+
+- `dev`: 7 consultas históricas;
+- `holdout`: 15 consultas novas;
+- `all`: 22 consultas.
+
+O holdout cobre alimentação, vacinação de adulto/adolescente/criança/idoso/gestante, saúde bucal na gestação, cadernetas, medicamentos, contracepção e paráfrases das consultas centrais.
+
+Status: **implementado, PR #3 aberto como draft e aguardando a primeira execução local do holdout**.
 
 ---
 
 ## 12. Ponto exato onde o trabalho foi pausado
 
-O PR #1 da 0.5.7 foi mesclado no `main`.
+A 0.5.8 foi validada e mesclada no `main`.
 
-A 0.5.8 foi validada no ambiente local do usuário.
+A 0.5.9 foi implementada na branch `feature/holdout-evaluation-0.5.9`.
 
-Confirmado:
+Ainda **não executar nem interpretar o holdout como se ele já tivesse sido testado**. A primeira execução local deve ser preservada como resultado experimental.
 
-1. `/health` retorna versão 0.5.8;
-2. `/ready` retorna ready com Qdrant ok;
-3. `ragtest-search` sem `--mode` informa `Mode: dense-rerank`;
-4. a consulta de vacinação na gestação mantém `vacinacao/calendario_nacional_vacinacao_gestante.pdf` no rank 1;
-5. o benchmark reproduziu exatamente a baseline da 0.5.7:
-   - dense: HitRate@5=1.000, MRR@5=0.857;
-   - dense-rerank: HitRate@5=1.000, MRR@5=0.929;
-   - hybrid: HitRate@5=1.000, MRR@5=0.821.
+Próxima validação:
 
-O PR #2 ainda não foi mesclado. Próxima decisão: autorização de merge e início da ampliação do conjunto de avaliação.
+1. `/health` deve mostrar versão 0.5.9;
+2. `/ready` deve permanecer ready;
+3. executar primeiro somente `dense-rerank` na suite holdout;
+4. registrar HitRate@5, MRR@5 e casos FAIL sem alterar parâmetros;
+5. depois executar os três perfis no mesmo holdout para comparação;
+6. confirmar a suite dev como regressão histórica.
 
-Não recriar a collection: os 767 chunks atuais continuam compatíveis.
+Não recriar a collection: os 767 chunks continuam compatíveis.
 
 ---
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — mesclar a 0.5.8
+### Passo 1 — executar o holdout 0.5.9
 
-A validação local foi concluída. Aguardar autorização explícita do usuário para mesclar o PR #2 no `main`.
+Rodar primeiro `dense-rerank` sobre as 15 consultas novas e preservar o primeiro resultado sem recalibrar parâmetros.
 
-### Passo 2 — ampliar o conjunto de avaliação
+### Passo 2 — comparar os três perfis no holdout
 
-Criar um conjunto maior, com consultas novas e mais difíceis, evitando ajustar parâmetros apenas nos sete casos usados durante o desenvolvimento.
+Rodar `dense`, `dense-rerank` e `hybrid` sobre exatamente as mesmas 15 consultas.
 
-### Passo 3 — medir relevância com mais granularidade
+### Passo 3 — registrar generalização e dificuldades
 
-Evoluir além de HitRate/MRR por fonte, incluindo julgamentos por página/chunk quando necessário e métricas como nDCG/Recall@k em um conjunto congelado.
+Documentar métricas e casos de falha. Se houver regressões relevantes, criar nova Dificuldade TCC, mas não “otimizar para o holdout” e reapresentá-lo como teste não visto.
 
-### Passo 4 — reforçar groundedness e segurança
+### Passo 4 — evoluir as métricas
 
-Validar citações, remover scores internos do prompt, adicionar defesa contra prompt injection documental e revisar privacidade dos arquivos CHATSCM antes de chamadas externas.
+Adicionar Recall@k/nDCG e, onde fizer sentido, julgamentos por página/chunk ou fonte única deduplicada.
 
-### Passo 5 — preparar a camada de produto
+### Passo 5 — reforçar groundedness e segurança
 
-Adicionar logs/auditoria estruturada, sessões, histórico, streaming e integração posterior com o aplicativo Se Cuida Mulher.
+Validar citações, remover scores internos do prompt, defender contra prompt injection documental e revisar a privacidade dos arquivos CHATSCM antes de chamadas externas.
 
 ---
 
@@ -455,7 +456,7 @@ Adicionar logs/auditoria estruturada, sessões, histórico, streaming e integra�
 - metadata de versão/configuração do embedding na collection deve ser reforçada;
 - cliente Gemini pode ser persistido e receber telemetria de `finish_reason`/uso;
 - warning de Hugging Face sem autenticação é não bloqueante;
-- conjunto de avaliação com 7 perguntas ainda é pequeno e deve crescer antes da conclusão acadêmica.
+- a suite histórica tem 7 perguntas; a 0.5.9 adiciona 15 perguntas holdout, ainda aguardando primeira execução.
 
 ---
 
@@ -509,7 +510,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.7
+Main validado/mesclado: 0.5.8
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -519,13 +520,16 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.8 consolidação dense-rerank
+0.5.9 avaliação holdout
 
 Branch:
-feature/default-dense-rerank-0.5.8
+feature/holdout-evaluation-0.5.9
+
+Dataset:
+2026-09-20-v1 — dev=7, holdout=15, all=22
 
 PR:
-#2 draft — Consolida dense-rerank como modo padrão na 0.5.8
+#3 draft — Adiciona avaliação holdout congelada na 0.5.9
 
 0.5.7 validada:
 dense         HitRate@5=1.000 / MRR@5=0.857
@@ -533,10 +537,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.8 validada localmente; PR #2 aberto e ainda não mesclado.
+0.5.9 implementada, antes da primeira execução do holdout.
 
 Próxima ação ao receber "continuar":
-confirmar estado do PR #2 e, se houver autorização do usuário, mesclar a 0.5.8 e iniciar a ampliação do conjunto de avaliação.
+executar primeiro a suite holdout com dense-rerank, preservar os resultados e só depois comparar dense/hybrid; não reindexar Qdrant.
 ```
 
 
