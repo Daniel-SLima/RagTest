@@ -32,6 +32,11 @@ async def chat(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> ChatResponse:
     profile = get_profile(settings.retrieval_mode)
+    auto_decompose = (
+        settings.retrieval_auto_decompose
+        if request.auto_decompose is None
+        else request.auto_decompose
+    )
 
     try:
         result = await answer_with_rag(
@@ -52,6 +57,8 @@ async def chat(
             content_lexical_weight=profile.content_lexical_weight,
             hybrid_dense_weight=profile.dense_weight,
             hybrid_sparse_weight=profile.sparse_weight,
+            auto_decompose=auto_decompose,
+            max_subqueries=settings.retrieval_max_subqueries,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
@@ -67,6 +74,9 @@ async def chat(
         grounded=result.grounded,
         citation_ids=result.citation_ids,
         citation_retry_count=result.citation_retry_count,
+        multi_query_used=result.multi_query_used,
+        retrieval_queries=result.retrieval_queries or [request.message],
+        decomposition_status=result.decomposition_status,
         sources=[
             ChatSource(
                 citation_id=index,

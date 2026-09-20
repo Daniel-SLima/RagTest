@@ -21,6 +21,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--audience", default=None)
     parser.add_argument("--min-score", type=float, default=None)
     parser.add_argument(
+        "--no-decompose",
+        action="store_true",
+        help="Disable automatic multi-intent decomposition for this request.",
+    )
+    parser.add_argument(
         "--mode",
         choices=tuple(PROFILES),
         default=None,
@@ -62,10 +67,15 @@ async def run(args: argparse.Namespace) -> None:
             content_lexical_weight=profile.content_lexical_weight,
             hybrid_dense_weight=profile.dense_weight,
             hybrid_sparse_weight=profile.sparse_weight,
+            auto_decompose=settings.retrieval_auto_decompose and not args.no_decompose,
+            max_subqueries=settings.retrieval_max_subqueries,
         )
 
         print()
         print(f"Retrieval mode: {profile.name}")
+        print(f"Decomposition status: {result.decomposition_status}")
+        print(f"Multi-query used: {'yes' if result.multi_query_used else 'no'}")
+        print(f"Retrieval queries: {result.retrieval_queries or [args.message]}")
         print(f"Grounded: {'yes' if result.grounded else 'no'}")
         print(f"Citation ids: {result.citation_ids or '-'}")
         print(f"Citation retries: {result.citation_retry_count}")

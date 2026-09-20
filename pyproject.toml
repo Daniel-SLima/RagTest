@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.5.12"
+version = "0.5.13"
 description = "Backend portável de RAG com FastAPI, Qdrant, OCR e Gemini"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -42,6 +42,7 @@ ragtest-evaluate-retrieval = "app.cli.evaluate_retrieval:main"
 ragtest-check-grounding = "app.cli.check_grounding:main"
 ragtest-search-multi = "app.cli.search_multi:main"
 ragtest-check-multi-query = "app.cli.check_multi_query:main"
+ragtest-check-decomposition = "app.cli.check_decomposition:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
