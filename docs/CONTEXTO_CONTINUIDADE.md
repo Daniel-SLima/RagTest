@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.17`  
-**Trabalho em andamento:** `0.5.18` em `feature/evaluation-label-semantics-0.5.18`; auditoria do v1 validada (22 legados, 5 multi-source) e CI da primeira etapa verde com 67 testes. Base do avaliador v2 implementada com semântica OR/AND e aguardando nova CI + self-check local.
+**Trabalho em andamento:** `0.5.18` em `feature/evaluation-label-semantics-0.5.18`; infraestrutura de avaliação v2 validada. Self-check OR/AND passou, regressão v1 reproduziu HitRate@5=1.000, MRR@5=0.929, SourceRecall@5=1.000 e SourceNDCG@5=0.936; CI verde com 72 testes. PR #12 aguarda autorização explícita de merge.
 
 ---
 
@@ -673,12 +673,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a auditoria local da 0.5.18 confirmou o dataset v1: 22 casos usam `expected_sources`, 5 deles têm múltiplas fontes e nenhum usa semântica explícita. A CI da primeira etapa passou com Ruff verde e `67 passed, 4 warnings`.
+a infraestrutura de avaliação v2 da 0.5.18 foi validada localmente. O `ragtest-check-evaluation-v2` passou em todos os checks de semântica OR/AND. A regressão do dataset v1 em `dense-rerank` reproduziu exatamente a baseline histórica: HitRate@5=1.000 (7/7), MRR@5=0.929, SourceRecall@5=1.000 e SourceNDCG@5=0.936. A CI final passou com Ruff verde e `72 passed, 4 warnings`.
 
-A segunda etapa implementa suporte real do avaliador ao esquema explícito: `acceptable_sources` usa semântica OR; `required_sources` usa cobertura AND. O evaluator mantém o caminho histórico intacto para v1, recusa misturar esquemas na mesma execução e adiciona métricas específicas para o contrato v2. Também foi adicionado `ragtest-check-evaluation-v2` e um template de esquema que não é um holdout real.
+O warning do FastEmbed sobre mean pooling continua sendo o warning conhecido do runtime 0.8.0 e não altera a decisão já tomada na 0.5.15 de preservar o runtime validado, em vez de voltar cegamente para 0.5.1.
 
 Próxima ação ao receber "continuar":
-atualizar/rebuildar a branch e executar `ragtest-check-evaluation-v2`. Depois executar uma regressão curta do evaluator v1 (`--suite dev --mode dense-rerank`) para provar que o caminho histórico continua funcionando. Não reindexar Qdrant.
+aguardar autorização explícita do usuário para merge do PR #12. Após o merge, iniciar a próxima fase de groundedness/segurança sem reindexar a collection.
 ```
 
 
