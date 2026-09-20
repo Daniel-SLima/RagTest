@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.12`  
-**Trabalho em andamento:** `0.5.13` em `feature/automatic-decomposition-0.5.13`; decomposição automática integrada ao chat e aguardando validação.
+**Trabalho em andamento:** `0.5.13` em `feature/automatic-decomposition-0.5.13`; caminho multi-query automático validado em runtime. Falta apenas confirmar o caminho single-query em uma chamada real do `/v1/chat` antes do merge.
 
 ---
 
@@ -390,7 +390,7 @@ Branch ativa:
 
 `feature/automatic-decomposition-0.5.13`
 
-Status: **implementado, PR #7 aberto como draft e aguardando validação local**.
+Status: **multi-query automático validado em runtime: health/ready ok, self-check PASS, duas subconsultas geradas automaticamente, página 13 recuperada e resposta grounded cobrindo direitos e deveres. PR #7 permanece draft; falta um teste real de pergunta simples/single-query.**
 
 ### Histórico — fase 0.5.12 — experimento controlado de multi-query
 
@@ -644,10 +644,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.13 implementada. O chat agora tenta decompor automaticamente perguntas potencialmente compostas, mas preserva single-query para perguntas simples e usa fallback quando o planejador não produz ao menos duas subconsultas válidas.
+o caminho multi-query automático da 0.5.13 foi validado em runtime. `/health` retornou 0.5.13, `/ready` retornou Qdrant ok, `ragtest-check-decomposition` passou em todos os checks e a chamada real do `/v1/chat` gerou automaticamente duas subconsultas (direitos/deveres), retornou `multi_query_used=true`, `decomposition_status=multi-query`, incluiu a página 13 entre as fontes e produziu resposta `grounded=true` cobrindo as duas intenções.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, rebuildar 0.5.13, executar `ragtest-check-decomposition` e testar o `/v1/chat` com direitos+deveres sem fornecer subconsultas manualmente. Confirmar `multi_query_used=true`, duas retrieval queries e presença da página 13 entre as fontes. Não reindexar Qdrant.
+executar uma pergunta simples no `/v1/chat` para confirmar em runtime `multi_query_used=false`, `decomposition_status=not-needed` e uma única `retrieval_query`. Depois, se passar, a 0.5.13 fica pronta para autorização de merge. Não reindexar Qdrant.
 ```
 
 
