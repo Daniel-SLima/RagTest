@@ -328,3 +328,23 @@ A CI também passou:
     pytest: 53 passed, 4 warnings
 
 Portanto, o pinning não alterou o runtime nem a collection existente.
+
+
+## Fase 0.5.16 — sincronização segura da ingestão
+
+O primeiro passo da 0.5.16 trata uma limitação da ingestão incremental: IDs determinísticos permitem upsert, mas chunks antigos podem permanecer quando documentos são editados ou removidos.
+
+Novo comando somente leitura:
+
+    ragtest-plan-ingestion-sync
+
+Ele compara o corpus atual com a collection e informa:
+
+- chunks atuais;
+- pontos indexados;
+- pontos que faltam no índice;
+- pontos obsoletos;
+- fontes órfãs que não existem mais no diretório;
+- diferenças por fonte.
+
+Nesta primeira etapa o comando não grava nem remove nada no Qdrant. A exclusão sincronizada só será habilitada depois de validar o plano contra a collection atual.

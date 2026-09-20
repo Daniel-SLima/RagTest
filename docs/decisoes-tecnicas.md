@@ -144,3 +144,11 @@ Impacto:
 **Mudança:** antes de fixar novas versões de FastEmbed/Qdrant, a 0.5.15 adiciona um fingerprint reproduzível do ambiente com versões instaladas, versão do servidor Qdrant, modelos configurados, parâmetros de chunking e schema/contagem da collection.  
 **Motivo:** o projeto já observou mudança de semântica de pooling no FastEmbed e ainda usa imagem Qdrant `latest`. Fixar versões sem registrar primeiro o ambiente realmente validado poderia cristalizar uma combinação diferente da que gerou os 767 chunks atuais.  
 **Impacto:** o pinning foi baseado no runtime observado: FastEmbed 0.8.0, qdrant-client 1.19.1 e servidor Qdrant 1.19.1. A imagem padrão passa a `qdrant/qdrant:v1.19.1`; FastEmbed e qdrant-client passam a versões exatas no `pyproject.toml`. O comando `ragtest-runtime-info` não altera a collection e não exige reindexação.
+
+
+## D015 — Planejar sincronização da ingestão antes de permitir exclusões
+
+**Data:** 2026-09-20  
+**Mudança:** a ingestão incremental passa a ser desenvolvida em duas etapas. Primeiro, um comando somente leitura compara os chunks atuais do corpus com os IDs determinísticos já indexados no Qdrant e identifica pontos ausentes, obsoletos e fontes órfãs. A exclusão automática só será adicionada depois dessa comparação ser validada.  
+**Motivo:** o upsert atual adiciona/substitui IDs determinísticos, mas não remove chunks antigos quando um arquivo muda ou é excluído. Apagar automaticamente sem um plano auditável criaria risco desnecessário para a collection validada de 767 pontos.  
+**Impacto:** `ragtest-plan-ingestion-sync` oferece uma prévia segura da sincronização e não altera o Qdrant. A collection atual não deve ser reindexada nesta primeira etapa.

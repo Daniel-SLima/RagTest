@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.14`  
-**Trabalho em andamento:** `0.5.15` em `feature/runtime-reproducibility-0.5.15`; validação pós-pinning concluída. Runtime permaneceu idêntico, collection segue 767/767 e CI passou com Ruff verde + 53 testes aprovados. PR #9 aguarda autorização explícita de merge.
+**Estado validado e mesclado no main:** `0.5.15`  
+**Trabalho em andamento:** `0.5.16` em `feature/incremental-ingestion-0.5.16`; planejador somente leitura de sincronização da ingestão implementado e aguardando validação na collection de 767 pontos.
 
 ---
 
@@ -631,7 +631,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.14
+Main validado/mesclado: 0.5.15
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -641,10 +641,10 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.15 fingerprint e reprodutibilidade do runtime
+0.5.16 sincronização segura da ingestão
 
 Branch:
-feature/runtime-reproducibility-0.5.15
+feature/incremental-ingestion-0.5.16
 
 PR:
 #9 draft — Adiciona fingerprint de runtime na 0.5.15
@@ -664,10 +664,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a validação pós-pinning da 0.5.15 foi concluída. O runtime continuou com FastEmbed 0.8.0, qdrant-client 1.19.1 e Qdrant Server 1.19.1 no mesmo commit do servidor. A collection permaneceu 767/767, dense 384/Cosine e sparse IDF. A CI passou com `All checks passed!` no Ruff e `53 passed, 4 warnings` no pytest.
+a 0.5.15 foi mesclada. A primeira etapa da 0.5.16 adiciona um plano somente leitura de sincronização da ingestão. Ele compara IDs determinísticos dos chunks atuais com os pontos existentes no Qdrant e detecta missing/stale/orphan sem alterar a collection.
 
 Próxima ação ao receber "continuar":
-aguardar autorização explícita para merge do PR #9. Depois do merge, iniciar a fase 0.5.16 de robustez de ingestão sem reindexar até que a nova estratégia seja definida e validada.
+atualizar a branch local, rebuildar 0.5.16, validar `/health` e executar `ragtest-plan-ingestion-sync`. Na collection atual, a expectativa é 767 chunks, 767 pontos e zero missing/stale/orphan. Não executar `ragtest-ingest --recreate`.
 ```
 
 
