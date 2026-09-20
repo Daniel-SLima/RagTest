@@ -117,7 +117,7 @@ Self-check determinístico:
 Não exige `ragtest-ingest --recreate`.
 
 
-### Validação parcial da 0.5.11
+### Validação da 0.5.11
 
 Verificado localmente:
 
@@ -125,5 +125,8 @@ Verificado localmente:
     /health: version 0.5.11
     /ready: qdrant ok
     ragtest-check-grounding: todos os checks passaram
+    /v1/chat: grounded=true
+    citation_ids=[1,2,3]
+    citation_retry_count=0
 
-Ainda falta validar o fluxo real do endpoint `/v1/chat` antes de considerar a fase pronta para merge.
+O teste real confirmou que as citações retornadas correspondem às fontes disponíveis. Também revelou uma limitação separada: uma pergunta composta sobre direitos e deveres recuperou contexto suficiente para direitos, mas não para detalhar deveres. Isso foi registrado como Dificuldade TCC #11 e será investigado sem alterar o retrieval nesta fase.

@@ -122,6 +122,18 @@ Correção: separar `ragtest-evaluate-retrieval` e `ragtest-check-grounding` em 
 
 Aprendizado técnico: alterações automatizadas em arquivos declarativos devem preservar a sintaxe do formato e ser validadas antes de considerar a imagem pronta para build.
 
+## 11. Consulta composta recuperou direitos, mas não detalhou deveres
+
+Planejado: responder à pergunta composta "Quais são os direitos e deveres da pessoa usuária da saúde?" usando três fontes recuperadas da categoria `direitos_saude`.
+
+Observado: a resposta real passou pela validação de citações, apresentou vários direitos com fontes válidas, mas informou que o contexto recuperado não era suficiente para detalhar os deveres. Os três resultados retornados eram páginas 10, 4 e 27 da mesma Carta.
+
+Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. Porém, o top 3 não cobriu as duas partes da intenção da pergunta. Ainda é necessário distinguir se isso ocorre por diluição da consulta composta no retrieval ou por baixa recuperabilidade/extração dos trechos específicos de deveres.
+
+Correção: não alterar pesos nem o corpus nesta etapa. Executar uma busca isolada por "deveres da pessoa usuária da saúde" na categoria `direitos_saude` para localizar as páginas relevantes e isolar a causa antes de propor mudança.
+
+Aprendizado técnico: uma resposta pode ter citações válidas e ainda ser incompleta quando o retrieval não cobre todas as subintenções de uma pergunta composta; validação de citações e cobertura semântica são dimensões distintas.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
