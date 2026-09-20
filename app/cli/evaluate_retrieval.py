@@ -1,11 +1,13 @@
 import argparse
 import asyncio
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from app.core.config import get_settings
 from app.evaluation import EVALUATION_DATASET_VERSION, select_retrieval_cases
+from app.evaluation.metrics import evaluate_case_sources, first_expected_rank
 from app.rag.embeddings.factory import (
     create_embedding_provider,
     create_sparse_embedding_provider,
@@ -14,6 +16,14 @@ from app.rag.retrieval_profiles import RetrievalProfile, selected_profiles
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
+
+
+@dataclass(frozen=True, slots=True)
+class AggregateMetrics:
+    hit_rate: float
+    mrr: float
+    source_recall: float
+    source_ndcg: float
 
 
 def parse_args() -> argparse.Namespace:
@@ -48,14 +58,6 @@ def _load_cases(
     return select_retrieval_cases(suite), f"packaged {suite}"
 
 
-def _first_expected_rank(sources: list[str], expected_sources: list[str]) -> int | None:
-    expected = set(expected_sources)
-    for rank, source in enumerate(sources, start=1):
-        if source in expected:
-            return rank
-    return None
-
-
 async def _evaluate_profile(
     *,
     profile: RetrievalProfile,
@@ -65,9 +67,11 @@ async def _evaluate_profile(
     sparse_embeddings,
     store: QdrantVectorStore,
     settings,
-) -> tuple[float, float]:
+) -> AggregateMetrics:
     hits_count = 0
     reciprocal_rank_sum = 0.0
+    source_recall_sum = 0.0
+    source_ndcg_sum = 0.0
 
     print()
     print(f"=== mode={profile.name} ===")
@@ -96,16 +100,22 @@ async def _evaluate_profile(
         )
 
         sources = [hit.source for hit in hits]
-        rank = _first_expected_rank(sources, expected_sources)
-        passed = rank is not None
+        rank = first_expected_rank(sources, expected_sources)
+        case_metrics = evaluate_case_sources(sources, expected_sources, limit)
 
-        if passed:
+        if case_metrics.hit:
             hits_count += 1
-            reciprocal_rank_sum += 1.0 / rank
+
+        reciprocal_rank_sum += case_metrics.reciprocal_rank
+        source_recall_sum += case_metrics.source_recall
+        source_ndcg_sum += case_metrics.source_ndcg
 
         print(
-            f"[{'PASS' if passed else 'FAIL'}] {index}. [{case_id}] {query} "
-            f"| first_expected_rank={rank or '-'}"
+            f"[{'PASS' if case_metrics.hit else 'FAIL'}] {index}. [{case_id}] {query} "
+            f"| first_expected_rank={rank or '-'} "
+            f"| source_recall={case_metrics.source_recall:.3f} "
+            f"| source_ndcg={case_metrics.source_ndcg:.3f} "
+            f"| unique_sources={case_metrics.unique_sources}"
         )
         for result_rank, hit in enumerate(hits, start=1):
             page = f":{hit.page}" if hit.page is not None else ""
@@ -116,13 +126,19 @@ async def _evaluate_profile(
             )
 
     total = len(cases)
-    hit_rate = hits_count / total if total else 0.0
-    mrr = reciprocal_rank_sum / total if total else 0.0
+    metrics = AggregateMetrics(
+        hit_rate=(hits_count / total) if total else 0.0,
+        mrr=(reciprocal_rank_sum / total) if total else 0.0,
+        source_recall=(source_recall_sum / total) if total else 0.0,
+        source_ndcg=(source_ndcg_sum / total) if total else 0.0,
+    )
 
     print()
-    print(f"HitRate@{limit}: {hit_rate:.3f} ({hits_count}/{total})")
-    print(f"MRR@{limit}: {mrr:.3f}")
-    return hit_rate, mrr
+    print(f"HitRate@{limit}: {metrics.hit_rate:.3f} ({hits_count}/{total})")
+    print(f"MRR@{limit}: {metrics.mrr:.3f}")
+    print(f"SourceRecall@{limit}: {metrics.source_recall:.3f}")
+    print(f"SourceNDCG@{limit}: {metrics.source_ndcg:.3f}")
+    return metrics
 
 
 async def run(
@@ -149,10 +165,14 @@ async def run(
             f"Dataset: {EVALUATION_DATASET_VERSION} | "
             f"Cases: {len(cases)} | k={limit} | source={source_label}"
         )
+        print(
+            "Metrics: legacy HitRate/MRR + source-level Recall/NDCG "
+            "(duplicate source pages count once as relevant)."
+        )
 
-        results: list[tuple[str, float, float]] = []
+        results: list[tuple[str, AggregateMetrics]] = []
         for profile in profiles:
-            hit_rate, mrr = await _evaluate_profile(
+            metrics = await _evaluate_profile(
                 profile=profile,
                 cases=cases,
                 limit=limit,
@@ -161,14 +181,20 @@ async def run(
                 store=store,
                 settings=settings,
             )
-            results.append((profile.name, hit_rate, mrr))
+            results.append((profile.name, metrics))
 
         if len(results) > 1:
             print()
             print("=== summary ===")
-            print("MODE            HITRATE      MRR")
-            for name, hit_rate, mrr in results:
-                print(f"{name:<15} {hit_rate:>7.3f}  {mrr:>7.3f}")
+            print("MODE            HITRATE      MRR  SRC_RECALL  SRC_NDCG")
+            for name, metrics in results:
+                print(
+                    f"{name:<15} "
+                    f"{metrics.hit_rate:>7.3f}  "
+                    f"{metrics.mrr:>7.3f}  "
+                    f"{metrics.source_recall:>10.3f}  "
+                    f"{metrics.source_ndcg:>8.3f}"
+                )
     finally:
         await qdrant.close()
 

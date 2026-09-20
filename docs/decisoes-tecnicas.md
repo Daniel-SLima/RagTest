@@ -96,3 +96,11 @@ Mudança:
 Motivo:
 Impacto:
 ```
+
+
+## D009 — Manter métricas históricas e adicionar métricas source-level
+
+**Data:** 2026-09-20  
+**Mudança:** a avaliação passa a manter HitRate@k e MRR@k para comparabilidade histórica e adiciona SourceRecall@k e SourceNDCG@k.  
+**Motivo:** HitRate/MRR verificam a presença e a primeira posição de uma fonte esperada, mas não medem bem a cobertura quando há múltiplas fontes relevantes nem penalizam de forma explícita páginas duplicadas da mesma fonte.  
+**Impacto:** novos experimentos passam a mostrar cobertura de fontes esperadas e qualidade de ordenação source-level sem invalidar as baselines antigas.

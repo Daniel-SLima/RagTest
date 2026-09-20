@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.8`  
-**Trabalho em andamento:** `0.5.9` em `feature/holdout-evaluation-0.5.9`; holdout comparativo e regressão da suite dev concluídos. PR #3 aguarda autorização de merge.
+**Estado validado e mesclado no main:** `0.5.9`  
+**Trabalho em andamento:** `0.5.10` em `feature/source-metrics-0.5.10`; métricas source-level implementadas e aguardando validação local.
 
 ---
 
@@ -369,7 +369,25 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.9 — avaliação holdout congelada
+### Fase 0.5.10 — métricas source-level
+
+A 0.5.9 foi validada e mesclada no `main`.
+
+Objetivo atual:
+
+- preservar HitRate@k e MRR@k para comparação histórica;
+- adicionar SourceRecall@k para medir quantas fontes esperadas distintas foram recuperadas;
+- adicionar SourceNDCG@k para medir a ordenação das fontes esperadas sem contar páginas repetidas da mesma fonte como novos acertos;
+- mostrar a quantidade de fontes distintas por consulta;
+- não alterar retrieval, pesos, corpus ou dataset.
+
+Branch ativa:
+
+`feature/source-metrics-0.5.10`
+
+Status: **implementado e aguardando validação local**.
+
+### Histórico — fase 0.5.9 — avaliação holdout congelada
 
 O PR #2 da 0.5.8 foi autorizado pelo usuário e mesclado no `main`.
 
@@ -438,17 +456,17 @@ Não recriar a collection: os 767 chunks continuam compatíveis.
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — mesclar a 0.5.9 após autorização
+### Passo 1 — validar as métricas da 0.5.10
 
-A validação foi concluída. Aguardar autorização explícita do usuário para mesclar o PR #3 no `main`.
+Executar holdout e dev e confirmar que HitRate/MRR permanecem iguais enquanto SourceRecall/SourceNDCG aparecem no relatório.
 
-### Passo 2 — evoluir a avaliação
+### Passo 2 — analisar diversidade e cobertura por fonte
 
-Adicionar métricas complementares como Recall@k e nDCG e revisar se a avaliação deve deduplicar resultados por fonte antes do cálculo.
+Usar os novos números para identificar consultas em que várias páginas da mesma fonte ocupam o top k e escondem outras fontes relevantes.
 
-### Passo 3 — melhorar os julgamentos de relevância
+### Passo 3 — preparar relevância preferencial
 
-Para consultas em que múltiplos documentos são plausíveis, distinguir documento aceitável de documento preferencial e, quando necessário, avaliar página/chunk.
+Definir, em uma fase separada e documentada, como distinguir fonte aceitável de fonte preferencial sem reescrever retroativamente o holdout original.
 
 ### Passo 4 — reforçar groundedness e segurança
 
@@ -526,7 +544,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.8
+Main validado/mesclado: 0.5.9
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -536,10 +554,10 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.9 avaliação holdout
+0.5.10 métricas source-level
 
 Branch:
-feature/holdout-evaluation-0.5.9
+feature/source-metrics-0.5.10
 
 Dataset:
 2026-09-20-v1 — dev=7, holdout=15, all=22
@@ -553,10 +571,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.9 validada. Holdout: dense=1.000/0.889, dense-rerank=1.000/0.933, hybrid=1.000/0.878. Suite dev reproduziu 1.000/0.857, 1.000/0.929 e 1.000/0.821.
+0.5.10 implementada na branch `feature/source-metrics-0.5.10`, aguardando validação das novas métricas. O retrieval continua dense-rerank e o corpus continua com 767 chunks.
 
 Próxima ação ao receber "continuar":
-confirmar estado do PR #3 e, se houver autorização do usuário, mesclar a 0.5.9 e iniciar a evolução das métricas/julgamentos de relevância.
+validar `/health` 0.5.10 e executar o avaliador em holdout e dev, conferindo HitRate/MRR antigos e os novos SourceRecall/SourceNDCG; não reindexar Qdrant.
 ```
 
 

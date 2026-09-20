@@ -68,3 +68,14 @@ Mudanças de arquitetura, comportamento padrão e metodologia são registradas e
 Problemas e correções continuam sendo registrados separadamente em:
 
     docs/dificuldades-tcc.md
+
+
+## Fase 0.5.10 — métricas source-level
+
+A próxima evolução do avaliador mantém HitRate/MRR e acrescenta:
+
+    SourceRecall@k
+    SourceNDCG@k
+    unique_sources por consulta
+
+O retrieval não muda e a collection de 767 chunks não precisa ser recriada.
