@@ -90,3 +90,77 @@ async def test_answer_with_rag_retries_invalid_citations_once() -> None:
     assert result.grounded is True
     assert result.citation_ids == [1]
     assert result.citation_retry_count == 1
+
+
+
+class CoverageRepairingFakeLLM:
+    model_name = "coverage-repairing-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        if self.calls == 1:
+            return (
+                "A fonte informa vacinação anual contra influenza [1].\n"
+                "Outra afirmação informativa ficou sem referência."
+            )
+        assert "VALIDAÇÃO AUTOMÁTICA DE CITAÇÕES" in user_prompt
+        assert "Cada parágrafo ou item informativo" in user_prompt
+        return (
+            "A fonte informa vacinação anual contra influenza [1].\n"
+            "A segunda afirmação também está atribuída à fonte [1]."
+        )
+
+
+class UnrepairableCoverageFakeLLM:
+    model_name = "unrepairable-coverage-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        return (
+            "A fonte informa vacinação anual contra influenza [1].\n"
+            "Outra afirmação informativa continua sem referência."
+        )
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_retries_incomplete_citation_coverage_once() -> None:
+    llm = CoverageRepairingFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 2
+    assert result.grounded is True
+    assert result.citation_ids == [1]
+    assert result.citation_retry_count == 1
+    assert "segunda afirmação" in result.answer.lower()
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_falls_back_when_coverage_still_fails() -> None:
+    llm = UnrepairableCoverageFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 2
+    assert result.grounded is False
+    assert result.citation_ids == []
+    assert result.citation_retry_count == 1
+    assert "Não foi possível gerar uma resposta" in result.answer

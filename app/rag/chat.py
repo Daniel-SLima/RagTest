@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
 from app.llm.base import LLMProvider
-from app.rag.citations import validate_citations
+from app.rag.citations import extract_citation_ids
 from app.rag.decomposition import decompose_question
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
+from app.rag.grounding import validate_citation_coverage
 from app.rag.multi_query import multi_query_search
 from app.rag.prompting import (
     SYSTEM_PROMPT,
@@ -42,19 +43,19 @@ async def _generate_with_validated_citations(
         system_prompt=SYSTEM_PROMPT,
         user_prompt=build_user_prompt(question, hits),
     )
-    validation = validate_citations(answer, len(hits))
+    validation = validate_citation_coverage(answer, len(hits))
 
     if validation.valid:
-        return answer, True, list(validation.citation_ids), 0
+        return answer, True, list(extract_citation_ids(answer)), 0
 
     repaired_answer = await llm.generate(
         system_prompt=SYSTEM_PROMPT,
         user_prompt=build_citation_repair_prompt(question, hits),
     )
-    repaired_validation = validate_citations(repaired_answer, len(hits))
+    repaired_validation = validate_citation_coverage(repaired_answer, len(hits))
 
     if repaired_validation.valid:
-        return repaired_answer, True, list(repaired_validation.citation_ids), 1
+        return repaired_answer, True, list(extract_citation_ids(repaired_answer)), 1
 
     return _GROUNDING_FALLBACK, False, [], 1
 

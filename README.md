@@ -558,3 +558,19 @@ Ela mede:
 Importante: cobertura de citações não é sinônimo de entailment semântico. A checagem não afirma que o trecho citado sustenta de fato a frase; apenas mede se a estrutura de atribuição está completa.
 
 Nesta primeira etapa o endpoint `/v1/chat` não muda de comportamento e nenhum conteúdo é enviado a um juiz externo.
+
+
+### Etapa 2 — cobertura vira gate do chat
+
+Após o self-check estrutural passar, a 0.5.19 passa a usar a cobertura de citações no fluxo de geração:
+
+    resposta do LLM
+      -> valida sintaxe das citações
+      -> valida cobertura por bloco informativo
+      -> se completa: grounded=true
+      -> se incompleta: tenta reparar uma vez
+      -> se continuar incompleta: fallback seguro + grounded=false
+
+O retry existente continua limitado a uma tentativa. Não há chamada adicional a um juiz externo; a segunda chamada é a própria regeneração já prevista pelo fluxo de correção de citações.
+
+O critério continua sendo estrutural. Uma citação presente no bloco não é prova de entailment semântico.
