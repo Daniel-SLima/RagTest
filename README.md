@@ -265,3 +265,66 @@ Após a CI verde, a imagem Docker foi reconstruída e validada localmente:
     /ready: status=ready, qdrant=ok
 
 Com isso, a 0.5.14 está validada tanto na suíte automatizada quanto no runtime local. Não houve mudança de corpus e nenhuma reindexação foi necessária.
+
+
+## Fase 0.5.15 — fingerprint e reprodutibilidade do runtime
+
+Antes de fixar novas versões de FastEmbed e da imagem Qdrant, a 0.5.15 registra o ambiente efetivamente validado.
+
+Novo comando:
+
+    ragtest-runtime-info
+
+Ele mostra:
+
+- versão do RagTest e dos principais pacotes;
+- versão/commit do servidor Qdrant;
+- modelos dense/sparse configurados;
+- estratégia de retrieval;
+- chunk size/overlap;
+- nome, schema, metadata e contagem da collection.
+
+O comando é somente diagnóstico: não escreve na collection e não exige reindexação.
+
+
+### Baseline observada e pinning da 0.5.15
+
+O fingerprint local confirmou:
+
+    fastembed: 0.8.0
+    qdrant-client: 1.19.1
+    qdrant_server: 1.19.1
+    qdrant_commit: 6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de
+    dense: 384 / Cosine
+    sparse: idf
+    points: 767
+    indexed_vectors: 767
+
+Com base nessa combinação já validada, a segunda etapa da 0.5.15 fixa:
+
+    fastembed==0.8.0
+    qdrant-client==1.19.1
+    qdrant/qdrant:v1.19.1
+
+A baseline completa está em `docs/runtime-baseline-0.5.15.md`.
+
+A aplicação desses pins não exige reindexação; o próximo teste deve confirmar que o fingerprint continua igual após rebuild.
+
+
+### Validação pós-pinning da 0.5.15
+
+Após rebuild com as versões exatas:
+
+    fastembed: 0.8.0
+    qdrant-client: 1.19.1
+    qdrant_server: 1.19.1
+    qdrant_commit: 6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de
+    points_count: 767
+    indexed_vectors_count: 767
+
+A CI também passou:
+
+    ruff: All checks passed!
+    pytest: 53 passed, 4 warnings
+
+Portanto, o pinning não alterou o runtime nem a collection existente.

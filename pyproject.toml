@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.5.14"
+version = "0.5.15"
 description = "Backend portável de RAG com FastAPI, Qdrant, OCR e Gemini"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116,<1.0",
-    "fastembed>=0.7,<1.0",
+    "fastembed==0.8.0",
     "fonttools>=4.59,<5.0",
     "google-genai>=1.33,<2.0",
     "langchain-core>=1.0,<2.0",
@@ -21,7 +21,7 @@ dependencies = [
     "pypdf>=6.0,<7.0",
     "pytesseract>=0.3.13,<1.0",
     "python-docx>=1.2,<2.0",
-    "qdrant-client>=1.15,<2.0",
+    "qdrant-client==1.19.1",
     "uvicorn[standard]>=0.35,<1.0",
 ]
 
@@ -43,6 +43,7 @@ ragtest-check-grounding = "app.cli.check_grounding:main"
 ragtest-search-multi = "app.cli.search_multi:main"
 ragtest-check-multi-query = "app.cli.check_multi_query:main"
 ragtest-check-decomposition = "app.cli.check_decomposition:main"
+ragtest-runtime-info = "app.cli.runtime_info:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
