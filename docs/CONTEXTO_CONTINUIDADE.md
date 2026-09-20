@@ -394,7 +394,7 @@ Objetivo atual:
 - parâmetros do perfil são versionados no código;
 - não exige reindexação da collection de 767 chunks.
 
-Status: **implementado, aguardando validação local**.
+Status: **implementado, PR #2 aberto como draft e aguardando validação local**.
 
 ---
 
@@ -520,7 +520,7 @@ Branch:
 feature/default-dense-rerank-0.5.8
 
 PR:
-será aberto como draft após documentação da implementação
+#2 draft — Consolida dense-rerank como modo padrão na 0.5.8
 
 0.5.7 validada:
 dense         HitRate@5=1.000 / MRR@5=0.857
