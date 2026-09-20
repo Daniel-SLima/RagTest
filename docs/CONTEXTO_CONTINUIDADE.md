@@ -647,6 +647,9 @@ Branch:
 feature/docx-structure-audit-0.5.17
 
 PR:
+#11 draft — Adiciona auditoria estrutural de DOCX na 0.5.17
+
+PR:
 #10 draft — Adiciona planejamento seguro da ingestão incremental 0.5.16
 
 PR:
