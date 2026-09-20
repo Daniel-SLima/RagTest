@@ -470,3 +470,71 @@ A auditoria local encontrou 3 DOCX e confirmou que nenhum possui conteúdo estru
 Conclusão: para o corpus atual, não há benefício observado em ampliar o loader para tabelas/cabeçalhos/rodapés. O corpus e a collection permanecem inalterados em 767 chunks/pontos.
 
 Resultado detalhado: `docs/docx-structure-audit-0.5.17.md`.
+
+
+## Fase 0.5.18 — semântica explícita dos rótulos de avaliação
+
+O dataset `2026-09-20-v1` permanece congelado. Seus casos usam `expected_sources`, um campo histórico que não distingue entre:
+
+- fontes alternativas aceitáveis; e
+- fontes que precisam aparecer conjuntamente para considerar a cobertura completa.
+
+A 0.5.18 não altera os resultados históricos. Ela adiciona o contrato para datasets futuros:
+
+    acceptable_sources  -> alternativas OR
+    required_sources    -> todas são deliberadamente exigidas
+
+Novo comando:
+
+    ragtest-audit-evaluation-labels
+
+Ele audita somente a estrutura dos rótulos e ajuda a evitar interpretações excessivas de SourceRecall/SourceNDCG no dataset legado.
+
+
+### Base da avaliação v2 na 0.5.18
+
+A auditoria local confirmou a hipótese metodológica:
+
+    Total cases             : 22
+    Legacy expected_sources : 22
+    Legacy multi-source     : 5
+    Explicit semantic cases : 0
+
+A segunda etapa da 0.5.18 permite que o avaliador processe arquivos JSON externos com rótulos explícitos:
+
+    acceptable_sources -> OR
+    required_sources   -> AND
+
+E introduz:
+
+    PassRate@k
+    AcceptableHitRate@k
+    RequiredRecall@k
+    RequiredNDCG@k
+
+Self-check determinístico:
+
+    ragtest-check-evaluation-v2
+
+O template `docs/evaluation-v2-template.json` demonstra o formato, mas não é um novo holdout nem contém julgamentos reais.
+
+
+### Validação final da avaliação v2 — 0.5.18
+
+Self-check semântico:
+
+    All evaluation v2 semantics self-checks passed.
+
+Regressão v1 (`dense-rerank`):
+
+    HitRate@5: 1.000 (7/7)
+    MRR@5: 0.929
+    SourceRecall@5: 1.000
+    SourceNDCG@5: 0.936
+
+CI final:
+
+    ruff: All checks passed!
+    pytest: 72 passed, 4 warnings
+
+Assim, a infraestrutura v2 adiciona semântica explícita sem alterar a baseline histórica.

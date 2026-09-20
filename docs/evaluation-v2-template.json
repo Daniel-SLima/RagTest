@@ -1,0 +1,29 @@
+[
+  {
+    "id": "example-alternative-sources",
+    "query": "Pergunta de exemplo com mais de uma fonte aceitável",
+    "acceptable_sources": [
+      "categoria/fonte_a.pdf",
+      "categoria/fonte_b.pdf"
+    ]
+  },
+  {
+    "id": "example-required-coverage",
+    "query": "Pergunta de exemplo que exige cobertura de dois documentos",
+    "required_sources": [
+      "categoria/fonte_primaria.pdf",
+      "categoria/fonte_secundaria.pdf"
+    ]
+  },
+  {
+    "id": "example-combined",
+    "query": "Pergunta de exemplo com fonte alternativa e fonte obrigatória",
+    "acceptable_sources": [
+      "categoria/visao_geral_a.pdf",
+      "categoria/visao_geral_b.pdf"
+    ],
+    "required_sources": [
+      "categoria/fonte_obrigatoria.pdf"
+    ]
+  }
+]

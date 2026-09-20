@@ -3,6 +3,7 @@ from app.evaluation import (
     EVALUATION_DATASET_VERSION,
     HOLDOUT_RETRIEVAL_CASES,
     select_retrieval_cases,
+    source_label_summary,
 )
 
 
@@ -28,3 +29,13 @@ def test_every_case_has_id_query_and_expected_sources() -> None:
 
 def test_dataset_version_is_frozen_identifier() -> None:
     assert EVALUATION_DATASET_VERSION == "2026-09-20-v1"
+
+
+
+def test_frozen_v1_label_audit_is_stable() -> None:
+    summary = source_label_summary(select_retrieval_cases("all"))
+
+    assert summary["total_cases"] == 22
+    assert summary["legacy_cases"] == 22
+    assert summary["legacy_multi_source_cases"] == 5
+    assert summary["explicit_cases"] == 0
