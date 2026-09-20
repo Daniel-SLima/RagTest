@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -7,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.7"
+    app_version: str = "0.5.8"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -35,15 +36,10 @@ class Settings(BaseSettings):
     sparse_embedding_provider: str = "fastembed_bm25"
     sparse_embedding_model: str = "Qdrant/bm25"
     sparse_embedding_language: str = "portuguese"
-    hybrid_dense_weight: float = 1.0
-    hybrid_sparse_weight: float = 1.0
 
-    retrieval_candidate_multiplier: int = 8
-    retrieval_score_margin: float = 0.0
+    retrieval_mode: Literal["dense", "dense-rerank", "hybrid"] = "dense-rerank"
     retrieval_merge_same_page: bool = True
     retrieval_max_group_chars: int = 5000
-    retrieval_source_lexical_weight: float = 0.25
-    retrieval_content_lexical_weight: float = 0.05
 
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None

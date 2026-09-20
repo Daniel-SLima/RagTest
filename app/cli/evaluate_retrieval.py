@@ -6,11 +6,11 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.evaluation import DEFAULT_RETRIEVAL_CASES
-from app.evaluation.retrieval_profiles import RetrievalProfile, selected_profiles
 from app.rag.embeddings.factory import (
     create_embedding_provider,
     create_sparse_embedding_provider,
 )
+from app.rag.retrieval_profiles import RetrievalProfile, selected_profiles
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
@@ -77,8 +77,8 @@ async def _evaluate_profile(
             max_group_chars=settings.retrieval_max_group_chars,
             source_lexical_weight=profile.source_lexical_weight,
             content_lexical_weight=profile.content_lexical_weight,
-            hybrid_dense_weight=settings.hybrid_dense_weight,
-            hybrid_sparse_weight=settings.hybrid_sparse_weight,
+            hybrid_dense_weight=profile.dense_weight,
+            hybrid_sparse_weight=profile.sparse_weight,
         )
 
         sources = [hit.source for hit in hits]
