@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.15`  
-**Trabalho em andamento:** `0.5.16` em `feature/incremental-ingestion-0.5.16`; planejador somente leitura de sincronização da ingestão implementado e aguardando validação na collection de 767 pontos.
+**Trabalho em andamento:** `0.5.16` em `feature/incremental-ingestion-0.5.16`; plano somente leitura validado em 18/18 fontes e 767/767 pontos. Aplicação controlada da sincronização implementada e aguardando validação.
 
 ---
 
@@ -667,10 +667,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a 0.5.15 foi mesclada. A primeira etapa da 0.5.16 adiciona um plano somente leitura de sincronização da ingestão. Ele compara IDs determinísticos dos chunks atuais com os pontos existentes no Qdrant e detecta missing/stale/orphan sem alterar a collection.
+o plano somente leitura da 0.5.16 foi validado na collection real: 18 arquivos carregados, 767 chunks, 767 pontos, zero missing/stale/orphan e `In sync=yes`. A CI da primeira etapa também passou com 56 testes.
+
+A segunda etapa implementa `ragtest-sync-ingestion --apply` com proteções: aborta em corpus vazio ou erros de carregamento, faz upsert antes de delete e verifica o estado final. Também foi adicionado `ragtest-check-ingestion-sync`.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, rebuildar 0.5.16, validar `/health` e executar `ragtest-plan-ingestion-sync`. Na collection atual, a expectativa é 767 chunks, 767 pontos e zero missing/stale/orphan. Não executar `ragtest-ingest --recreate`.
+atualizar/rebuildar a branch, rodar `ragtest-check-ingestion-sync` e depois `ragtest-sync-ingestion --apply` sobre a collection já sincronizada. O esperado é no-op explícito, mantendo 767 pontos. Não usar `--recreate`.
 ```
 
 
