@@ -647,6 +647,9 @@ Branch:
 feature/runtime-reproducibility-0.5.15
 
 PR:
+#9 draft — Adiciona fingerprint de runtime na 0.5.15
+
+PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
 
 Dataset:
