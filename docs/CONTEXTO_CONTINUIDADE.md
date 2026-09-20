@@ -390,7 +390,7 @@ Branch ativa:
 
 `feature/automatic-decomposition-0.5.13`
 
-Status: **implementado e aguardando validação local**.
+Status: **implementado, PR #7 aberto como draft e aguardando validação local**.
 
 ### Histórico — fase 0.5.12 — experimento controlado de multi-query
 
@@ -625,6 +625,9 @@ Em andamento:
 
 Branch:
 feature/automatic-decomposition-0.5.13
+
+PR:
+#7 draft — Integra decomposição automática no chat 0.5.13
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
