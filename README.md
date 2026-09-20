@@ -379,3 +379,16 @@ Proteções:
 - insere/reindexa os novos chunks antes de remover os antigos;
 - verifica novamente a collection após aplicar;
 - se já estiver sincronizado, `--apply` faz no-op e não altera pontos.
+
+
+### Etapa 3 — self-check de escrita/exclusão em collection isolada
+
+A validação da collection principal confirmou que `--apply` faz no-op quando não há diferenças e preserva 767/767 pontos.
+
+Para testar o caminho destrutivo sem tocar na collection real, a 0.5.16 adiciona:
+
+    ragtest-check-ingestion-sync-qdrant
+
+O comando cria uma collection temporária exclusiva, simula um documento alterado, um adicionado e um removido, executa upsert + delete por ID, valida que o estado final fica sincronizado e apaga a collection temporária ao final.
+
+A collection `ragtest_documents` não é modificada por esse self-check.

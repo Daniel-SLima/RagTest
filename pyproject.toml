@@ -47,6 +47,7 @@ ragtest-runtime-info = "app.cli.runtime_info:main"
 ragtest-plan-ingestion-sync = "app.cli.plan_ingestion_sync:main"
 ragtest-sync-ingestion = "app.cli.sync_ingestion:main"
 ragtest-check-ingestion-sync = "app.cli.check_ingestion_sync:main"
+ragtest-check-ingestion-sync-qdrant = "app.cli.check_ingestion_sync_qdrant:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
