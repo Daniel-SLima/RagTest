@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.main import app
 
 
@@ -13,7 +14,7 @@ def test_health_returns_api_status() -> None:
     body = response.json()
     assert body["status"] == "ok"
     assert body["service"] == "RagTest API"
-    assert body["version"] == "0.1.0"
+    assert body["version"] == get_settings().app_version
 
 
 def test_ready_returns_200_when_qdrant_is_available() -> None:

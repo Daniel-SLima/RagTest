@@ -243,3 +243,13 @@ Mudanças:
 - evita CI para mudanças exclusivamente em documentação.
 
 Não exige reindexação.
+
+
+### Primeiro resultado da CI 0.5.14
+
+O novo job de lint passou. O job de testes executou independentemente e revelou uma expectativa obsoleta no teste de health:
+
+    50 passed
+    1 failed
+
+A única falha esperava a versão `0.1.0` em vez da versão configurada atual. O teste foi corrigido para comparar com `get_settings().app_version`. Dificuldade TCC #14 registrada; rerun pendente.

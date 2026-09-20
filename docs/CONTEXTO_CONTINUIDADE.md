@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.13`  
-**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; correção do gate de CI implementada e aguardando validação automática.
+**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; lint validado no GitHub Actions. Pytest executou pela primeira vez nesta sequência (50 passed / 1 failed) e revelou a Dificuldade TCC #14; correção implementada e aguardando rerun.
 
 ---
 
@@ -359,7 +359,8 @@ Casos atuais:
 10. `pyproject.toml` inválido bloqueou o build Docker da 0.5.11;
 11. consulta composta recuperou direitos, mas não detalhou deveres;
 12. RRF reforçou a intenção dominante quando a pergunta original foi fundida com as subconsultas;
-13. CI bloqueava o pytest por falhas de lint.
+13. CI bloqueava o pytest por falhas de lint;
+14. teste de health tinha versão inicial hardcoded.
 
 **Regra:** quando algo planejado não funcionar como esperado, criar uma nova “Dificuldade TCC #N” com:
 
@@ -660,10 +661,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-após o merge da 0.5.13, o GitHub Actions falhou no lint com 8 violações e pulou o pytest. Isso foi registrado como Dificuldade TCC #13. A 0.5.14 corrige as violações, fixa o contrato do Ruff e separa lint/test em jobs independentes.
+o primeiro workflow da 0.5.14 confirmou que o lint agora passa. O job de testes também executou independentemente e encontrou 1 falha real de manutenção: `test_health_returns_api_status` esperava a versão antiga `0.1.0`; o restante da suíte teve 50 testes aprovados. Isso foi registrado como Dificuldade TCC #14.
+
+Correção implementada: o teste de health agora compara o retorno com `get_settings().app_version`.
 
 Próxima ação ao receber "continuar":
-verificar o workflow do PR da 0.5.14. Se lint passar, analisar o resultado real do pytest e corrigir qualquer falha funcional encontrada antes do merge. Não reindexar Qdrant.
+verificar o rerun automático do PR #8. A meta é `lint=success` e `test=success`. Se ambos passarem, validar localmente apenas o build/health 0.5.14 e então aguardar autorização de merge. Não reindexar Qdrant.
 ```
 
 

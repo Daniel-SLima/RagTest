@@ -158,6 +158,18 @@ Correção: corrigir as 8 violações atuais; documentar com `noqa: BLE001` apen
 
 Aprendizado técnico: um gate de qualidade deve tornar lint e testes independentes e reproduzíveis; caso contrário, uma falha de estilo pode ocultar regressões funcionais e upgrades silenciosos de ferramentas podem alterar o comportamento da CI.
 
+## 14. Teste de health tinha versão inicial hardcoded
+
+Planejado: após liberar o pytest na CI, executar toda a suíte e usar o resultado como gate funcional da 0.5.14.
+
+Observado: o job de lint passou, e o pytest finalmente executou: 50 testes passaram e 1 falhou. A falha foi `tests/test_health.py::test_health_returns_api_status`, que ainda esperava `"0.1.0"` enquanto a aplicação retornava corretamente `"0.5.14"`.
+
+Diagnóstico: o teste de health carregava uma versão fixa da fase inicial do projeto. Como a suíte vinha sendo bloqueada anteriormente pelo lint, essa expectativa obsoleta permaneceu sem ser detectada.
+
+Correção: fazer o teste comparar a versão retornada com `get_settings().app_version`, validando que o endpoint reflete a configuração corrente sem exigir edição manual do teste a cada release.
+
+Aprendizado técnico: testes de contratos que incluem metadados evolutivos devem validar a fonte de configuração correspondente, e não duplicar valores que mudam a cada versão.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
