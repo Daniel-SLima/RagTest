@@ -115,3 +115,15 @@ Self-check determinístico:
     ragtest-check-grounding
 
 Não exige `ragtest-ingest --recreate`.
+
+
+### Validação parcial da 0.5.11
+
+Verificado localmente:
+
+    docker build: sucesso
+    /health: version 0.5.11
+    /ready: qdrant ok
+    ragtest-check-grounding: todos os checks passaram
+
+Ainda falta validar o fluxo real do endpoint `/v1/chat` antes de considerar a fase pronta para merge.

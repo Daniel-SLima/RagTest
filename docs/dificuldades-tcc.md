@@ -118,7 +118,7 @@ Observado: o build falhou em `RUN pip install --no-cache-dir .` com `TOMLDecodeE
 
 Diagnóstico: o `pyproject.toml` continha os dois scripts na mesma linha com os caracteres literais `\n` entre eles, em vez de uma quebra de linha TOML real.
 
-Correção: separar `ragtest-evaluate-retrieval` e `ragtest-check-grounding` em duas linhas válidas dentro de `[project.scripts]`.
+Correção: separar `ragtest-evaluate-retrieval` e `ragtest-check-grounding` em duas linhas válidas dentro de `[project.scripts]`. A correção foi validada em runtime: o build Docker concluiu, a API 0.5.11 subiu e o self-check de groundedness passou.
 
 Aprendizado técnico: alterações automatizadas em arquivos declarativos devem preservar a sintaxe do formato e ser validadas antes de considerar a imagem pronta para build.
 
