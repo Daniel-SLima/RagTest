@@ -355,7 +355,8 @@ Casos atuais:
 6. retrieval híbrido inicial piorou métricas;
 7. BM25 enriquecido não resolveu a fonte problemática;
 8. fonte esperada tinha zero texto e zero chunks;
-9. retrieval híbrido não superou dense-rerank no mesmo corpus.
+9. retrieval híbrido não superou dense-rerank no mesmo corpus;
+10. `pyproject.toml` inválido bloqueou o build Docker da 0.5.11.
 
 **Regra:** quando algo planejado não funcionar como esperado, criar uma nova “Dificuldade TCC #N” com:
 
@@ -387,7 +388,7 @@ Branch ativa:
 
 `feature/grounded-citations-0.5.11`
 
-Status: **implementado, PR #5 aberto como draft e aguardando validação local**.
+Status: **correção implementada após falha de build; PR #5 permanece draft e aguarda nova validação local**.
 
 ### Histórico — fase 0.5.10 — métricas source-level
 
@@ -597,10 +598,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.11 implementada, aguardando validação. O retrieval e os 767 chunks não mudaram. O chat agora possui validação de citações, retry único e fallback seguro; o prompt não envia score de retrieval e marca documentos como dados não confiáveis.
+o primeiro build da 0.5.11 falhou antes de subir a API porque o `pyproject.toml` tinha um `\n` literal entre dois scripts. A correção foi aplicada na branch e registrada como Dificuldade TCC #10. Ainda aguarda nova execução local.
 
 Próxima ação ao receber "continuar":
-validar `/health` 0.5.11, executar `ragtest-check-grounding` e testar `/v1/chat` com uma fonte oficial não CHATSCM. Não reindexar Qdrant.
+atualizar a branch local, reconstruir Docker, validar `/health` 0.5.11, executar `ragtest-check-grounding` e só depois testar `/v1/chat`. Não reindexar Qdrant.
 ```
 
 
