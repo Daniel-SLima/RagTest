@@ -2,6 +2,7 @@ import pytest
 
 from app.evaluation.metrics import (
     evaluate_case_sources,
+    evaluate_explicit_case_sources,
     first_expected_rank,
     source_ndcg_at_k,
     source_recall_at_k,
@@ -50,3 +51,50 @@ def test_case_metrics_keep_legacy_and_source_metrics_together() -> None:
     assert metrics.source_recall == 1.0
     assert metrics.source_ndcg == pytest.approx(1 / 1.5849625007)
     assert metrics.unique_sources == 2
+
+
+
+def test_explicit_acceptable_sources_use_or_semantics() -> None:
+    metrics = evaluate_explicit_case_sources(
+        ["b.pdf"],
+        ["a.pdf", "b.pdf"],
+        [],
+        5,
+    )
+
+    assert metrics.passed is True
+    assert metrics.acceptable_hit is True
+    assert metrics.required_recall is None
+
+
+def test_explicit_required_sources_use_and_coverage_semantics() -> None:
+    partial = evaluate_explicit_case_sources(
+        ["a.pdf"],
+        [],
+        ["a.pdf", "b.pdf"],
+        5,
+    )
+    complete = evaluate_explicit_case_sources(
+        ["a.pdf", "b.pdf"],
+        [],
+        ["a.pdf", "b.pdf"],
+        5,
+    )
+
+    assert partial.passed is False
+    assert partial.required_recall == 0.5
+    assert complete.passed is True
+    assert complete.required_recall == 1.0
+
+
+def test_explicit_combined_case_requires_both_conditions() -> None:
+    missing_required = evaluate_explicit_case_sources(
+        ["overview.pdf"],
+        ["overview.pdf"],
+        ["primary.pdf"],
+        5,
+    )
+
+    assert missing_required.acceptable_hit is True
+    assert missing_required.required_recall == 0.0
+    assert missing_required.passed is False

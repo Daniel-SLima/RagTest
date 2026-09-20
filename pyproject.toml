@@ -50,6 +50,7 @@ ragtest-check-ingestion-sync = "app.cli.check_ingestion_sync:main"
 ragtest-check-ingestion-sync-qdrant = "app.cli.check_ingestion_sync_qdrant:main"
 ragtest-audit-docx-structure = "app.cli.audit_docx_structure:main"
 ragtest-audit-evaluation-labels = "app.cli.audit_evaluation_labels:main"
+ragtest-check-evaluation-v2 = "app.cli.check_evaluation_v2:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

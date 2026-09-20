@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.17`  
-**Trabalho em andamento:** `0.5.18` em `feature/evaluation-label-semantics-0.5.18`; contrato explícito de rótulos de avaliação implementado, preservando integralmente o dataset/holdout v1. Aguardando CI e auditoria local.
+**Trabalho em andamento:** `0.5.18` em `feature/evaluation-label-semantics-0.5.18`; auditoria do v1 validada (22 legados, 5 multi-source) e CI da primeira etapa verde com 67 testes. Base do avaliador v2 implementada com semântica OR/AND e aguardando nova CI + self-check local.
 
 ---
 
@@ -673,10 +673,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a 0.5.17 foi mesclada. A 0.5.18 começa a corrigir uma limitação metodológica já conhecida sem tocar nos resultados históricos: `expected_sources` do dataset v1 é ambíguo quando há múltiplas fontes, pois não informa se são alternativas aceitáveis ou se todas são obrigatórias. Foi criado um contrato novo para datasets futuros com `acceptable_sources` (OR) e `required_sources` (AND), mantendo `expected_sources` como legado congelado.
+a auditoria local da 0.5.18 confirmou o dataset v1: 22 casos usam `expected_sources`, 5 deles têm múltiplas fontes e nenhum usa semântica explícita. A CI da primeira etapa passou com Ruff verde e `67 passed, 4 warnings`.
+
+A segunda etapa implementa suporte real do avaliador ao esquema explícito: `acceptable_sources` usa semântica OR; `required_sources` usa cobertura AND. O evaluator mantém o caminho histórico intacto para v1, recusa misturar esquemas na mesma execução e adiciona métricas específicas para o contrato v2. Também foi adicionado `ragtest-check-evaluation-v2` e um template de esquema que não é um holdout real.
 
 Próxima ação ao receber "continuar":
-atualizar/rebuildar a branch 0.5.18, validar `/health` e executar `ragtest-audit-evaluation-labels`. Não reindexar Qdrant e não alterar o holdout v1.
+atualizar/rebuildar a branch e executar `ragtest-check-evaluation-v2`. Depois executar uma regressão curta do evaluator v1 (`--suite dev --mode dense-rerank`) para provar que o caminho histórico continua funcionando. Não reindexar Qdrant.
 ```
 
 

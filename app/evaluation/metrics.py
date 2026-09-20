@@ -81,3 +81,59 @@ def evaluate_case_sources(
         source_ndcg=source_ndcg_at_k(sources, expected_sources, k),
         unique_sources=len(set(sources[:k])),
     )
+
+
+
+@dataclass(frozen=True, slots=True)
+class ExplicitCaseMetrics:
+    passed: bool
+    reciprocal_rank: float
+    acceptable_hit: bool | None
+    required_recall: float | None
+    required_ndcg: float | None
+    unique_sources: int
+
+
+def evaluate_explicit_case_sources(
+    sources: list[str],
+    acceptable_sources: list[str],
+    required_sources: list[str],
+    k: int,
+) -> ExplicitCaseMetrics:
+    if not acceptable_sources and not required_sources:
+        raise ValueError(
+            "Explicit evaluation requires acceptable_sources or required_sources."
+        )
+
+    relevant_sources = list(
+        dict.fromkeys([*acceptable_sources, *required_sources])
+    )
+    rank = first_expected_rank(sources[:k], relevant_sources)
+
+    acceptable_hit: bool | None = None
+    if acceptable_sources:
+        acceptable_hit = (
+            first_expected_rank(sources[:k], acceptable_sources) is not None
+        )
+
+    required_recall: float | None = None
+    required_ndcg: float | None = None
+    if required_sources:
+        required_recall = source_recall_at_k(sources, required_sources, k)
+        required_ndcg = source_ndcg_at_k(sources, required_sources, k)
+
+    acceptable_ok = acceptable_hit if acceptable_hit is not None else True
+    required_ok = (
+        required_recall == 1.0
+        if required_recall is not None
+        else True
+    )
+
+    return ExplicitCaseMetrics(
+        passed=acceptable_ok and required_ok,
+        reciprocal_rank=(1.0 / rank) if rank is not None else 0.0,
+        acceptable_hit=acceptable_hit,
+        required_recall=required_recall,
+        required_ndcg=required_ndcg,
+        unique_sources=len(set(sources[:k])),
+    )

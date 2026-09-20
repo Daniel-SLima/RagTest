@@ -91,3 +91,15 @@ def source_label_summary(cases: list[dict[str, Any]]) -> dict[str, int]:
         "explicit_with_acceptable": explicit_with_acceptable,
         "explicit_with_required": explicit_with_required,
     }
+
+
+
+def evaluation_label_mode(cases: list[dict[str, Any]]) -> LabelMode:
+    modes = {parse_source_judgments(case).mode for case in cases}
+    if not modes:
+        raise ValueError("Evaluation dataset cannot be empty")
+    if len(modes) != 1:
+        raise ValueError(
+            "A single evaluation run cannot mix legacy and explicit source labels."
+        )
+    return next(iter(modes))

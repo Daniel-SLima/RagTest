@@ -489,3 +489,31 @@ Novo comando:
     ragtest-audit-evaluation-labels
 
 Ele audita somente a estrutura dos rótulos e ajuda a evitar interpretações excessivas de SourceRecall/SourceNDCG no dataset legado.
+
+
+### Base da avaliação v2 na 0.5.18
+
+A auditoria local confirmou a hipótese metodológica:
+
+    Total cases             : 22
+    Legacy expected_sources : 22
+    Legacy multi-source     : 5
+    Explicit semantic cases : 0
+
+A segunda etapa da 0.5.18 permite que o avaliador processe arquivos JSON externos com rótulos explícitos:
+
+    acceptable_sources -> OR
+    required_sources   -> AND
+
+E introduz:
+
+    PassRate@k
+    AcceptableHitRate@k
+    RequiredRecall@k
+    RequiredNDCG@k
+
+Self-check determinístico:
+
+    ragtest-check-evaluation-v2
+
+O template `docs/evaluation-v2-template.json` demonstra o formato, mas não é um novo holdout nem contém julgamentos reais.

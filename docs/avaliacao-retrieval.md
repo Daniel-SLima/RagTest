@@ -211,3 +211,29 @@ A nova métrica revelou algo que HitRate não mostrava: no holdout, o modo hybri
 O perfil `dense-rerank` manteve o maior SourceNDCG tanto no holdout quanto na suite dev, reforçando a decisão de mantê-lo como padrão.
 
 Os testes unitários adicionados para as funções de métricas ainda não foram executados em CI/container de desenvolvimento; a validação atual é de runtime pelo avaliador.
+
+
+## 0.5.18 — semântica explícita dos rótulos
+
+A auditoria do dataset congelado `2026-09-20-v1` confirmou:
+
+- 22 casos legados;
+- 5 casos com múltiplas `expected_sources`;
+- 0 casos com semântica explícita.
+
+Isso preserva a interpretação histórica: os resultados de `HitRate`, `MRR`, `SourceRecall` e `SourceNDCG` continuam válidos como métricas calculadas pelo contrato antigo, mas as cinco listas multi-source não devem ser descritas como julgamentos manuais completos de relevância.
+
+Para datasets novos, o contrato passa a ser:
+
+    acceptable_sources -> alternativas OR
+    required_sources   -> cobertura AND
+
+Métricas explícitas:
+
+- `PassRate@k`: caso satisfaz todas as condições declaradas;
+- `MRR@k`: posição da primeira fonte relevante declarada;
+- `AcceptableHitRate@k`: pelo menos uma alternativa aceitável recuperada;
+- `RequiredRecall@k`: fração das fontes obrigatórias recuperadas;
+- `RequiredNDCG@k`: ordenação das fontes obrigatórias recuperadas.
+
+O arquivo `docs/evaluation-v2-template.json` é apenas um template de esquema, não um dataset rotulado nem um holdout.

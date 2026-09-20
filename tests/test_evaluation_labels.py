@@ -1,6 +1,10 @@
 import pytest
 
-from app.evaluation.labels import parse_source_judgments, source_label_summary
+from app.evaluation.labels import (
+    evaluation_label_mode,
+    parse_source_judgments,
+    source_label_summary,
+)
 
 
 def test_legacy_expected_sources_remain_explicitly_ambiguous() -> None:
@@ -68,3 +72,26 @@ def test_source_label_summary_counts_legacy_multi_source_cases() -> None:
         "explicit_with_acceptable": 1,
         "explicit_with_required": 1,
     }
+
+
+
+def test_evaluation_label_mode_accepts_uniform_explicit_dataset() -> None:
+    assert (
+        evaluation_label_mode(
+            [
+                {"acceptable_sources": ["a.pdf"]},
+                {"required_sources": ["b.pdf"]},
+            ]
+        )
+        == "explicit"
+    )
+
+
+def test_evaluation_label_mode_rejects_mixed_dataset() -> None:
+    with pytest.raises(ValueError, match="cannot mix legacy and explicit"):
+        evaluation_label_mode(
+            [
+                {"expected_sources": ["legacy.pdf"]},
+                {"acceptable_sources": ["explicit.pdf"]},
+            ]
+        )
