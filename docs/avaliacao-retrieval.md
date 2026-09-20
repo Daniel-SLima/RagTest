@@ -70,3 +70,18 @@ No conjunto atual de sete consultas, `dense-rerank` obteve o maior MRR@5. Exempl
 - implante contraceptivo: fonte esperada ficou em rank 2 no dense-rerank e rank 4 no hybrid.
 
 Conclusão experimental: `dense-rerank` é a estratégia com melhor resultado medido neste benchmark controlado. Isso ainda não deve ser generalizado como superioridade definitiva, pois o conjunto de avaliação possui apenas sete consultas e os julgamentos de relevância ainda são majoritariamente por fonte esperada.
+
+
+## 0.5.8 — consolidação do perfil padrão
+
+A 0.5.8 não cria uma nova hipótese de ranking. Ela transforma o perfil `dense-rerank`, que obteve o maior MRR@5 no benchmark 0.5.7, em candidato padrão do runtime.
+
+Mudanças:
+
+- `RETRIEVAL_MODE=dense-rerank` como padrão;
+- parâmetros de cada perfil ficam versionados em código;
+- busca e chat usam o perfil selecionado;
+- `dense` e `hybrid` permanecem disponíveis para benchmark/diagnóstico;
+- collection permanece com dense + sparse, portanto não há reindexação.
+
+Status: implementado e aguardando validação local. A validação deve reproduzir o benchmark e confirmar que a busca padrão corresponde ao perfil `dense-rerank`.

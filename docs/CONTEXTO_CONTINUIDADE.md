@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado testado no main:** `0.5.6`  
-**Trabalho em andamento:** `0.5.7` validada em branch separada; benchmark concluído e PR #1 continua em draft, aguardando decisão de merge/consolidação.
+**Estado validado e mesclado no main:** `0.5.7`  
+**Trabalho em andamento:** `0.5.8` em `feature/default-dense-rerank-0.5.8`, implementada e aguardando validação local.
 
 ---
 
@@ -198,7 +198,7 @@ A `GEMINI_API_KEY` deve existir apenas no `.env` local.
 
 ## 7. Estado do .env local
 
-Configuração recomendada/atual:
+Configuração recomendada a partir da 0.5.8:
 
 ```env
 PDF_OCR_ENABLED=true
@@ -210,20 +210,16 @@ SPARSE_EMBEDDING_PROVIDER=fastembed_bm25
 SPARSE_EMBEDDING_MODEL=Qdrant/bm25
 SPARSE_EMBEDDING_LANGUAGE=portuguese
 
-HYBRID_DENSE_WEIGHT=1.0
-HYBRID_SPARSE_WEIGHT=1.0
-
-RETRIEVAL_CANDIDATE_MULTIPLIER=8
-RETRIEVAL_SCORE_MARGIN=0.0
+RETRIEVAL_MODE=dense-rerank
 RETRIEVAL_MERGE_SAME_PAGE=true
 RETRIEVAL_MAX_GROUP_CHARS=5000
-RETRIEVAL_SOURCE_LEXICAL_WEIGHT=0.25
-RETRIEVAL_CONTENT_LEXICAL_WEIGHT=0.05
 
 LLM_PROVIDER=gemini
 GEMINI_MODEL=gemini-3.6-flash
 LLM_TEMPERATURE=0.1
 ```
+
+A 0.5.8 passa a usar perfis versionados para `dense`, `dense-rerank` e `hybrid`. As antigas variáveis de tuning de candidate multiplier, score margin, pesos lexicais e pesos híbridos podem continuar no `.env` local por compatibilidade, mas são ignoradas pelo runtime novo.
 
 No ambiente local do usuário, `LLM_MAX_OUTPUT_TOKENS` foi mantido em **4096** após um caso real de truncamento da resposta.
 
@@ -373,106 +369,74 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.7 — benchmark comparativo justo
+### Fase 0.5.8 — consolidar dense-rerank como candidato padrão
 
-Objetivo:
+O PR #1 da 0.5.7 foi autorizado pelo usuário e mesclado no `main`.
 
-Comparar estratégias de retrieval usando **exatamente o mesmo corpus corrigido de 767 chunks**, para separar:
+Objetivo atual:
 
-- efeito da correção de ingestão/OCR;
-- efeito da estratégia de retrieval.
+- usar `dense-rerank` como modo padrão de busca e chat;
+- garantir que o runtime use exatamente o perfil validado no benchmark;
+- manter `dense` e `hybrid` disponíveis para benchmark e diagnóstico;
+- evitar que um `.env` antigo altere silenciosamente os parâmetros do perfil validado.
 
 ### Branch ativa
 
-`feature/retrieval-benchmark-0.5.7`
+`feature/default-dense-rerank-0.5.8`
 
-### Commit atual da branch
+### Implementação atual
 
-`cc0f9d865b72f8c77d6185c54e3e9cbe0d5497c9`
+- `RETRIEVAL_MODE=dense-rerank` por padrão;
+- perfis de retrieval movidos para `app/rag/retrieval_profiles.py`;
+- API de busca e chat usam o perfil selecionado;
+- CLI de busca e chat aceitam `--mode` para diagnóstico;
+- benchmark continua comparando os três perfis;
+- parâmetros do perfil são versionados no código;
+- não exige reindexação da collection de 767 chunks.
 
-### Pull Request
-
-**PR #1 — Draft**
-
-`Benchmark comparativo de retrieval no corpus corrigido`
-
-Ainda **não fazer merge** antes da validação.
-
-### Perfis implementados na 0.5.7
-
-- `dense`
-- `dense-rerank`
-- `hybrid`
-
-O comando:
-
-```cmd
-docker compose run --rm api ragtest-evaluate-retrieval
-```
-
-passa a executar os três perfis no mesmo corpus e imprimir um resumo comparativo.
-
-Também podem ser executados isoladamente:
-
-```cmd
-docker compose run --rm api ragtest-evaluate-retrieval --mode dense
-docker compose run --rm api ragtest-evaluate-retrieval --mode dense-rerank
-docker compose run --rm api ragtest-evaluate-retrieval --mode hybrid
-```
+Status: **implementado, aguardando validação local**.
 
 ---
 
 ## 12. Ponto exato onde o trabalho foi pausado
 
-A 0.5.7 foi executada e validada localmente sobre a collection de **767 chunks**.
+O PR #1 da 0.5.7 foi mesclado no `main`.
 
-Resultado:
+A 0.5.8 foi implementada na branch `feature/default-dense-rerank-0.5.8`, mas ainda **não foi validada no ambiente local do usuário**.
 
-- dense: HitRate@5=1.000, MRR@5=0.857;
-- dense-rerank: HitRate@5=1.000, MRR@5=0.929;
-- hybrid: HitRate@5=1.000, MRR@5=0.821.
+Próxima validação deve confirmar:
 
-A branch `feature/retrieval-benchmark-0.5.7` continua aberta no PR #1 como draft e **não foi mesclada**.
+1. `/health` mostra versão 0.5.8;
+2. `/ready` continua ready;
+3. `ragtest-search` sem `--mode` informa `Mode: dense-rerank`;
+4. a consulta de vacinação na gestação mantém a fonte esperada em rank 1;
+5. o benchmark completo continua reproduzindo aproximadamente a baseline 0.5.7.
 
-Ponto de decisão atual: consolidar `dense-rerank` como candidato a padrão da próxima versão, sem apagar os perfis de benchmark. Antes disso, o merge do PR #1 requer autorização explícita do usuário.
-
-Não recriar a collection: os 767 chunks atuais já possuem dense + sparse.
+Não recriar a collection: os 767 chunks atuais já são compatíveis.
 
 ---
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — concluir o PR #1
+### Passo 1 — validar a 0.5.8
 
-O benchmark já foi validado. Aguardar autorização explícita do usuário para fazer merge do PR #1 no `main`.
+Executar a branch `feature/default-dense-rerank-0.5.8`, conferir health/ready e verificar que a busca padrão usa `dense-rerank`.
 
-### Passo 2 — iniciar a consolidação 0.5.8
+### Passo 2 — repetir benchmark de regressão
 
-Após o merge, criar uma nova feature branch para tornar `dense-rerank` o candidato de estratégia padrão da aplicação, mantendo os perfis de benchmark para regressão.
+Executar os três modos novamente para garantir que a consolidação do runtime não alterou o benchmark validado da 0.5.7.
 
-### Passo 3 — ampliar a avaliação
+### Passo 3 — mesclar a 0.5.8 após validação
 
-Expandir o conjunto além das sete consultas atuais, incluindo casos difíceis/ambíguos e confusões entre públicos e documentos. Não ajustar parâmetros usando somente os mesmos sete casos e depois tratar o resultado como avaliação independente.
+Se os resultados forem consistentes, atualizar documentação e fazer merge do PR somente após autorização/validação do usuário.
 
-### Passo 4 — reforçar groundedness e segurança
+### Passo 4 — ampliar a avaliação e groundedness
 
-- validar programaticamente citações `[n]`;
-- impedir citações inexistentes;
-- remover score interno do contexto enviado ao LLM;
-- adicionar defesa contra prompt injection em documentos recuperados;
-- mapear melhor erros do provider Gemini;
-- revisar privacidade dos CHATSCM antes de uso externo.
+Expandir o conjunto além de sete consultas e, em seguida, validar citações, defesa contra prompt injection, ausência de scores internos no prompt e comportamento de contexto insuficiente.
 
-### Passo 5 — preparar camada de produto
+### Passo 5 — preparar a camada de produto
 
-Com o RAG estabilizado:
-
-- logs/auditoria estruturada;
-- sessões e histórico;
-- streaming;
-- integração REST/WebSocket;
-- integração final com o aplicativo Se Cuida Mulher;
-- interface de chat, rich text, links e gatilhos de serviços/lembretes.
+Adicionar logs/auditoria estruturada, sessões, histórico, streaming e integração posterior com o aplicativo Se Cuida Mulher.
 
 ---
 
@@ -540,7 +504,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main testado: 0.5.6
+Main validado/mesclado: 0.5.7
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -550,13 +514,13 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.7 benchmark comparativo
+0.5.8 consolidação dense-rerank
 
 Branch:
-feature/retrieval-benchmark-0.5.7
+feature/default-dense-rerank-0.5.8
 
 PR:
-#1 draft
+será aberto como draft após documentação da implementação
 
 0.5.7 validada:
 dense         HitRate@5=1.000 / MRR@5=0.857
@@ -564,10 +528,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-PR #1 draft, benchmark concluído, aguardando autorização de merge.
+0.5.8 implementada, aguardando validação local.
 
 Próxima ação ao receber "continuar":
-confirmar estado do PR #1 e, se o usuário autorizar, fazer merge e iniciar consolidação 0.5.8 com dense-rerank como candidato padrão.
+validar health/ready, busca padrão em dense-rerank e benchmark de regressão; não reindexar Qdrant.
 ```
 
 
