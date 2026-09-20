@@ -538,3 +538,23 @@ CI final:
     pytest: 72 passed, 4 warnings
 
 Assim, a infraestrutura v2 adiciona semântica explícita sem alterar a baseline histórica.
+
+
+## Fase 0.5.19 — cobertura estrutural de citações
+
+A validação anterior de grounding confirmava se a resposta possuía pelo menos uma citação válida e se os IDs estavam dentro das fontes retornadas. Isso não garante que todas as afirmações informativas estejam citadas.
+
+A 0.5.19 adiciona uma checagem determinística de cobertura por bloco informativo:
+
+    ragtest-check-grounding-coverage
+
+Ela mede:
+
+- quantidade de blocos informativos;
+- blocos com citação válida;
+- blocos sem citação;
+- proporção de cobertura.
+
+Importante: cobertura de citações não é sinônimo de entailment semântico. A checagem não afirma que o trecho citado sustenta de fato a frase; apenas mede se a estrutura de atribuição está completa.
+
+Nesta primeira etapa o endpoint `/v1/chat` não muda de comportamento e nenhum conteúdo é enviado a um juiz externo.

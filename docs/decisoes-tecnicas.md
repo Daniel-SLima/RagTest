@@ -168,3 +168,11 @@ Impacto:
 **Mudança:** a 0.5.18 introduz um contrato explícito para rótulos de fonte em datasets futuros: `acceptable_sources` representa alternativas OR (qualquer uma pode satisfazer o caso), enquanto `required_sources` só deve ser usado quando todas as fontes listadas forem deliberadamente exigidas para cobertura. O campo histórico `expected_sources` permanece suportado, mas é marcado como semântica legada ambígua.  
 **Motivo:** o dataset congelado 2026-09-20-v1 foi criado antes dessa distinção. Em casos com múltiplas `expected_sources`, as métricas SourceRecall/SourceNDCG tratam todas como conjuntamente relevantes, embora os rótulos não tenham sido produzidos como julgamentos completos de relevância.  
 **Impacto:** as métricas históricas e o holdout v1 permanecem intocados e reproduzíveis. A 0.5.18 não reinterpreta nem reescreve resultados antigos. Para datasets explícitos, o avaliador passa a usar `AcceptableHitRate` para alternativas OR e `RequiredRecall`/`RequiredNDCG` para fontes AND. Um caso explícito só passa quando satisfaz todas as condições declaradas. Runs não podem misturar esquema legado e explícito.
+
+
+## D018 — Medir cobertura de citações antes de introduzir um juiz semântico externo
+
+**Data:** 2026-09-20  
+**Mudança:** a 0.5.19 adiciona uma validação determinística de cobertura estrutural das citações por bloco informativo. Ela complementa a validação sintática já existente, que apenas verificava se havia ao menos uma citação válida e se os IDs estavam no intervalo disponível.  
+**Motivo:** uma resposta pode passar na validação sintática mesmo contendo várias afirmações sem citação. Ao mesmo tempo, usar imediatamente um LLM externo como juiz de entailment poderia reenviar trechos recuperados, inclusive de fontes CHATSCM ainda não revisadas manualmente quanto à privacidade.  
+**Impacto:** `ragtest-check-grounding-coverage` mede se cada bloco informativo contém ao menos uma citação válida, sem chamar LLM externo e sem alterar ainda o comportamento do endpoint. Essa métrica é estrutural e não prova que a fonte citada realmente sustenta semanticamente a afirmação. A etapa seguinte só poderá promover essa checagem para gate de runtime depois de validar o comportamento em respostas reais/sintéticas e tratar a política de privacidade para qualquer juiz semântico externo.
