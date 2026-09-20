@@ -1,4 +1,8 @@
-from app.rag.retrieval_quality import apply_relative_score_floor, group_hits_by_page, metadata_aware_rerank
+from app.rag.retrieval_quality import (
+    apply_relative_score_floor,
+    group_hits_by_page,
+    metadata_aware_rerank,
+)
 from app.rag.vector_store import SearchHit
 
 

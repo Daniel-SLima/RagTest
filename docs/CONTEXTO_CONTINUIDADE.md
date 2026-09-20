@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.12`  
-**Trabalho em andamento:** `0.5.13` em `feature/automatic-decomposition-0.5.13`; caminhos multi-query e single-query validados em runtime. PR #7 aguarda autorização explícita de merge.
+**Estado validado e mesclado no main:** `0.5.13`  
+**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; validação completa concluída: GitHub Actions com lint verde e 51 testes aprovados, `/health` local em 0.5.14 e `/ready` com Qdrant ok. PR #8 aguarda autorização explícita de merge.
 
 ---
 
@@ -358,7 +358,9 @@ Casos atuais:
 9. retrieval híbrido não superou dense-rerank no mesmo corpus;
 10. `pyproject.toml` inválido bloqueou o build Docker da 0.5.11;
 11. consulta composta recuperou direitos, mas não detalhou deveres;
-12. RRF reforçou a intenção dominante quando a pergunta original foi fundida com as subconsultas.
+12. RRF reforçou a intenção dominante quando a pergunta original foi fundida com as subconsultas;
+13. CI bloqueava o pytest por falhas de lint;
+14. teste de health tinha versão inicial hardcoded.
 
 **Regra:** quando algo planejado não funcionar como esperado, criar uma nova “Dificuldade TCC #N” com:
 
@@ -372,7 +374,25 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.13 — decomposição automática no chat
+### Fase 0.5.14 — CI e execução real da suíte
+
+A 0.5.13 foi validada e mesclada no `main`.
+
+Objetivo atual:
+
+- corrigir as 8 violações Ruff que bloqueiam a CI;
+- separar lint e pytest em jobs independentes;
+- tornar a versão/regras do Ruff reprodutíveis;
+- finalmente observar o resultado real da suíte pytest no GitHub Actions;
+- evitar workflows em mudanças exclusivamente documentais.
+
+Branch ativa:
+
+`feature/ci-quality-gate-0.5.14`
+
+Status: **validado em CI e runtime local. Lint verde, pytest 51 passed / 4 warnings, `/health`=0.5.14 e `/ready` com Qdrant ok. PR #8 aguarda autorização explícita de merge.**
+
+### Histórico — fase 0.5.13 — decomposição automática no chat
 
 A 0.5.12 foi validada e mesclada no `main`.
 
@@ -611,7 +631,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.12
+Main validado/mesclado: 0.5.13
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -621,13 +641,10 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.13 decomposição automática no chat
+0.5.14 CI e execução real da suíte
 
 Branch:
-feature/automatic-decomposition-0.5.13
-
-PR:
-#7 draft — Integra decomposição automática no chat 0.5.13
+feature/ci-quality-gate-0.5.14
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
@@ -644,10 +661,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a 0.5.13 foi validada em runtime nos dois caminhos. Pergunta composta: decomposição automática em direitos/deveres, `multi_query_used=true`, página 13 presente e resposta grounded. Pergunta simples sobre vacinas para idosos: `multi_query_used=false`, `decomposition_status=not-needed`, uma única retrieval query, `grounded=true` e `citation_retry_count=0`.
+o PR #8 passou nos dois jobs da CI. O lint retornou `All checks passed!` e a suíte pytest terminou com 51 testes aprovados e 4 warnings não bloqueantes. A validação local da imagem também passou: `/health` retornou versão 0.5.14 e `/ready` retornou Qdrant ok. As Dificuldades TCC #13 e #14 estão corrigidas e verificadas.
 
 Próxima ação ao receber "continuar":
-aguardar autorização explícita para merge do PR #7. Depois do merge, iniciar a próxima fase sem reindexar Qdrant.
+aguardar autorização explícita do usuário para merge do PR #8. Depois do merge, iniciar a próxima fase sem reindexar Qdrant.
 ```
 
 

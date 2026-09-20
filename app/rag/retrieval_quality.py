@@ -1,6 +1,6 @@
-from collections import OrderedDict
 import re
 import unicodedata
+from collections import OrderedDict
 
 from app.rag.vector_store import SearchHit
 

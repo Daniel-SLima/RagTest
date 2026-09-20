@@ -1,12 +1,12 @@
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
-import unicodedata
 
+import pymupdf
+import pytesseract
 from docx import Document as DocxDocument
 from langchain_core.documents import Document
-import pymupdf
 from pypdf import PdfReader
-import pytesseract
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx"}
 
@@ -196,7 +196,7 @@ def load_source_documents(
                 loaded = load_docx(path, source_dir)
             else:
                 continue
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - isolate one bad source and continue corpus loading
             report.errors.append(
                 LoadError(
                     source=path.relative_to(source_dir).as_posix(),

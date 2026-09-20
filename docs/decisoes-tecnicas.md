@@ -128,3 +128,11 @@ Impacto:
 **Mudança:** o `/v1/chat` passa a detectar perguntas potencialmente compostas, solicitar ao LLM uma decomposição de no máximo três subconsultas e, quando houver pelo menos duas subintenções válidas, usar o multi-query/RRF validado na 0.5.12.  
 **Motivo:** o experimento controlado mostrou que separar as intenções recuperou a página de deveres em rank 2, enquanto a consulta composta original a colocou em rank 10.  
 **Impacto:** perguntas simples continuam no caminho single-query sem chamada de planejamento; perguntas potencialmente compostas podem gerar uma chamada adicional ao LLM. Saída inválida ou insuficiente do planejador não interrompe o chat: o sistema retorna automaticamente ao retrieval original. A API expõe `multi_query_used`, `retrieval_queries` e `decomposition_status` para auditoria. A validação real confirmou os dois caminhos: direitos+deveres ativou multi-query com duas subconsultas e recuperação da página 13; uma pergunta simples sobre vacinação de idosos permaneceu em single-query com `decomposition_status=not-needed`.
+
+
+## D013 — Separar lint e testes na CI e fixar o contrato do Ruff
+
+**Data:** 2026-09-20  
+**Mudança:** lint e pytest passam a rodar em jobs independentes no GitHub Actions. O Ruff usado pela suite dev fica fixado em 0.16.8 e o conjunto de regras do gate é declarado explicitamente. Commits que alteram somente `docs/**` ou `README.md` não disparam CI.  
+**Motivo:** o workflow anterior parava no lint, deixando o pytest como `skipped`; além disso, a faixa ampla de versão do Ruff deixava o gate sujeito a mudanças de comportamento da ferramenta.  
+**Impacto:** regressões funcionais podem ser observadas mesmo quando houver falha de lint; a política de lint passa a ser reprodutível; atualizações futuras do Ruff tornam-se mudanças deliberadas.

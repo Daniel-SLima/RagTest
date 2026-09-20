@@ -1,5 +1,5 @@
-from langchain_core.documents import Document
 import pytest
+from langchain_core.documents import Document
 
 from app.rag.embeddings.base import SparseVectorData
 from app.rag.ingestion import ingest_chunks

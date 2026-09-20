@@ -227,3 +227,41 @@ Verificado localmente:
     citation_retry_count=0
 
 O caminho composto passou a responder direitos e deveres na mesma chamada. O caminho simples também foi validado no endpoint real: pergunta sobre vacinação de idosos retornou `multi_query_used=false`, `decomposition_status=not-needed`, uma única `retrieval_query`, `grounded=true` e `citation_retry_count=0`.
+
+
+## Fase 0.5.14 — CI e execução real da suíte de testes
+
+A 0.5.14 não altera retrieval, corpus ou geração. O objetivo é restaurar o gate de qualidade automatizado.
+
+Mudanças:
+
+- corrige as 8 violações Ruff observadas no workflow do `main`;
+- mantém catches amplos apenas onde são intencionais e documentados;
+- fixa Ruff em `0.16.8`;
+- declara explicitamente as regras usadas no gate;
+- separa lint e pytest em jobs independentes;
+- evita CI para mudanças exclusivamente em documentação.
+
+Não exige reindexação.
+
+
+### Validação da CI 0.5.14
+
+O gate automatizado foi validado no GitHub Actions:
+
+    lint: All checks passed!
+    pytest: 51 passed, 4 warnings
+
+A primeira execução da suíte havia revelado uma expectativa obsoleta no teste de health (50 passed / 1 failed); após a correção para comparar com `get_settings().app_version`, todos os testes passaram.
+
+Os warnings restantes são não bloqueantes e vêm de depreciação do TestClient/AnyIO e da verificação de compatibilidade do cliente Qdrant em testes sem servidor real.
+
+
+### Validação local da 0.5.14
+
+Após a CI verde, a imagem Docker foi reconstruída e validada localmente:
+
+    /health: status=ok, version=0.5.14
+    /ready: status=ready, qdrant=ok
+
+Com isso, a 0.5.14 está validada tanto na suíte automatizada quanto no runtime local. Não houve mudança de corpus e nenhuma reindexação foi necessária.
