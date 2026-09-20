@@ -29,13 +29,17 @@ O objetivo é verificar generalização. O holdout não deve ser usado para ajus
 
 Não recrie a collection. O corpus permanece com 767 chunks.
 
-## Primeira execução do holdout
+## Primeira execução do holdout — concluída
 
-Execute primeiro o modo padrão isoladamente:
+Resultado preservado do modo padrão:
 
-    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode dense-rerank
+    dense-rerank
+    HitRate@5=1.000 (15/15)
+    MRR@5=0.933
 
-Depois compare os três perfis:
+Foram 13 casos com fonte esperada em rank 1 e 2 casos em rank 2, sem falhas no top 5.
+
+Agora compare os três perfis:
 
     docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
 

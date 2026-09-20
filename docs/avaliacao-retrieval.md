@@ -116,3 +116,33 @@ E a regressão histórica:
     docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
 
 Regra experimental: a primeira execução do holdout deve ser preservada. Se forem observadas falhas, elas podem orientar novos experimentos, mas o mesmo holdout deixa de ser considerado totalmente não visto para uma nova alegação de validação independente.
+
+
+### Primeira execução do holdout — resultado preservado
+
+Modo avaliado primeiro, antes de comparar com alternativas:
+
+    dense-rerank
+
+Resultado:
+
+    HitRate@5: 1.000 (15/15)
+    MRR@5: 0.933
+
+Distribuição dos primeiros ranks esperados:
+
+- 13 casos em rank 1;
+- 2 casos em rank 2;
+- 0 falhas no top 5.
+
+Casos em rank 2:
+
+1. `holdout-caderneta-gestante`: a Caderneta da Gestante apareceu em rank 2, atrás de `gestacao/cartilha_saude_bucal_gestante.pdf`.
+2. `holdout-vacinas-gestante-parafrase`: a Caderneta da Gestante apareceu em rank 2 e o calendário nacional da gestante em rank 5; `chatscm/chatscm_gestante.docx` ficou em rank 1.
+
+Interpretação: o perfil padrão mostrou boa recuperação no primeiro holdout congelado, sem casos FAIL. A métrica é source-level e permite múltiplas fontes esperadas, portanto um PASS não implica que o documento mais específico esteja sempre no primeiro lugar. O conjunto ainda é pequeno e foi construído dentro do corpus conhecido, então o resultado deve ser tratado como evidência positiva de generalização, não como prova definitiva.
+
+Próximos comandos:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
+    docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
