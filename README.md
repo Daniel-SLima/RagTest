@@ -158,3 +158,20 @@ Nesta fase, o endpoint `/v1/chat` ainda não decompõe perguntas automaticamente
 O primeiro teste real mostrou que incluir a pergunta composta como terceiro voto de RRF reforçava as mesmas páginas da subconsulta de direitos. A página 13, recuperada em rank 1 pela subconsulta de deveres, ficou fora do top 5 fundido.
 
 A correção mantém o RRF, mas funde somente as subconsultas explícitas por padrão. Isso foi registrado como Dificuldade TCC #12.
+
+
+### Validação do experimento multi-query 0.5.12
+
+Verificado localmente:
+
+    /health: version 0.5.12
+    ragtest-check-multi-query: todos os checks passaram
+    fusion policy: subqueries only
+
+Caso direitos + deveres:
+
+    consulta composta original: página 13 em rank 10
+    primeira fusão (original + subconsultas): página 13 fora do top 5
+    fusão corrigida (subconsultas somente): página 13 em rank 2
+
+A correção confirma que remover o voto redundante da pergunta original melhora a cobertura da subintenção minoritária sem aumentar o top-k global.

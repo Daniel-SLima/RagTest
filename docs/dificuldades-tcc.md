@@ -142,7 +142,7 @@ Observado: o self-check da fusão passou, mas no experimento real a página 13 c
 
 Diagnóstico: o RRF somou votos de rankings redundantes. Como a pergunta original e a subconsulta de direitos reforçaram as mesmas páginas, a intenção dominante recebeu peso duplicado e superou resultados exclusivos da subintenção de deveres. O problema não era a implementação matemática do RRF, mas a composição das consultas usadas na fusão.
 
-Correção: quando subconsultas explícitas existirem, fundir apenas as subconsultas por padrão. A pergunta original permanece disponível como referência e pode ser incluída com `--include-original` somente para diagnóstico.
+Correção: quando subconsultas explícitas existirem, fundir apenas as subconsultas por padrão. A pergunta original permanece disponível como referência e pode ser incluída com `--include-original` somente para diagnóstico. A correção foi validada em runtime: a página 13 de deveres, que estava fora do top 5 na primeira fusão, passou para rank 2 no resultado final.
 
 Aprendizado técnico: técnicas de fusão como RRF pressupõem diversidade útil entre os rankings; consultas semanticamente redundantes podem amplificar a intenção dominante e reduzir a cobertura de subintenções minoritárias.
 

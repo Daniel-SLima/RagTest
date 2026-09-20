@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.11`  
-**Trabalho em andamento:** `0.5.12` em `feature/multi-query-retrieval-0.5.12`; primeiro experimento executado, hipótese inicial falhou e a correção da Dificuldade TCC #12 foi implementada, aguardando nova validação.
+**Trabalho em andamento:** `0.5.12` em `feature/multi-query-retrieval-0.5.12`; correção da Dificuldade TCC #12 validada. A página 13 de deveres passou para rank 2 no multi-query corrigido. PR #6 aguarda autorização de merge.
 
 ---
 
@@ -390,7 +390,7 @@ Branch ativa:
 
 `feature/multi-query-retrieval-0.5.12`
 
-Status: **primeiro experimento executado; correção da Dificuldade #12 implementada e aguardando nova validação local. PR #6 permanece draft.**
+Status: **validado em runtime: self-check completo PASS e página 13 de deveres em rank 2 no top 5 multi-query. PR #6 permanece draft aguardando autorização de merge.**
 
 ### Histórico — fase 0.5.11 — groundedness e citações verificáveis
 
@@ -624,12 +624,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o primeiro experimento multi-query confirmou que cada busca individual funciona, mas a fusão da pergunta original + subconsultas falhou em trazer a página 13 ao top 5. A pergunta original e a subconsulta de direitos produziram rankings quase idênticos, duplicando votos da intenção dominante no RRF. Isso foi registrado como Dificuldade TCC #12.
-
-Correção implementada: quando existem subconsultas explícitas, apenas elas participam da fusão por padrão. A pergunta original só entra com `--include-original` para diagnóstico.
+a correção da Dificuldade TCC #12 foi validada. O `ragtest-check-multi-query` passou em todos os checks. No experimento real, usando apenas as subconsultas como votos do RRF, a página 13 de deveres passou para rank 2; antes ela estava em rank 10 na consulta composta original e fora do top 5 na primeira fusão.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, rebuildar a imagem 0.5.12, executar novamente `ragtest-check-multi-query` e repetir o mesmo comando de `ragtest-search-multi`. A hipótese revisada é que a página 13 passe ao top 5, provavelmente entre as primeiras posições. Não reindexar Qdrant.
+considerar a 0.5.12 validada dentro do escopo experimental e aguardar autorização explícita para merge do PR #6. Depois do merge, iniciar a fase de decomposição automática no chat, mantendo o mecanismo multi-query validado. Não reindexar Qdrant.
 ```
 
 
