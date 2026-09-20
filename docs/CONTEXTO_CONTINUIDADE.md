@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.8`  
-**Trabalho em andamento:** `0.5.9` em `feature/holdout-evaluation-0.5.9`; primeira execução do holdout com `dense-rerank` concluída e aguardando comparação com `dense` e `hybrid`.
+**Trabalho em andamento:** `0.5.9` em `feature/holdout-evaluation-0.5.9`; holdout comparativo e regressão da suite dev concluídos. PR #3 aguarda autorização de merge.
 
 ---
 
@@ -397,7 +397,7 @@ Suites:
 
 O holdout cobre alimentação, vacinação de adulto/adolescente/criança/idoso/gestante, saúde bucal na gestação, cadernetas, medicamentos, contracepção e paráfrases das consultas centrais.
 
-Status: **implementado; PR #3 aberto como draft. A primeira execução do holdout com `dense-rerank` foi concluída com HitRate@5=1.000 (15/15) e MRR@5=0.933.**
+Status: **implementado e validado localmente. No holdout, `dense-rerank` manteve HitRate@5=1.000 e obteve o maior MRR@5 (0.933) entre os três perfis. A suite dev reproduziu exatamente a baseline histórica. PR #3 aguarda autorização de merge.**
 
 ---
 
@@ -405,27 +405,32 @@ Status: **implementado; PR #3 aberto como draft. A primeira execução do holdou
 
 A 0.5.8 foi validada e mesclada no `main`.
 
-A 0.5.9 foi implementada e a primeira execução do holdout foi concluída.
+A 0.5.9 foi implementada e validada localmente.
 
 Verificado:
 
 1. `/health` retornou versão 0.5.9;
 2. `/ready` retornou ready com Qdrant ok;
-3. primeira execução de `dense-rerank` na suite holdout:
+3. primeira execução preservada de `dense-rerank` no holdout:
    - HitRate@5=1.000 (15/15);
    - MRR@5=0.933;
-   - 13 consultas tiveram a primeira fonte esperada no rank 1;
-   - 2 consultas tiveram a primeira fonte esperada no rank 2;
-   - nenhum caso FAIL.
+4. comparação completa no holdout:
+   - dense: HitRate@5=1.000, MRR@5=0.889;
+   - dense-rerank: HitRate@5=1.000, MRR@5=0.933;
+   - hybrid: HitRate@5=1.000, MRR@5=0.878;
+5. regressão da suite dev reproduziu exatamente:
+   - dense: HitRate@5=1.000, MRR@5=0.857;
+   - dense-rerank: HitRate@5=1.000, MRR@5=0.929;
+   - hybrid: HitRate@5=1.000, MRR@5=0.821.
 
-Casos com rank 2:
+Conclusão experimental: `dense-rerank` foi o perfil com maior MRR tanto na suite dev quanto no primeiro holdout congelado, sempre com HitRate@5=1.000. Isso reforça a escolha do perfil padrão, sem transformar o resultado em uma alegação de superioridade universal.
 
-- `holdout-caderneta-gestante`: a caderneta apareceu em rank 2, atrás da cartilha de saúde bucal da gestante;
-- `holdout-vacinas-gestante-parafrase`: a Caderneta da Gestante apareceu em rank 2 e o calendário de vacinação da gestante em rank 5; o rank 1 foi `chatscm_gestante.docx`.
+Dois pontos qualitativos permanecem relevantes:
 
-Interpretação: é uma evidência positiva de generalização neste conjunto congelado de 15 consultas, mas ainda não uma prova geral de superioridade.
+- `holdout-caderneta-gestante`: a Caderneta da Gestante ficou em rank 2;
+- `holdout-vacinas-gestante-parafrase`: o rank 1 foi `chatscm_gestante.docx`; uma fonte esperada ficou em rank 2 e o calendário oficial em rank 5.
 
-Próxima validação: executar os três perfis no mesmo holdout e depois repetir a suite dev como regressão histórica.
+O PR #3 ainda não foi mesclado.
 
 Não recriar a collection: os 767 chunks continuam compatíveis.
 
@@ -433,25 +438,25 @@ Não recriar a collection: os 767 chunks continuam compatíveis.
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — comparar os três perfis no holdout
+### Passo 1 — mesclar a 0.5.9 após autorização
 
-A primeira execução do `dense-rerank` já foi preservada: HitRate@5=1.000 e MRR@5=0.933. Agora rodar `dense`, `dense-rerank` e `hybrid` sobre exatamente as mesmas 15 consultas.
+A validação foi concluída. Aguardar autorização explícita do usuário para mesclar o PR #3 no `main`.
 
-### Passo 2 — confirmar regressão histórica
+### Passo 2 — evoluir a avaliação
 
-Executar novamente a suite `dev` com os três perfis para confirmar que a infraestrutura 0.5.9 não alterou a baseline histórica.
+Adicionar métricas complementares como Recall@k e nDCG e revisar se a avaliação deve deduplicar resultados por fonte antes do cálculo.
 
-### Passo 3 — registrar generalização e dificuldades
+### Passo 3 — melhorar os julgamentos de relevância
 
-Documentar métricas e casos de falha. Se houver regressões relevantes, criar nova Dificuldade TCC, mas não “otimizar para o holdout” e reapresentá-lo como teste não visto.
+Para consultas em que múltiplos documentos são plausíveis, distinguir documento aceitável de documento preferencial e, quando necessário, avaliar página/chunk.
 
-### Passo 4 — evoluir as métricas
+### Passo 4 — reforçar groundedness e segurança
 
-Adicionar Recall@k/nDCG e, onde fizer sentido, julgamentos por página/chunk ou fonte única deduplicada.
+Validar citações, remover scores internos do prompt, adicionar defesa contra prompt injection documental e revisar a privacidade dos arquivos CHATSCM antes de chamadas externas.
 
-### Passo 5 — reforçar groundedness e segurança
+### Passo 5 — preparar a camada de produto
 
-Validar citações, remover scores internos do prompt, defender contra prompt injection documental e revisar a privacidade dos arquivos CHATSCM antes de chamadas externas.
+Adicionar logs/auditoria estruturada, sessões, histórico, streaming e integração posterior com o aplicativo Se Cuida Mulher.
 
 ---
 
@@ -546,10 +551,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-primeiro holdout 0.5.9 concluído: dense-rerank HitRate@5=1.000 (15/15), MRR@5=0.933.
+0.5.9 validada. Holdout: dense=1.000/0.889, dense-rerank=1.000/0.933, hybrid=1.000/0.878. Suite dev reproduziu 1.000/0.857, 1.000/0.929 e 1.000/0.821.
 
 Próxima ação ao receber "continuar":
-executar `--suite holdout --mode all` e depois `--suite dev --mode all`; não alterar parâmetros e não reindexar Qdrant.
+confirmar estado do PR #3 e, se houver autorização do usuário, mesclar a 0.5.9 e iniciar a evolução das métricas/julgamentos de relevância.
 ```
 
 
