@@ -171,3 +171,43 @@ A suite dev também foi executada novamente e reproduziu exatamente a baseline h
 Interpretação: a infraestrutura 0.5.9 não alterou os resultados anteriores e o perfil `dense-rerank` manteve o maior MRR tanto no desenvolvimento quanto no primeiro holdout congelado.
 
 Limitação importante: a métrica atual usa a primeira fonte esperada e não diferencia relevância preferencial entre várias fontes plausíveis. Em especial, consultas de gestação podem promover documentos CHATSCM ou cadernetas antes de calendários oficiais, mesmo quando todas são semanticamente relacionadas.
+
+
+## 0.5.10 — métricas source-level complementares
+
+A 0.5.10 não altera o retrieval nem o dataset. Ela mantém as métricas históricas e adiciona:
+
+- `SourceRecall@k`: fração das fontes esperadas distintas que aparecem entre os k resultados;
+- `SourceNDCG@k`: qualidade da ordenação das fontes esperadas, contando uma mesma fonte apenas uma vez como relevante;
+- `unique_sources` por caso: quantidade de fontes distintas nos k resultados.
+
+HitRate@k e MRR@k continuam sendo calculados com a semântica histórica para que os resultados anteriores permaneçam comparáveis.
+
+Essa fase deve ser validada primeiro sobre `holdout` e `dev` sem alterar parâmetros de retrieval e sem reindexar o corpus.
+
+
+### Resultado verificado da 0.5.10
+
+As métricas históricas foram reproduzidas e as novas métricas source-level foram calculadas com sucesso.
+
+Holdout (15 casos):
+
+| Modo | HitRate@5 | MRR@5 | SourceRecall@5 | SourceNDCG@5 |
+| --- | ---: | ---: | ---: | ---: |
+| dense | 1.000 | 0.889 | 1.000 | 0.917 |
+| dense-rerank | 1.000 | 0.933 | 1.000 | 0.941 |
+| hybrid | 1.000 | 0.878 | 0.967 | 0.885 |
+
+Suite dev (7 casos):
+
+| Modo | HitRate@5 | MRR@5 | SourceRecall@5 | SourceNDCG@5 |
+| --- | ---: | ---: | ---: | ---: |
+| dense | 1.000 | 0.857 | 1.000 | 0.903 |
+| dense-rerank | 1.000 | 0.929 | 1.000 | 0.936 |
+| hybrid | 1.000 | 0.821 | 1.000 | 0.869 |
+
+A nova métrica revelou algo que HitRate não mostrava: no holdout, o modo hybrid continuou com HitRate@5=1.000, mas SourceRecall@5 caiu para 0.967 porque, em `holdout-vacinas-gestante-parafrase`, apenas uma das duas fontes esperadas apareceu no top 5.
+
+O perfil `dense-rerank` manteve o maior SourceNDCG tanto no holdout quanto na suite dev, reforçando a decisão de mantê-lo como padrão.
+
+Os testes unitários adicionados para as funções de métricas ainda não foram executados em CI/container de desenvolvimento; a validação atual é de runtime pelo avaliador.
