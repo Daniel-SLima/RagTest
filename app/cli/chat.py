@@ -8,6 +8,7 @@ from app.rag.embeddings.factory import (
     create_embedding_provider,
     create_sparse_embedding_provider,
 )
+from app.rag.retrieval_profiles import PROFILES, get_profile
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
 
@@ -19,16 +20,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--category", default=None)
     parser.add_argument("--audience", default=None)
     parser.add_argument("--min-score", type=float, default=None)
+    parser.add_argument(
+        "--mode",
+        choices=tuple(PROFILES),
+        default=None,
+        help="Override the configured retrieval mode for this chat request.",
+    )
     return parser.parse_args()
 
 
 async def run(args: argparse.Namespace) -> None:
     settings = get_settings()
+    profile = get_profile(args.mode or settings.retrieval_mode)
     qdrant = QdrantService(settings)
 
     try:
         embeddings = create_embedding_provider(settings)
-        sparse_embeddings = create_sparse_embedding_provider(settings)
+        sparse_embeddings = (
+            create_sparse_embedding_provider(settings)
+            if profile.use_sparse
+            else None
+        )
         vector_store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
         llm = create_llm_provider(settings)
 
@@ -42,17 +54,18 @@ async def run(args: argparse.Namespace) -> None:
             category=args.category,
             audience=args.audience,
             min_score=args.min_score,
-            candidate_multiplier=settings.retrieval_candidate_multiplier,
-            score_margin=settings.retrieval_score_margin,
+            candidate_multiplier=profile.candidate_multiplier,
+            score_margin=profile.score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
             max_group_chars=settings.retrieval_max_group_chars,
-            source_lexical_weight=settings.retrieval_source_lexical_weight,
-            content_lexical_weight=settings.retrieval_content_lexical_weight,
-            hybrid_dense_weight=settings.hybrid_dense_weight,
-            hybrid_sparse_weight=settings.hybrid_sparse_weight,
+            source_lexical_weight=profile.source_lexical_weight,
+            content_lexical_weight=profile.content_lexical_weight,
+            hybrid_dense_weight=profile.dense_weight,
+            hybrid_sparse_weight=profile.sparse_weight,
         )
 
         print()
+        print(f"Retrieval mode: {profile.name}")
         print("Answer:")
         print(result.answer)
         print()
@@ -62,7 +75,7 @@ async def run(args: argparse.Namespace) -> None:
             page = f", page {hit.page}" if hit.page is not None else ""
             print(
                 f"[{index}] {hit.source}{page} "
-                f"(fusion={hit.score:.4f}, audience={hit.audience or '-'}, "
+                f"(retrieval={hit.score:.4f}, audience={hit.audience or '-'}, "
                 f"grouped_chunks={hit.chunk_count})"
             )
     finally:

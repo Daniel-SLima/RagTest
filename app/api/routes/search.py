@@ -9,6 +9,7 @@ from app.api.dependencies import (
 )
 from app.core.config import Settings, get_settings
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
+from app.rag.retrieval_profiles import get_profile
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.schemas.search import SemanticSearchHit, SemanticSearchRequest, SemanticSearchResponse
@@ -27,24 +28,26 @@ async def search_documents(
     vector_store: Annotated[QdrantVectorStore, Depends(get_vector_store)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> SemanticSearchResponse:
+    profile = get_profile(settings.retrieval_mode)
+
     try:
         hits = await semantic_search(
             request.query,
             embeddings=embeddings,
-            sparse_embeddings=sparse_embeddings,
+            sparse_embeddings=sparse_embeddings if profile.use_sparse else None,
             vector_store=vector_store,
             limit=request.limit,
             category=request.category,
             audience=request.audience,
             min_score=request.min_score,
-            candidate_multiplier=settings.retrieval_candidate_multiplier,
-            score_margin=settings.retrieval_score_margin,
+            candidate_multiplier=profile.candidate_multiplier,
+            score_margin=profile.score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
             max_group_chars=settings.retrieval_max_group_chars,
-            source_lexical_weight=settings.retrieval_source_lexical_weight,
-            content_lexical_weight=settings.retrieval_content_lexical_weight,
-            hybrid_dense_weight=settings.hybrid_dense_weight,
-            hybrid_sparse_weight=settings.hybrid_sparse_weight,
+            source_lexical_weight=profile.source_lexical_weight,
+            content_lexical_weight=profile.content_lexical_weight,
+            hybrid_dense_weight=profile.dense_weight,
+            hybrid_sparse_weight=profile.sparse_weight,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc

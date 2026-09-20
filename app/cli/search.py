@@ -6,55 +6,63 @@ from app.rag.embeddings.factory import (
     create_embedding_provider,
     create_sparse_embedding_provider,
 )
+from app.rag.retrieval_profiles import PROFILES, get_profile
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run hybrid search in RagTest.")
+    parser = argparse.ArgumentParser(description="Run document retrieval in RagTest.")
     parser.add_argument("query", help="Natural-language search query.")
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--category", default=None)
     parser.add_argument("--audience", default=None)
     parser.add_argument("--min-score", type=float, default=None)
+    parser.add_argument(
+        "--mode",
+        choices=tuple(PROFILES),
+        default=None,
+        help="Override the configured retrieval mode for this search.",
+    )
     return parser.parse_args()
 
 
-async def run(
-    query: str,
-    limit: int,
-    category: str | None,
-    audience: str | None,
-    min_score: float | None,
-) -> None:
+async def run(args: argparse.Namespace) -> None:
     settings = get_settings()
+    profile = get_profile(args.mode or settings.retrieval_mode)
     qdrant = QdrantService(settings)
+
     try:
         embeddings = create_embedding_provider(settings)
-        sparse_embeddings = create_sparse_embedding_provider(settings)
+        sparse_embeddings = (
+            create_sparse_embedding_provider(settings)
+            if profile.use_sparse
+            else None
+        )
         vector_store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
 
         hits = await semantic_search(
-            query,
+            args.query,
             embeddings=embeddings,
             sparse_embeddings=sparse_embeddings,
             vector_store=vector_store,
-            limit=limit,
-            category=category,
-            audience=audience,
-            min_score=min_score,
-            candidate_multiplier=settings.retrieval_candidate_multiplier,
-            score_margin=settings.retrieval_score_margin,
+            limit=args.limit,
+            category=args.category,
+            audience=args.audience,
+            min_score=args.min_score,
+            candidate_multiplier=profile.candidate_multiplier,
+            score_margin=profile.score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
             max_group_chars=settings.retrieval_max_group_chars,
-            source_lexical_weight=settings.retrieval_source_lexical_weight,
-            content_lexical_weight=settings.retrieval_content_lexical_weight,
-            hybrid_dense_weight=settings.hybrid_dense_weight,
-            hybrid_sparse_weight=settings.hybrid_sparse_weight,
+            source_lexical_weight=profile.source_lexical_weight,
+            content_lexical_weight=profile.content_lexical_weight,
+            hybrid_dense_weight=profile.dense_weight,
+            hybrid_sparse_weight=profile.sparse_weight,
         )
 
-        print(f'Query: "{query}"')
+        print(f'Mode: {profile.name}')
+        print(f'Query: "{args.query}"')
         print(f"Results: {len(hits)}")
         for index, hit in enumerate(hits, start=1):
             page = f" | page {hit.page}" if hit.page is not None else ""
@@ -66,7 +74,7 @@ async def run(
             sparse = f"{hit.sparse_score:.4f}" if hit.sparse_score is not None else "-"
             print()
             print(
-                f"#{index} fusion={hit.score:.4f} rank={rank_score:.4f} "
+                f"#{index} retrieval={hit.score:.4f} rank={rank_score:.4f} "
                 f"dense={dense} sparse={sparse} grouped_chunks={hit.chunk_count}"
             )
             print(f"{hit.source}{page} | audience={hit.audience or '-'}")
@@ -76,16 +84,7 @@ async def run(
 
 
 def main() -> None:
-    args = parse_args()
-    asyncio.run(
-        run(
-            args.query,
-            args.limit,
-            args.category,
-            args.audience,
-            args.min_score,
-        )
-    )
+    asyncio.run(run(parse_args()))
 
 
 if __name__ == "__main__":
