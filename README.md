@@ -175,3 +175,38 @@ Caso direitos + deveres:
     fusão corrigida (subconsultas somente): página 13 em rank 2
 
 A correção confirma que remover o voto redundante da pergunta original melhora a cobertura da subintenção minoritária sem aumentar o top-k global.
+
+
+## Fase 0.5.13 — decomposição automática no chat
+
+A 0.5.13 integra o mecanismo multi-query validado ao `/v1/chat`.
+
+Fluxo:
+
+    pergunta
+      -> heurística conservadora de multi-intent
+      -> planejador LLM apenas quando necessário
+      -> 2-3 subconsultas
+      -> dense-rerank por subconsulta
+      -> RRF somente entre subconsultas
+      -> contexto final
+      -> resposta grounded com citações
+
+Resiliência:
+
+- pergunta simples: usa single-query e não chama o planejador;
+- JSON inválido ou menos de duas subconsultas: fallback para single-query;
+- pode ser desativado globalmente com `RETRIEVAL_AUTO_DECOMPOSE=false`;
+- pode ser desativado por requisição com `"auto_decompose": false`.
+
+Novos campos de resposta:
+
+    multi_query_used
+    retrieval_queries
+    decomposition_status
+
+Self-check:
+
+    ragtest-check-decomposition
+
+Não exige reindexação.

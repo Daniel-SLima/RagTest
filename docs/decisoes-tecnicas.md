@@ -120,3 +120,11 @@ Impacto:
 **Mudança:** perguntas com múltiplas intenções relevantes devem ser candidatas a decomposição em subconsultas antes da recuperação, mantendo `dense-rerank` como estratégia base de cada busca.  
 **Motivo:** na pergunta "Quais são os direitos e deveres da pessoa usuária da saúde?", a página com deveres ficou em rank 10; quando a intenção "deveres" foi consultada isoladamente, a mesma página ficou em rank 1. Aumentar o top-k global para 10 resolveria este caso às custas de mais contexto, ruído e custo para todas as perguntas.  
 **Impacto:** a 0.5.11 permanece focada em groundedness/citações. A 0.5.12 inicia a validação controlada do mecanismo multi-query com subconsultas informadas explicitamente, antes de automatizar a decomposição. Após o primeiro experimento, ficou definido que, havendo subconsultas, a pergunta original não participa da fusão RRF por padrão, pois pode duplicar a intenção dominante; ela continua disponível via `--include-original` para diagnóstico. A validação confirmou o efeito esperado: a página 13 de deveres saiu de rank 10 na consulta composta original para rank 2 no resultado multi-query corrigido. Os pesos do `dense-rerank` e o corpus permanecem inalterados.
+
+
+## D012 — Decomposição automática conservadora no chat com fallback para single-query
+
+**Data:** 2026-09-20  
+**Mudança:** o `/v1/chat` passa a detectar perguntas potencialmente compostas, solicitar ao LLM uma decomposição de no máximo três subconsultas e, quando houver pelo menos duas subintenções válidas, usar o multi-query/RRF validado na 0.5.12.  
+**Motivo:** o experimento controlado mostrou que separar as intenções recuperou a página de deveres em rank 2, enquanto a consulta composta original a colocou em rank 10.  
+**Impacto:** perguntas simples continuam no caminho single-query sem chamada de planejamento; perguntas potencialmente compostas podem gerar uma chamada adicional ao LLM. Saída inválida ou insuficiente do planejador não interrompe o chat: o sistema retorna automaticamente ao retrieval original. A API expõe `multi_query_used`, `retrieval_queries` e `decomposition_status` para auditoria.
