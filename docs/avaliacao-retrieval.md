@@ -237,3 +237,30 @@ Métricas explícitas:
 - `RequiredNDCG@k`: ordenação das fontes obrigatórias recuperadas.
 
 O arquivo `docs/evaluation-v2-template.json` é apenas um template de esquema, não um dataset rotulado nem um holdout.
+
+
+### Validação da infraestrutura v2
+
+O self-check determinístico passou em todos os cenários:
+
+    [PASS] OR alternative passes with one acceptable source
+    [PASS] OR alternative does not require every acceptable source
+    [PASS] AND required fails with incomplete coverage
+    [PASS] AND required exposes partial recall
+    [PASS] AND required passes with complete coverage
+    [PASS] combined case requires acceptable and required conditions
+    [PASS] explicit dataset mode is detected
+
+A regressão do caminho legado também foi executada sobre a suite dev com `dense-rerank` e reproduziu exatamente a baseline:
+
+    HitRate@5: 1.000 (7/7)
+    MRR@5: 0.929
+    SourceRecall@5: 1.000
+    SourceNDCG@5: 0.936
+
+CI final da 0.5.18:
+
+    ruff: All checks passed!
+    pytest: 72 passed, 4 warnings
+
+Conclusão: o avaliador v2 pode expressar semântica OR/AND sem alterar o contrato histórico do dataset v1.

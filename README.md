@@ -517,3 +517,24 @@ Self-check determinístico:
     ragtest-check-evaluation-v2
 
 O template `docs/evaluation-v2-template.json` demonstra o formato, mas não é um novo holdout nem contém julgamentos reais.
+
+
+### Validação final da avaliação v2 — 0.5.18
+
+Self-check semântico:
+
+    All evaluation v2 semantics self-checks passed.
+
+Regressão v1 (`dense-rerank`):
+
+    HitRate@5: 1.000 (7/7)
+    MRR@5: 0.929
+    SourceRecall@5: 1.000
+    SourceNDCG@5: 0.936
+
+CI final:
+
+    ruff: All checks passed!
+    pytest: 72 passed, 4 warnings
+
+Assim, a infraestrutura v2 adiciona semântica explícita sem alterar a baseline histórica.
