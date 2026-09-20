@@ -1,4 +1,4 @@
-from app.rag.multi_query import reciprocal_rank_fuse_hits
+from app.rag.multi_query import reciprocal_rank_fuse_hits, select_fusion_queries
 from app.rag.vector_store import SearchHit
 
 
@@ -31,6 +31,21 @@ def main() -> None:
     )
 
     checks = [
+        (
+            "explicit subqueries exclude original query by default",
+            select_fusion_queries(
+                "direitos e deveres",
+                ["direitos", "deveres"],
+            ) == ["direitos", "deveres"],
+        ),
+        (
+            "original query can be included explicitly",
+            select_fusion_queries(
+                "direitos e deveres",
+                ["direitos", "deveres"],
+                include_original=True,
+            ) == ["direitos e deveres", "direitos", "deveres"],
+        ),
         ("shared result promoted across queries", fused[0].hit.source == "shared.pdf"),
         ("shared page deduplicated", sum(x.hit.source == "shared.pdf" for x in fused) == 1),
         ("matched query ids preserved", fused[0].matched_query_indexes == (1, 2)),

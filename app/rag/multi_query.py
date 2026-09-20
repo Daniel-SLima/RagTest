@@ -146,3 +146,19 @@ async def multi_query_search(
         rrf_k=rrf_k,
     )
     return normalized_queries, query_results, fused
+
+
+def select_fusion_queries(
+    original_query: str,
+    subqueries: list[str],
+    *,
+    include_original: bool = False,
+) -> list[str]:
+    cleaned_subqueries = [query.strip() for query in subqueries if query.strip()]
+
+    if cleaned_subqueries:
+        if include_original:
+            return [original_query, *cleaned_subqueries]
+        return cleaned_subqueries
+
+    return [original_query]

@@ -144,10 +144,17 @@ Exemplo diagnóstico:
 
     ragtest-search-multi "Quais são os direitos e deveres da pessoa usuária da saúde?" --subquery "Quais são os direitos da pessoa usuária da saúde?" --subquery "Quais são os deveres da pessoa usuária da saúde?" --category direitos_saude --limit 5 --per-query-limit 5
 
-Cada consulta usa o perfil `dense-rerank` já validado. Os resultados por página são deduplicados e combinados por Reciprocal Rank Fusion (RRF).
+Cada subconsulta usa o perfil `dense-rerank` já validado. Os resultados por página são deduplicados e combinados por Reciprocal Rank Fusion (RRF). Quando subconsultas são informadas, a pergunta original não participa da fusão por padrão para evitar duplicar a intenção dominante. Use `--include-original` apenas para comparação diagnóstica.
 
 Self-check determinístico:
 
     ragtest-check-multi-query
 
 Nesta fase, o endpoint `/v1/chat` ainda não decompõe perguntas automaticamente. O objetivo é verificar primeiro se a fusão das subconsultas corrige a cobertura observada na Dificuldade TCC #11.
+
+
+### Ajuste após o primeiro experimento 0.5.12
+
+O primeiro teste real mostrou que incluir a pergunta composta como terceiro voto de RRF reforçava as mesmas páginas da subconsulta de direitos. A página 13, recuperada em rank 1 pela subconsulta de deveres, ficou fora do top 5 fundido.
+
+A correção mantém o RRF, mas funde somente as subconsultas explícitas por padrão. Isso foi registrado como Dificuldade TCC #12.

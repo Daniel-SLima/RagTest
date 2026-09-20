@@ -1,4 +1,4 @@
-from app.rag.multi_query import reciprocal_rank_fuse_hits
+from app.rag.multi_query import reciprocal_rank_fuse_hits, select_fusion_queries
 from app.rag.vector_store import SearchHit
 
 
@@ -54,3 +54,19 @@ def test_rrf_respects_limit() -> None:
     )
 
     assert len(fused) == 2
+
+
+
+def test_explicit_subqueries_are_fused_without_original_by_default() -> None:
+    assert select_fusion_queries(
+        "direitos e deveres",
+        ["direitos", "deveres"],
+    ) == ["direitos", "deveres"]
+
+
+def test_original_can_be_included_for_diagnostics() -> None:
+    assert select_fusion_queries(
+        "direitos e deveres",
+        ["direitos", "deveres"],
+        include_original=True,
+    ) == ["direitos e deveres", "direitos", "deveres"]

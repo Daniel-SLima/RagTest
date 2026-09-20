@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.11`  
-**Trabalho em andamento:** `0.5.12` em `feature/multi-query-retrieval-0.5.12`; experimento controlado de multi-query implementado e aguardando validação.
+**Trabalho em andamento:** `0.5.12` em `feature/multi-query-retrieval-0.5.12`; primeiro experimento executado, hipótese inicial falhou e a correção da Dificuldade TCC #12 foi implementada, aguardando nova validação.
 
 ---
 
@@ -357,7 +357,8 @@ Casos atuais:
 8. fonte esperada tinha zero texto e zero chunks;
 9. retrieval híbrido não superou dense-rerank no mesmo corpus;
 10. `pyproject.toml` inválido bloqueou o build Docker da 0.5.11;
-11. consulta composta recuperou direitos, mas não detalhou deveres.
+11. consulta composta recuperou direitos, mas não detalhou deveres;
+12. RRF reforçou a intenção dominante quando a pergunta original foi fundida com as subconsultas.
 
 **Regra:** quando algo planejado não funcionar como esperado, criar uma nova “Dificuldade TCC #N” com:
 
@@ -389,7 +390,7 @@ Branch ativa:
 
 `feature/multi-query-retrieval-0.5.12`
 
-Status: **implementado, PR #6 aberto como draft e aguardando validação local**.
+Status: **primeiro experimento executado; correção da Dificuldade #12 implementada e aguardando nova validação local. PR #6 permanece draft.**
 
 ### Histórico — fase 0.5.11 — groundedness e citações verificáveis
 
@@ -623,10 +624,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.12 implementada como experimento controlado. O novo `ragtest-search-multi` recebe a pergunta original e subconsultas explícitas, executa `dense-rerank` em cada uma e combina páginas por RRF. O `ragtest-check-multi-query` valida a lógica de fusão sem Qdrant/Gemini.
+o primeiro experimento multi-query confirmou que cada busca individual funciona, mas a fusão da pergunta original + subconsultas falhou em trazer a página 13 ao top 5. A pergunta original e a subconsulta de direitos produziram rankings quase idênticos, duplicando votos da intenção dominante no RRF. Isso foi registrado como Dificuldade TCC #12.
+
+Correção implementada: quando existem subconsultas explícitas, apenas elas participam da fusão por padrão. A pergunta original só entra com `--include-original` para diagnóstico.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, rebuildar a imagem 0.5.12, executar `ragtest-check-multi-query` e depois o caso direitos+deveres com duas subconsultas. Não reindexar Qdrant.
+atualizar a branch local, rebuildar a imagem 0.5.12, executar novamente `ragtest-check-multi-query` e repetir o mesmo comando de `ragtest-search-multi`. A hipótese revisada é que a página 13 passe ao top 5, provavelmente entre as primeiras posições. Não reindexar Qdrant.
 ```
 
 

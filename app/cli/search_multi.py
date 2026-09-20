@@ -6,7 +6,7 @@ from app.rag.embeddings.factory import (
     create_embedding_provider,
     create_sparse_embedding_provider,
 )
-from app.rag.multi_query import multi_query_search
+from app.rag.multi_query import multi_query_search, select_fusion_queries
 from app.rag.retrieval_profiles import PROFILES, get_profile
 from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
@@ -26,6 +26,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--per-query-limit", type=int, default=5)
     parser.add_argument("--rrf-k", type=int, default=60)
+    parser.add_argument(
+        "--include-original",
+        action="store_true",
+        help=(
+            "Include the original compound question as an RRF voter even when "
+            "subqueries are provided. Default: fuse only the explicit subqueries."
+        ),
+    )
     parser.add_argument("--category", default=None)
     parser.add_argument("--audience", default=None)
     parser.add_argument("--min-score", type=float, default=None)
@@ -52,8 +60,14 @@ async def run(args: argparse.Namespace) -> None:
         )
         vector_store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
 
+        fusion_queries = select_fusion_queries(
+            args.query,
+            args.subquery,
+            include_original=args.include_original,
+        )
+
         queries, query_results, fused = await multi_query_search(
-            [args.query, *args.subquery],
+            fusion_queries,
             embeddings=embeddings,
             sparse_embeddings=sparse_embeddings,
             vector_store=vector_store,
@@ -74,6 +88,11 @@ async def run(args: argparse.Namespace) -> None:
         )
 
         print(f"Mode: {profile.name}")
+        print(f'Original query: "{args.query}"')
+        print(
+            "Fusion policy: "
+            + ("original + subqueries" if args.include_original else "subqueries only")
+        )
         print(f"Queries: {len(queries)}")
         for index, query in enumerate(queries, start=1):
             print(f'Q{index}: "{query}"')
