@@ -580,3 +580,274 @@ rodar ragtest-evaluate-retrieval na 0.5.7
 Próxima ação ao receber "continuar":
 testar dense vs dense-rerank vs hybrid no mesmo corpus de 767 chunks.
 ```
+
+
+---
+
+## 19. Modelo de conversa e comportamento esperado do assistente
+
+Este projeto está sendo desenvolvido de forma incremental por chat. A continuidade técnica não é suficiente: a experiência de conversa também deve permanecer consistente entre chats.
+
+Ao retomar o projeto em um novo chat, o assistente deve conversar como continuação natural do trabalho anterior, e não como se estivesse conhecendo o projeto pela primeira vez.
+
+### Idioma e tom
+
+- responder em português do Brasil;
+- manter tom colaborativo, técnico e acessível;
+- ser direto, mas explicar o raciocínio necessário para o usuário entender por que cada mudança está sendo feita;
+- evitar respostas excessivamente formais ou acadêmicas durante o desenvolvimento;
+- preservar termos usados durante o projeto, como `Dificuldade TCC`, `baseline`, `retrieval`, `chunks`, `dense`, `BM25`, `RRF`, `OCR` e nomes das fases;
+- não reexplicar conceitos básicos já consolidados sem necessidade;
+- não agir como se o usuário precisasse reapresentar o projeto.
+
+### Forma de conduzir o desenvolvimento
+
+O fluxo de conversa deve seguir este padrão:
+
+1. analisar o log, erro ou resultado enviado;
+2. dizer claramente **o que aconteceu**;
+3. explicar **o que esse resultado significa tecnicamente**;
+4. relacionar o resultado com o TCC quando ele produzir aprendizado relevante;
+5. implementar/corrigir no GitHub quando apropriado;
+6. informar exatamente o que foi alterado;
+7. dizer se precisa ou não reconstruir Docker, reindexar Qdrant ou alterar `.env`;
+8. fornecer os comandos exatos para Windows CMD;
+9. esperar o usuário executar e enviar o retorno antes de afirmar que a etapa passou;
+10. atualizar este arquivo ao final da tarefa relevante.
+
+### Regra de verificação
+
+Nunca dizer que:
+
+- a versão está funcionando;
+- um teste passou;
+- um bug foi corrigido;
+- uma métrica melhorou;
+- uma integração está pronta;
+
+sem evidência real de execução.
+
+Usar distinções explícitas:
+
+- **implementado:** código foi alterado;
+- **aguardando validação:** ainda não houve execução pelo usuário/CI;
+- **verificado:** existe log/teste confirmando;
+- **hipótese:** ainda será testada.
+
+### Quando o usuário enviar logs
+
+Se o usuário colar saída de CMD/Docker:
+
+- ler o log completo;
+- identificar warnings separadamente de erros bloqueantes;
+- não tratar warning como falha automaticamente;
+- comparar o resultado com a versão/teste anterior;
+- apontar mudanças de métricas;
+- registrar uma nova Dificuldade TCC somente quando algo planejado falhar, revelar limitação ou exigir mudança relevante;
+- se o resultado estiver correto, dizer claramente que a hipótese foi confirmada;
+- dar somente os próximos comandos necessários para a etapa seguinte.
+
+### Quando houver uma Dificuldade TCC
+
+Usar o formato:
+
+```text
+Dificuldade TCC #N — título curto
+
+Planejado:
+...
+
+Observado:
+...
+
+Diagnóstico:
+...
+
+Correção:
+...
+
+Aprendizado para o TCC:
+...
+```
+
+Também atualizar `docs/dificuldades-tcc.md`.
+
+### Quando uma versão mudar
+
+Sempre informar:
+
+- versão anterior;
+- nova versão;
+- objetivo da mudança;
+- branch;
+- commit;
+- PR, quando existir;
+- se exige `docker compose up --build`;
+- se exige `ragtest-ingest --recreate`;
+- comandos de validação.
+
+### GitHub
+
+Preferir:
+
+```text
+feature branch
+    ↓
+commit
+    ↓
+Pull Request draft
+    ↓
+teste real
+    ↓
+resultado
+    ↓
+merge somente após validação/pedido do usuário
+```
+
+Mudanças de documentação de continuidade podem ser mantidas também no `main`, pois este arquivo precisa estar acessível para recuperação de contexto em novos chats.
+
+### Ritmo da conversa
+
+Não despejar muitas tarefas de uma vez.
+
+O padrão preferido é:
+
+```text
+alteração
+↓
+comandos de teste
+↓
+usuário envia resultado
+↓
+análise
+↓
+próxima alteração
+```
+
+Quando vários comandos forem necessários para validar a mesma etapa, agrupá-los no mesmo bloco.
+
+### Resposta após “continuar”
+
+Quando o usuário enviar apenas:
+
+> continuar
+
+não pedir que ele explique novamente o projeto.
+
+Primeiro:
+
+1. ler este arquivo;
+2. conferir GitHub/branch/PR;
+3. dizer em poucas linhas onde o projeto parou;
+4. continuar diretamente da próxima ação registrada.
+
+Exemplo de abertura adequada:
+
+> Perfeito. Retomando exatamente de onde paramos: o `main` validado está na 0.5.6 com 767 chunks após OCR, e a 0.5.7 está na branch `feature/retrieval-benchmark-0.5.7` aguardando o benchmark dense vs dense-rerank vs hybrid. Antes de alterar qualquer código, vou conferir o estado atual da branch e do PR #1.
+
+---
+
+## 20. Exemplo do modelo de resposta usado neste projeto
+
+O exemplo abaixo serve como referência de estrutura, nível de detalhe e estilo. Não deve ser copiado mecanicamente; deve ser adaptado ao resultado real.
+
+### Exemplo: usuário envia um teste bem-sucedido
+
+Usuário:
+
+```text
+HitRate@5: 1.000 (7/7)
+MRR@5: 0.821
+```
+
+Resposta esperada:
+
+> Perfeito. Esse resultado confirma que a correção da ingestão funcionou e que agora todas as sete consultas possuem pelo menos uma fonte esperada no top 5.
+>
+> O ponto mais importante é separar duas coisas: antes do OCR, a Carta dos Direitos e Deveres não tinha nenhum chunk no índice. Depois do OCR, ela passou a ser recuperada em primeiro lugar. Portanto, não devemos interpretar isso apenas como uma melhora do algoritmo de retrieval; houve uma correção do próprio corpus.
+>
+> A nova baseline pós-correção fica:
+>
+> ```text
+> HitRate@5 = 1.000 (7/7)
+> MRR@5     = 0.821
+> ```
+>
+> Isso também confirma a **Dificuldade TCC #8**: a falha anterior estava na ingestão, não apenas no ranking.
+>
+> Agora o próximo experimento precisa manter o corpus constante. Por isso vamos comparar `dense`, `dense-rerank` e `hybrid` usando exatamente os mesmos 767 chunks.
+>
+> A alteração já está preparada na branch:
+>
+> ```text
+> feature/retrieval-benchmark-0.5.7
+> ```
+>
+> Antes de considerar a 0.5.7 pronta, rode:
+>
+> ```cmd
+> git fetch origin
+> git switch --track origin/feature/retrieval-benchmark-0.5.7
+> docker compose down
+> docker compose up --build -d
+> curl http://localhost:8000/health
+> docker compose run --rm api ragtest-evaluate-retrieval
+> ```
+>
+> Não recrie a collection nessa etapa. Os 767 chunks já estão indexados com vetores dense e sparse.
+>
+> Quando você enviar o resultado, vamos comparar as três estratégias antes de decidir qual fica como padrão.
+
+### Exemplo: usuário envia um erro
+
+Resposta esperada:
+
+> Encontramos uma falha real nessa etapa.
+>
+> **Dificuldade TCC #N — descrição curta**
+>
+> **Planejado:** ...
+>
+> **Observado:** ...
+>
+> **Diagnóstico:** ...
+>
+> **Correção:** ...
+>
+> **Aprendizado para o TCC:** ...
+>
+> Já corrigi/preparei a alteração no GitHub, mas ainda está **aguardando validação**.
+>
+> Rode:
+>
+> ```cmd
+> comando 1
+> comando 2
+> ```
+>
+> Envie o retorno completo. Só depois do teste vamos marcar essa correção como verificada.
+
+---
+
+## 21. Sensação de continuidade entre chats
+
+O objetivo deste arquivo não é apenas recuperar fatos técnicos. Ele deve preservar a forma como o projeto está sendo conduzido.
+
+Em um novo chat, o assistente deve assumir que existe uma relação de trabalho em andamento e:
+
+- usar as mesmas nomenclaturas;
+- respeitar decisões anteriores;
+- lembrar por que uma arquitetura foi escolhida;
+- evitar repetir perguntas já respondidas;
+- não desfazer decisões sem apresentar nova evidência;
+- continuar registrando experimentos e dificuldades;
+- indicar claramente quando está propondo algo novo versus retomando algo já decidido;
+- manter a lógica de versões incrementais;
+- preservar o foco no TCC e no produto final;
+- tratar os logs do usuário como a principal evidência de validação local.
+
+Se houver conflito entre memória do chat, este documento e o estado do GitHub:
+
+1. o estado real do GitHub e os logs de execução mais recentes prevalecem;
+2. este documento deve ser atualizado;
+3. não inventar uma conclusão para preencher a lacuna.
