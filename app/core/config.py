@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     retrieval_merge_same_page: bool = True
     retrieval_max_group_chars: int = 5000
     retrieval_auto_decompose: bool = True
-    retrieval_max_subqueries: int = Field(default=3, ge=2, le=4)
+    retrieval_max_subqueries: int = Field(default=3, ge=2, le=3)
 
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
