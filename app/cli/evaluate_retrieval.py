@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from app.core.config import get_settings
-from app.evaluation import DEFAULT_RETRIEVAL_CASES
+from app.evaluation import EVALUATION_DATASET_VERSION, select_retrieval_cases
 from app.rag.embeddings.factory import (
     create_embedding_provider,
     create_sparse_embedding_provider,
@@ -26,13 +26,26 @@ def parse_args() -> argparse.Namespace:
         default="all",
         help="Retrieval strategy to evaluate. Default: all.",
     )
+    parser.add_argument(
+        "--suite",
+        choices=("dev", "holdout", "all"),
+        default="dev",
+        help=(
+            "Packaged evaluation suite. 'dev' preserves the historical seven cases; "
+            "'holdout' contains frozen unseen queries; 'all' combines both."
+        ),
+    )
     return parser.parse_args()
 
 
-def _load_cases(cases_path: Path | None) -> list[dict[str, Any]]:
-    if cases_path is None:
-        return [dict(case) for case in DEFAULT_RETRIEVAL_CASES]
-    return json.loads(cases_path.read_text(encoding="utf-8"))
+def _load_cases(
+    cases_path: Path | None,
+    suite: str,
+) -> tuple[list[dict[str, Any]], str]:
+    if cases_path is not None:
+        return json.loads(cases_path.read_text(encoding="utf-8")), "external JSON"
+
+    return select_retrieval_cases(suite), f"packaged {suite}"
 
 
 def _first_expected_rank(sources: list[str], expected_sources: list[str]) -> int | None:
@@ -60,6 +73,7 @@ async def _evaluate_profile(
     print(f"=== mode={profile.name} ===")
 
     for index, case in enumerate(cases, start=1):
+        case_id = str(case.get("id", index))
         query = str(case["query"])
         expected_sources = [str(item) for item in case["expected_sources"]]
 
@@ -90,7 +104,7 @@ async def _evaluate_profile(
             reciprocal_rank_sum += 1.0 / rank
 
         print(
-            f"[{'PASS' if passed else 'FAIL'}] {index}. {query} "
+            f"[{'PASS' if passed else 'FAIL'}] {index}. [{case_id}] {query} "
             f"| first_expected_rank={rank or '-'}"
         )
         for result_rank, hit in enumerate(hits, start=1):
@@ -111,8 +125,13 @@ async def _evaluate_profile(
     return hit_rate, mrr
 
 
-async def run(cases_path: Path | None, limit: int, mode: str) -> None:
-    cases = _load_cases(cases_path)
+async def run(
+    cases_path: Path | None,
+    limit: int,
+    mode: str,
+    suite: str,
+) -> None:
+    cases, source_label = _load_cases(cases_path, suite)
     profiles = selected_profiles(mode)
     settings = get_settings()
     qdrant = QdrantService(settings)
@@ -127,8 +146,8 @@ async def run(cases_path: Path | None, limit: int, mode: str) -> None:
     try:
         print("RagTest retrieval benchmark")
         print(
-            f"Cases: {len(cases)} | k={limit} | "
-            f"source={'external JSON' if cases_path else 'packaged defaults'}"
+            f"Dataset: {EVALUATION_DATASET_VERSION} | "
+            f"Cases: {len(cases)} | k={limit} | source={source_label}"
         )
 
         results: list[tuple[str, float, float]] = []
@@ -156,7 +175,7 @@ async def run(cases_path: Path | None, limit: int, mode: str) -> None:
 
 def main() -> None:
     args = parse_args()
-    asyncio.run(run(args.cases, args.limit, args.mode))
+    asyncio.run(run(args.cases, args.limit, args.mode, args.suite))
 
 
 if __name__ == "__main__":
