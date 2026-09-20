@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.10`  
-**Trabalho em andamento:** `0.5.11` em `feature/grounded-citations-0.5.11`; build, health/ready e self-check de groundedness validados. Falta validar o fluxo real `/v1/chat`.
+**Trabalho em andamento:** `0.5.11` em `feature/grounded-citations-0.5.11`; build, health/ready, self-check e fluxo real `/v1/chat` validados. A execução revelou a Dificuldade TCC #11 sobre cobertura parcial de perguntas compostas.
 
 ---
 
@@ -356,7 +356,8 @@ Casos atuais:
 7. BM25 enriquecido não resolveu a fonte problemática;
 8. fonte esperada tinha zero texto e zero chunks;
 9. retrieval híbrido não superou dense-rerank no mesmo corpus;
-10. `pyproject.toml` inválido bloqueou o build Docker da 0.5.11.
+10. `pyproject.toml` inválido bloqueou o build Docker da 0.5.11;
+11. consulta composta recuperou direitos, mas não detalhou deveres.
 
 **Regra:** quando algo planejado não funcionar como esperado, criar uma nova “Dificuldade TCC #N” com:
 
@@ -364,7 +365,7 @@ Casos atuais:
 - observado;
 - diagnóstico;
 - correção;
-- aprendizado para a monografia.
+- Aprendizado técnico.
 
 ---
 
@@ -388,7 +389,7 @@ Branch ativa:
 
 `feature/grounded-citations-0.5.11`
 
-Status: **build corrigido e validado; health/ready e `ragtest-check-grounding` passaram. PR #5 permanece draft e aguarda teste real do `/v1/chat`.**
+Status: **fluxo real validado: `grounded=true`, citações [1,2,3] válidas e `citation_retry_count=0`. PR #5 permanece draft. A resposta revelou cobertura parcial de deveres, registrada como Dificuldade TCC #11.**
 
 ### Histórico — fase 0.5.10 — métricas source-level
 
@@ -598,10 +599,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a correção da Dificuldade TCC #10 foi validada. A imagem 0.5.11 foi construída com sucesso, `/health` retornou 0.5.11, `/ready` retornou Qdrant ok e o `ragtest-check-grounding` passou em todos os checks determinísticos.
+o fluxo real da 0.5.11 foi validado com Gemini: `grounded=true`, `citation_ids=[1,2,3]`, `citation_retry_count=0`, e todas as citações referenciam fontes realmente retornadas. O modelo também recusou inventar deveres que não estavam detalhados nos três trechos recuperados.
+
+A mesma execução revelou a Dificuldade TCC #11: a pergunta composta sobre direitos e deveres teve cobertura forte para direitos, mas o top 3 não trouxe trechos suficientes sobre deveres.
 
 Próxima ação ao receber "continuar":
-executar o teste real do `/v1/chat` com a categoria `direitos_saude`, conferir `grounded`, `citation_ids`, `citation_retry_count` e a correspondência entre citações e `sources`. Não reindexar Qdrant.
+executar uma busca isolada por deveres na categoria `direitos_saude` para distinguir falha de cobertura multi-intent de eventual problema de extração/recuperabilidade. Não alterar pesos, não reindexar Qdrant.
 ```
 
 
@@ -689,7 +692,7 @@ Diagnóstico:
 Correção:
 ...
 
-Aprendizado para o TCC:
+Aprendizado técnico:
 ...
 ```
 
@@ -837,7 +840,7 @@ Resposta esperada:
 >
 > **Correção:** ...
 >
-> **Aprendizado para o TCC:** ...
+> **Aprendizado técnico:** ...
 >
 > Já corrigi/preparei a alteração no GitHub, mas ainda está **aguardando validação**.
 >
