@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.16`  
-**Trabalho em andamento:** `0.5.17` em `feature/docx-structure-audit-0.5.17`; auditoria estrutural validada localmente. Os 3 DOCX possuem 0 tabelas e nenhum conteúdo não vazio em cabeçalhos/rodapés. Não há ganho observado em ampliar o loader para esses elementos; corpus permanece em 767 chunks. CI verde com 60 testes. PR #11 aguarda autorização explícita de merge.
+**Estado validado e mesclado no main:** `0.5.17`  
+**Trabalho em andamento:** `0.5.18` em `feature/evaluation-label-semantics-0.5.18`; contrato explícito de rótulos de avaliação implementado, preservando integralmente o dataset/holdout v1. Aguardando CI e auditoria local.
 
 ---
 
@@ -631,7 +631,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.16
+Main validado/mesclado: 0.5.17
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -641,10 +641,13 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.17 auditoria estrutural de DOCX
+0.5.18 semântica explícita dos rótulos de avaliação
 
 Branch:
-feature/docx-structure-audit-0.5.17
+feature/evaluation-label-semantics-0.5.18
+
+PR:
+#12 draft — Explicita semântica dos rótulos de avaliação na 0.5.18
 
 PR:
 #11 draft — Adiciona auditoria estrutural de DOCX na 0.5.17
@@ -670,12 +673,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a auditoria estrutural da 0.5.17 foi validada localmente. Foram encontrados 3 DOCX; todos possuem 0 tabelas, 0 células e nenhum conteúdo não vazio em cabeçalhos ou rodapés. O comando confirmou `Files with structural content outside body paragraphs: 0` e não imprimiu conteúdo textual. A CI passou com Ruff verde e `60 passed, 4 warnings`.
-
-Conclusão: não ampliar o loader para tabelas/cabeçalhos/rodapés no corpus atual, pois não há conteúdo a recuperar nesses elementos. Preservar os 767 chunks/pontos. A revisão manual de privacidade dos CHATSCM continua pendente e separada desta auditoria.
+a 0.5.17 foi mesclada. A 0.5.18 começa a corrigir uma limitação metodológica já conhecida sem tocar nos resultados históricos: `expected_sources` do dataset v1 é ambíguo quando há múltiplas fontes, pois não informa se são alternativas aceitáveis ou se todas são obrigatórias. Foi criado um contrato novo para datasets futuros com `acceptable_sources` (OR) e `required_sources` (AND), mantendo `expected_sources` como legado congelado.
 
 Próxima ação ao receber "continuar":
-aguardar autorização explícita para merge do PR #11. Após o merge, seguir para a próxima fase de avaliação/robustez sem reindexar a collection.
+atualizar/rebuildar a branch 0.5.18, validar `/health` e executar `ragtest-audit-evaluation-labels`. Não reindexar Qdrant e não alterar o holdout v1.
 ```
 
 
