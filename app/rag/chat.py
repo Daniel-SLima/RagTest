@@ -1,8 +1,13 @@
 from dataclasses import dataclass
 
 from app.llm.base import LLMProvider
+from app.rag.citations import validate_citations
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
-from app.rag.prompting import SYSTEM_PROMPT, build_user_prompt
+from app.rag.prompting import (
+    SYSTEM_PROMPT,
+    build_citation_repair_prompt,
+    build_user_prompt,
+)
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore, SearchHit
 
@@ -12,6 +17,41 @@ class ChatResult:
     answer: str
     sources: list[SearchHit]
     model: str
+    grounded: bool
+    citation_ids: list[int]
+    citation_retry_count: int = 0
+
+
+_GROUNDING_FALLBACK = (
+    "Não foi possível gerar uma resposta com citações verificáveis a partir dos "
+    "trechos recuperados. Consulte as fontes retornadas antes de usar a informação."
+)
+
+
+async def _generate_with_validated_citations(
+    question: str,
+    hits: list[SearchHit],
+    llm: LLMProvider,
+) -> tuple[str, bool, list[int], int]:
+    answer = await llm.generate(
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=build_user_prompt(question, hits),
+    )
+    validation = validate_citations(answer, len(hits))
+
+    if validation.valid:
+        return answer, True, list(validation.citation_ids), 0
+
+    repaired_answer = await llm.generate(
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=build_citation_repair_prompt(question, hits),
+    )
+    repaired_validation = validate_citations(repaired_answer, len(hits))
+
+    if repaired_validation.valid:
+        return repaired_answer, True, list(repaired_validation.citation_ids), 1
+
+    return _GROUNDING_FALLBACK, False, [], 1
 
 
 async def answer_with_rag(
@@ -61,17 +101,21 @@ async def answer_with_rag(
             ),
             sources=[],
             model=llm.model_name,
+            grounded=False,
+            citation_ids=[],
         )
 
-    answer = await llm.generate(
-        system_prompt=SYSTEM_PROMPT,
-        user_prompt=build_user_prompt(question, hits),
+    answer, grounded, citation_ids, retry_count = await _generate_with_validated_citations(
+        question,
+        hits,
+        llm,
     )
 
-    if not answer:
-        answer = (
-            "O modelo não retornou uma resposta. Os trechos recuperados estão "
-            "disponíveis no campo sources."
-        )
-
-    return ChatResult(answer=answer, sources=hits, model=llm.model_name)
+    return ChatResult(
+        answer=answer,
+        sources=hits,
+        model=llm.model_name,
+        grounded=grounded,
+        citation_ids=citation_ids,
+        citation_retry_count=retry_count,
+    )

@@ -110,6 +110,30 @@ Correção: dense-rerank passou a ser o candidato padrão, mantendo hybrid dispo
 
 Aprendizado técnico: adicionar uma técnica mais complexa não garante melhor qualidade; a escolha da estratégia deve ser sustentada por benchmark controlado e replicável.
 
+## 10. pyproject inválido bloqueou o build Docker da 0.5.11
+
+Planejado: adicionar o comando `ragtest-check-grounding` ao bloco `[project.scripts]` e reconstruir a imagem Docker da versão 0.5.11.
+
+Observado: o build falhou em `RUN pip install --no-cache-dir .` com `TOMLDecodeError: Expected newline or end of document after a statement (at line 41, column 63)`.
+
+Diagnóstico: o `pyproject.toml` continha os dois scripts na mesma linha com os caracteres literais `\n` entre eles, em vez de uma quebra de linha TOML real.
+
+Correção: separar `ragtest-evaluate-retrieval` e `ragtest-check-grounding` em duas linhas válidas dentro de `[project.scripts]`. A correção foi validada em runtime: o build Docker concluiu, a API 0.5.11 subiu e o self-check de groundedness passou.
+
+Aprendizado técnico: alterações automatizadas em arquivos declarativos devem preservar a sintaxe do formato e ser validadas antes de considerar a imagem pronta para build.
+
+## 11. Consulta composta recuperou direitos, mas não detalhou deveres
+
+Planejado: responder à pergunta composta "Quais são os direitos e deveres da pessoa usuária da saúde?" usando três fontes recuperadas da categoria `direitos_saude`.
+
+Observado: a resposta real passou pela validação de citações, apresentou vários direitos com fontes válidas, mas informou que o contexto recuperado não era suficiente para detalhar os deveres. Os três resultados retornados eram páginas 10, 4 e 27 da mesma Carta.
+
+Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. A busca isolada por deveres recuperou a página 13 da Carta em rank 1, confirmando que os trechos estão extraídos, indexados e recuperáveis. Na consulta composta, a mesma página não apareceu no top 5 e só surgiu em rank 10. Portanto, o problema não é ausência no corpus nem apenas um corte top 3: a subintenção "deveres" é fortemente diluída quando combinada com "direitos".
+
+Correção: não aumentar simplesmente o contexto global para 10 resultados, pois isso elevaria custo e ruído para todas as perguntas. Levar o caso para uma fase própria de decomposição/multi-query, preservando o `dense-rerank` como retrieval base para cada subconsulta.
+
+Aprendizado técnico: uma resposta pode ter citações válidas e ainda ser incompleta quando o retrieval não cobre todas as subintenções de uma pergunta composta; validação de citações e cobertura semântica são dimensões distintas.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

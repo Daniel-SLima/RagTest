@@ -96,3 +96,37 @@ Runtime verificado:
     hybrid        HitRate=1.000 MRR=0.821 SourceRecall=1.000 SourceNDCG=0.869
 
 A nova métrica mostrou uma perda de cobertura no modo hybrid que o HitRate isolado não evidenciava.
+
+
+## Fase 0.5.11 — groundedness e citações verificáveis
+
+A 0.5.11 reforça a etapa de geração sem alterar retrieval ou reindexar o corpus:
+
+- remove score de retrieval do prompt enviado ao LLM;
+- marca cada fonte recuperada como dado não confiável;
+- instrui o modelo a ignorar comandos/prompt injection presentes nos documentos;
+- valida citações `[n]` contra as fontes realmente retornadas;
+- tenta reparar a geração uma vez quando a citação é inválida ou ausente;
+- usa fallback seguro se a segunda tentativa também falhar;
+- adiciona `grounded`, `citation_ids` e `citation_retry_count` à resposta do chat.
+
+Self-check determinístico:
+
+    ragtest-check-grounding
+
+Não exige `ragtest-ingest --recreate`.
+
+
+### Validação da 0.5.11
+
+Verificado localmente:
+
+    docker build: sucesso
+    /health: version 0.5.11
+    /ready: qdrant ok
+    ragtest-check-grounding: todos os checks passaram
+    /v1/chat: grounded=true
+    citation_ids=[1,2,3]
+    citation_retry_count=0
+
+O teste real confirmou que as citações retornadas correspondem às fontes disponíveis. Também revelou uma limitação separada: uma pergunta composta sobre direitos e deveres recuperou contexto suficiente para direitos, mas não para detalhar deveres. Isso foi registrado como Dificuldade TCC #11 e será investigado sem alterar o retrieval nesta fase.
