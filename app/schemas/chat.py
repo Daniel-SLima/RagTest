@@ -23,4 +23,7 @@ class ChatSource(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     model: str
+    grounded: bool
+    citation_ids: list[int]
+    citation_retry_count: int
     sources: list[ChatSource]

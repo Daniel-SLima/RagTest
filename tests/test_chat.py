@@ -41,6 +41,20 @@ class FakeLLM:
         return "A fonte informa vacinação anual contra influenza [1]."
 
 
+class RepairingFakeLLM:
+    model_name = "repairing-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        if self.calls == 1:
+            return "Resposta com citação inexistente [9]."
+        assert "VALIDAÇÃO AUTOMÁTICA DE CITAÇÕES" in user_prompt
+        return "Resposta reparada e verificável [1]."
+
+
 @pytest.mark.asyncio
 async def test_answer_with_rag_returns_grounded_answer_and_sources() -> None:
     result = await answer_with_rag(
@@ -53,5 +67,26 @@ async def test_answer_with_rag_returns_grounded_answer_and_sources() -> None:
 
     assert result.model == "fake-llm"
     assert result.answer.endswith("[1].")
+    assert result.grounded is True
+    assert result.citation_ids == [1]
+    assert result.citation_retry_count == 0
     assert len(result.sources) == 1
     assert result.sources[0].audience == "idoso"
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_retries_invalid_citations_once() -> None:
+    llm = RepairingFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 2
+    assert result.grounded is True
+    assert result.citation_ids == [1]
+    assert result.citation_retry_count == 1

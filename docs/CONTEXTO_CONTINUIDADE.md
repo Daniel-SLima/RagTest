@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.9`  
-**Trabalho em andamento:** `0.5.10` em `feature/source-metrics-0.5.10`; métricas source-level validadas em runtime. PR #4 aguarda autorização de merge.
+**Estado validado e mesclado no main:** `0.5.10`  
+**Trabalho em andamento:** `0.5.11` em `feature/grounded-citations-0.5.11`; guardrails de citações e prompt injection implementados e aguardando validação.
 
 ---
 
@@ -369,7 +369,27 @@ Casos atuais:
 
 ## 11. O que está sendo feito agora
 
-### Fase 0.5.10 — métricas source-level
+### Fase 0.5.11 — groundedness e citações verificáveis
+
+A 0.5.10 foi validada e mesclada no `main`.
+
+Objetivo atual:
+
+- remover scores internos do contexto enviado ao LLM;
+- tratar documentos recuperados explicitamente como dados não confiáveis;
+- adicionar defesa de prompt contra instruções encontradas dentro dos documentos;
+- validar programaticamente citações `[n]`;
+- repetir a geração uma vez quando citações forem inválidas ou ausentes;
+- retornar fallback seguro se a resposta continuar sem citações verificáveis;
+- expor `grounded`, `citation_ids` e `citation_retry_count` na API.
+
+Branch ativa:
+
+`feature/grounded-citations-0.5.11`
+
+Status: **implementado e aguardando validação local**.
+
+### Histórico — fase 0.5.10 — métricas source-level
 
 A 0.5.9 foi validada e mesclada no `main`.
 
@@ -544,7 +564,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.9
+Main validado/mesclado: 0.5.10
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -554,10 +574,10 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.10 métricas source-level
+0.5.11 groundedness/citações
 
 Branch:
-feature/source-metrics-0.5.10
+feature/grounded-citations-0.5.11
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
@@ -574,10 +594,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.10 validada em runtime. Holdout manteve as métricas históricas e adicionou: dense SourceRecall@5=1.000 / SourceNDCG@5=0.917; dense-rerank 1.000 / 0.941; hybrid 0.967 / 0.885. Suite dev: dense 1.000 / 0.903; dense-rerank 1.000 / 0.936; hybrid 1.000 / 0.869.
+0.5.11 implementada, aguardando validação. O retrieval e os 767 chunks não mudaram. O chat agora possui validação de citações, retry único e fallback seguro; o prompt não envia score de retrieval e marca documentos como dados não confiáveis.
 
 Próxima ação ao receber "continuar":
-confirmar o estado do PR #4 e, se houver autorização do usuário, mesclar a 0.5.10. Os testes unitários adicionados ainda não foram executados em CI/container de desenvolvimento; não afirmar que passaram.
+validar `/health` 0.5.11, executar `ragtest-check-grounding` e testar `/v1/chat` com uma fonte oficial não CHATSCM. Não reindexar Qdrant.
 ```
 
 

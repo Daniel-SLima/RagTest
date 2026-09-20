@@ -104,3 +104,11 @@ Impacto:
 **Mudança:** a avaliação passa a manter HitRate@k e MRR@k para comparabilidade histórica e adiciona SourceRecall@k e SourceNDCG@k.  
 **Motivo:** HitRate/MRR verificam a presença e a primeira posição de uma fonte esperada, mas não medem bem a cobertura quando há múltiplas fontes relevantes nem penalizam de forma explícita páginas duplicadas da mesma fonte.  
 **Impacto:** novos experimentos passam a mostrar cobertura de fontes esperadas e qualidade de ordenação source-level sem invalidar as baselines antigas. A validação 0.5.10 mostrou o valor prático dessa decisão: no holdout, hybrid manteve HitRate@5=1.000, mas SourceRecall@5=0.967, revelando perda de uma fonte esperada que o HitRate sozinho não mostrava.
+
+
+## D010 — Validar citações e tratar documentos recuperados como dados não confiáveis
+
+**Data:** 2026-09-20  
+**Mudança:** o chat passa a validar programaticamente citações `[n]`, repetir a geração uma vez quando a resposta usa citações inválidas/ausentes, remover scores de retrieval do prompt do LLM e delimitar os documentos recuperados como dados não confiáveis.  
+**Motivo:** o prompt sozinho não garante que o LLM cite somente fontes existentes nem impede que instruções contidas em documentos sejam interpretadas como comandos. Scores internos de retrieval também não são necessários para a geração textual.  
+**Impacto:** a API passa a expor `grounded`, `citation_ids` e `citation_retry_count`; respostas que continuam sem citações verificáveis após uma tentativa de reparo são substituídas por um fallback seguro. O conteúdo documental continua sendo enviado ao LLM apenas como contexto de dados, não como instrução.

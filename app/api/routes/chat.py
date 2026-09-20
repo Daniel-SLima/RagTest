@@ -64,6 +64,9 @@ async def chat(
     return ChatResponse(
         answer=result.answer,
         model=result.model,
+        grounded=result.grounded,
+        citation_ids=result.citation_ids,
+        citation_retry_count=result.citation_retry_count,
         sources=[
             ChatSource(
                 citation_id=index,

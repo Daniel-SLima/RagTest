@@ -66,6 +66,9 @@ async def run(args: argparse.Namespace) -> None:
 
         print()
         print(f"Retrieval mode: {profile.name}")
+        print(f"Grounded: {'yes' if result.grounded else 'no'}")
+        print(f"Citation ids: {result.citation_ids or '-'}")
+        print(f"Citation retries: {result.citation_retry_count}")
         print("Answer:")
         print(result.answer)
         print()
