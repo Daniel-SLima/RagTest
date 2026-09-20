@@ -967,3 +967,19 @@ Implementado:
 - sem envio de conteúdo CHATSCM a LLM externo para avaliação.
 
 Próximo passo: validar CI e executar o self-check local. Não reindexar Qdrant.
+
+
+### Etapa 2 da 0.5.19 — gate de cobertura no runtime
+
+O self-check local da cobertura estrutural passou nos quatro cenários esperados, e a CI da primeira etapa passou com Ruff verde e 77 testes.
+
+Com base nisso, a cobertura estrutural foi promovida ao gate de geração do chat:
+
+- toda resposta gerada passa por validação de cobertura por bloco informativo;
+- cobertura completa mantém `grounded=true`;
+- cobertura incompleta aciona o único retry de reparo já existente;
+- se o retry continuar incompleto, retorna fallback seguro com `grounded=false`;
+- nenhum juiz semântico externo foi introduzido;
+- nenhuma mudança no retrieval/corpus/Qdrant.
+
+Próximo passo: validar a nova CI e executar novamente os self-checks de grounding/cobertura. Depois, testar um chat real apenas com fonte oficial para observar o gate em runtime sem expor CHATSCM ao Gemini.
