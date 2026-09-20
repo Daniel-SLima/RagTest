@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.17`  
-**Trabalho em andamento:** `0.5.18` em `feature/evaluation-label-semantics-0.5.18`; infraestrutura de avaliação v2 validada. Self-check OR/AND passou, regressão v1 reproduziu HitRate@5=1.000, MRR@5=0.929, SourceRecall@5=1.000 e SourceNDCG@5=0.936; CI verde com 72 testes. PR #12 aguarda autorização explícita de merge.
+**Estado validado e mesclado no main:** `0.5.18`  
+**Trabalho em andamento:** `0.5.19` em `feature/semantic-grounding-0.5.19`; primeira etapa adiciona auditoria determinística de cobertura estrutural das citações por bloco informativo, sem alterar o endpoint e sem enviar conteúdo a juiz externo.
 
 ---
 
@@ -631,7 +631,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.17
+Main validado/mesclado: 0.5.18
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -951,3 +951,19 @@ Se houver conflito entre memória do chat, este documento e o estado do GitHub:
 1. o estado real do GitHub e os logs de execução mais recentes prevalecem;
 2. este documento deve ser atualizado;
 3. não inventar uma conclusão para preencher a lacuna.
+
+
+## Atualização 0.5.19 — cobertura de grounding
+
+A 0.5.18 foi mesclada no main. A 0.5.19 inicia o fortalecimento de groundedness sem usar juiz semântico externo nesta etapa.
+
+Implementado:
+
+- validação determinística por bloco informativo;
+- contagem de blocos citados e não citados;
+- proporção de cobertura;
+- self-check `ragtest-check-grounding-coverage`;
+- sem alteração do endpoint `/v1/chat`;
+- sem envio de conteúdo CHATSCM a LLM externo para avaliação.
+
+Próximo passo: validar CI e executar o self-check local. Não reindexar Qdrant.
