@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.8`  
-**Trabalho em andamento:** `0.5.9` em `feature/holdout-evaluation-0.5.9`, implementada e aguardando a primeira execução do holdout.
+**Trabalho em andamento:** `0.5.9` em `feature/holdout-evaluation-0.5.9`; primeira execução do holdout com `dense-rerank` concluída e aguardando comparação com `dense` e `hybrid`.
 
 ---
 
@@ -397,7 +397,7 @@ Suites:
 
 O holdout cobre alimentação, vacinação de adulto/adolescente/criança/idoso/gestante, saúde bucal na gestação, cadernetas, medicamentos, contracepção e paráfrases das consultas centrais.
 
-Status: **implementado, PR #3 aberto como draft e aguardando a primeira execução local do holdout**.
+Status: **implementado; PR #3 aberto como draft. A primeira execução do holdout com `dense-rerank` foi concluída com HitRate@5=1.000 (15/15) e MRR@5=0.933.**
 
 ---
 
@@ -405,18 +405,27 @@ Status: **implementado, PR #3 aberto como draft e aguardando a primeira execuç�
 
 A 0.5.8 foi validada e mesclada no `main`.
 
-A 0.5.9 foi implementada na branch `feature/holdout-evaluation-0.5.9`.
+A 0.5.9 foi implementada e a primeira execução do holdout foi concluída.
 
-Ainda **não executar nem interpretar o holdout como se ele já tivesse sido testado**. A primeira execução local deve ser preservada como resultado experimental.
+Verificado:
 
-Próxima validação:
+1. `/health` retornou versão 0.5.9;
+2. `/ready` retornou ready com Qdrant ok;
+3. primeira execução de `dense-rerank` na suite holdout:
+   - HitRate@5=1.000 (15/15);
+   - MRR@5=0.933;
+   - 13 consultas tiveram a primeira fonte esperada no rank 1;
+   - 2 consultas tiveram a primeira fonte esperada no rank 2;
+   - nenhum caso FAIL.
 
-1. `/health` deve mostrar versão 0.5.9;
-2. `/ready` deve permanecer ready;
-3. executar primeiro somente `dense-rerank` na suite holdout;
-4. registrar HitRate@5, MRR@5 e casos FAIL sem alterar parâmetros;
-5. depois executar os três perfis no mesmo holdout para comparação;
-6. confirmar a suite dev como regressão histórica.
+Casos com rank 2:
+
+- `holdout-caderneta-gestante`: a caderneta apareceu em rank 2, atrás da cartilha de saúde bucal da gestante;
+- `holdout-vacinas-gestante-parafrase`: a Caderneta da Gestante apareceu em rank 2 e o calendário de vacinação da gestante em rank 5; o rank 1 foi `chatscm_gestante.docx`.
+
+Interpretação: é uma evidência positiva de generalização neste conjunto congelado de 15 consultas, mas ainda não uma prova geral de superioridade.
+
+Próxima validação: executar os três perfis no mesmo holdout e depois repetir a suite dev como regressão histórica.
 
 Não recriar a collection: os 767 chunks continuam compatíveis.
 
@@ -424,13 +433,13 @@ Não recriar a collection: os 767 chunks continuam compatíveis.
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — executar o holdout 0.5.9
+### Passo 1 — comparar os três perfis no holdout
 
-Rodar primeiro `dense-rerank` sobre as 15 consultas novas e preservar o primeiro resultado sem recalibrar parâmetros.
+A primeira execução do `dense-rerank` já foi preservada: HitRate@5=1.000 e MRR@5=0.933. Agora rodar `dense`, `dense-rerank` e `hybrid` sobre exatamente as mesmas 15 consultas.
 
-### Passo 2 — comparar os três perfis no holdout
+### Passo 2 — confirmar regressão histórica
 
-Rodar `dense`, `dense-rerank` e `hybrid` sobre exatamente as mesmas 15 consultas.
+Executar novamente a suite `dev` com os três perfis para confirmar que a infraestrutura 0.5.9 não alterou a baseline histórica.
 
 ### Passo 3 — registrar generalização e dificuldades
 
@@ -537,10 +546,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.9 implementada, antes da primeira execução do holdout.
+primeiro holdout 0.5.9 concluído: dense-rerank HitRate@5=1.000 (15/15), MRR@5=0.933.
 
 Próxima ação ao receber "continuar":
-executar primeiro a suite holdout com dense-rerank, preservar os resultados e só depois comparar dense/hybrid; não reindexar Qdrant.
+executar `--suite holdout --mode all` e depois `--suite dev --mode all`; não alterar parâmetros e não reindexar Qdrant.
 ```
 
 
