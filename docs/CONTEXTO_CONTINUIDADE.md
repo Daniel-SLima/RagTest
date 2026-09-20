@@ -601,10 +601,10 @@ hybrid        HitRate@5=1.000 / MRR@5=0.821
 Pausado em:
 o fluxo real da 0.5.11 foi validado com Gemini: `grounded=true`, `citation_ids=[1,2,3]`, `citation_retry_count=0`, e todas as citações referenciam fontes realmente retornadas. O modelo também recusou inventar deveres que não estavam detalhados nos três trechos recuperados.
 
-A mesma execução revelou a Dificuldade TCC #11: a pergunta composta sobre direitos e deveres teve cobertura forte para direitos, mas o top 3 não trouxe trechos suficientes sobre deveres.
+A Dificuldade TCC #11 foi parcialmente isolada: a busca específica por deveres recuperou `direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf` página 13 em rank 1, com outras páginas relevantes em seguida. Portanto, os deveres estão extraídos/indexados e são recuperáveis. A limitação está na consulta composta e/ou no corte top-k=3 usado pelo chat.
 
 Próxima ação ao receber "continuar":
-executar uma busca isolada por deveres na categoria `direitos_saude` para distinguir falha de cobertura multi-intent de eventual problema de extração/recuperabilidade. Não alterar pesos, não reindexar Qdrant.
+executar a consulta composta por `ragtest-search` com `--limit 5` para verificar se a página de deveres aparece fora do top 3. Não alterar pesos e não reindexar Qdrant.
 ```
 
 
