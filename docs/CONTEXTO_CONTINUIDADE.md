@@ -387,7 +387,7 @@ Branch ativa:
 
 `feature/grounded-citations-0.5.11`
 
-Status: **implementado e aguardando validação local**.
+Status: **implementado, PR #5 aberto como draft e aguardando validação local**.
 
 ### Histórico — fase 0.5.10 — métricas source-level
 
@@ -578,6 +578,9 @@ Em andamento:
 
 Branch:
 feature/grounded-citations-0.5.11
+
+PR:
+#5 draft — Adiciona groundedness e validação de citações na 0.5.11
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
