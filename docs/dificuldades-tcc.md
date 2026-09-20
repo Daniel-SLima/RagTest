@@ -128,9 +128,9 @@ Planejado: responder à pergunta composta "Quais são os direitos e deveres da p
 
 Observado: a resposta real passou pela validação de citações, apresentou vários direitos com fontes válidas, mas informou que o contexto recuperado não era suficiente para detalhar os deveres. Os três resultados retornados eram páginas 10, 4 e 27 da mesma Carta.
 
-Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. Porém, o top 3 não cobriu as duas partes da intenção da pergunta. Ainda é necessário distinguir se isso ocorre por diluição da consulta composta no retrieval ou por baixa recuperabilidade/extração dos trechos específicos de deveres.
+Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. A busca isolada por deveres recuperou a página 13 da Carta em rank 1, seguida por outras páginas relevantes, confirmando que os trechos estão extraídos, indexados e recuperáveis. A limitação está na cobertura da consulta composta e/ou no corte top-k usado no chat, não na ausência dos deveres no corpus.
 
-Correção: não alterar pesos nem o corpus nesta etapa. Executar uma busca isolada por "deveres da pessoa usuária da saúde" na categoria `direitos_saude` para localizar as páginas relevantes e isolar a causa antes de propor mudança.
+Correção: não alterar pesos nem o corpus nesta etapa. A busca isolada confirmou a recuperabilidade dos deveres. Próximo diagnóstico: repetir a consulta composta via `ragtest-search` com `--limit 5` para verificar se a página de deveres aparece fora do top 3 e separar efeito de limite de efeito de diluição multi-intent.
 
 Aprendizado técnico: uma resposta pode ter citações válidas e ainda ser incompleta quando o retrieval não cobre todas as subintenções de uma pergunta composta; validação de citações e cobertura semântica são dimensões distintas.
 
