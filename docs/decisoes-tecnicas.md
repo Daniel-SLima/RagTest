@@ -143,4 +143,4 @@ Impacto:
 **Data:** 2026-09-20  
 **Mudança:** antes de fixar novas versões de FastEmbed/Qdrant, a 0.5.15 adiciona um fingerprint reproduzível do ambiente com versões instaladas, versão do servidor Qdrant, modelos configurados, parâmetros de chunking e schema/contagem da collection.  
 **Motivo:** o projeto já observou mudança de semântica de pooling no FastEmbed e ainda usa imagem Qdrant `latest`. Fixar versões sem registrar primeiro o ambiente realmente validado poderia cristalizar uma combinação diferente da que gerou os 767 chunks atuais.  
-**Impacto:** o próximo pinning será baseado no runtime observado e validado, não em suposição. O comando `ragtest-runtime-info` não altera a collection e não exige reindexação.
+**Impacto:** o pinning foi baseado no runtime observado: FastEmbed 0.8.0, qdrant-client 1.19.1 e servidor Qdrant 1.19.1. A imagem padrão passa a `qdrant/qdrant:v1.19.1`; FastEmbed e qdrant-client passam a versões exatas no `pyproject.toml`. O comando `ragtest-runtime-info` não altera a collection e não exige reindexação.

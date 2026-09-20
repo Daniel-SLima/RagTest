@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.14`  
-**Trabalho em andamento:** `0.5.15` em `feature/runtime-reproducibility-0.5.15`; fingerprint de runtime implementado e aguardando validação para orientar pinning seguro de FastEmbed/Qdrant.
+**Trabalho em andamento:** `0.5.15` em `feature/runtime-reproducibility-0.5.15`; fingerprint local capturado e pins exatos de FastEmbed/qdrant-client/Qdrant Server aplicados. Aguardando rebuild para confirmar que o runtime permanece idêntico.
 
 ---
 
@@ -664,10 +664,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a 0.5.14 foi mesclada. A 0.5.15 adiciona `ragtest-runtime-info` para capturar a combinação realmente validada de pacotes, servidor Qdrant, modelos, chunking e schema/contagem da collection antes de fazer pinning adicional.
+o fingerprint da 0.5.15 foi executado localmente e confirmou FastEmbed 0.8.0, qdrant-client 1.19.1, Qdrant Server 1.19.1, 767 pontos e schema dense 384/Cosine + sparse IDF. Com base nessa evidência, os pins exatos foram aplicados e a imagem padrão deixou de usar `latest`.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, rebuildar a imagem 0.5.15 e executar `ragtest-runtime-info`. Usar essa saída para decidir os pins exatos de FastEmbed/Qdrant sem reindexar Qdrant nesta primeira etapa.
+atualizar a branch local, rebuildar sem reindexar e executar novamente `ragtest-runtime-info`. Confirmar FastEmbed 0.8.0, qdrant-client 1.19.1, Qdrant Server 1.19.1 e 767/767 pontos.
 ```
 
 

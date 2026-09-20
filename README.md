@@ -285,3 +285,27 @@ Ele mostra:
 - nome, schema, metadata e contagem da collection.
 
 O comando é somente diagnóstico: não escreve na collection e não exige reindexação.
+
+
+### Baseline observada e pinning da 0.5.15
+
+O fingerprint local confirmou:
+
+    fastembed: 0.8.0
+    qdrant-client: 1.19.1
+    qdrant_server: 1.19.1
+    qdrant_commit: 6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de
+    dense: 384 / Cosine
+    sparse: idf
+    points: 767
+    indexed_vectors: 767
+
+Com base nessa combinação já validada, a segunda etapa da 0.5.15 fixa:
+
+    fastembed==0.8.0
+    qdrant-client==1.19.1
+    qdrant/qdrant:v1.19.1
+
+A baseline completa está em `docs/runtime-baseline-0.5.15.md`.
+
+A aplicação desses pins não exige reindexação; o próximo teste deve confirmar que o fingerprint continua igual após rebuild.
