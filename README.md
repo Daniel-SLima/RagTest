@@ -309,3 +309,22 @@ Com base nessa combinação já validada, a segunda etapa da 0.5.15 fixa:
 A baseline completa está em `docs/runtime-baseline-0.5.15.md`.
 
 A aplicação desses pins não exige reindexação; o próximo teste deve confirmar que o fingerprint continua igual após rebuild.
+
+
+### Validação pós-pinning da 0.5.15
+
+Após rebuild com as versões exatas:
+
+    fastembed: 0.8.0
+    qdrant-client: 1.19.1
+    qdrant_server: 1.19.1
+    qdrant_commit: 6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de
+    points_count: 767
+    indexed_vectors_count: 767
+
+A CI também passou:
+
+    ruff: All checks passed!
+    pytest: 53 passed, 4 warnings
+
+Portanto, o pinning não alterou o runtime nem a collection existente.
