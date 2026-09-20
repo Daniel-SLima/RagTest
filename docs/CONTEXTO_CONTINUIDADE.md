@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.13`  
-**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; GitHub Actions validado: lint passou e pytest terminou com 51 passed / 4 warnings. Falta apenas validar build/health local da imagem 0.5.14 antes da autorização de merge.
+**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; validação completa concluída: GitHub Actions com lint verde e 51 testes aprovados, `/health` local em 0.5.14 e `/ready` com Qdrant ok. PR #8 aguarda autorização explícita de merge.
 
 ---
 
@@ -390,7 +390,7 @@ Branch ativa:
 
 `feature/ci-quality-gate-0.5.14`
 
-Status: **implementado e aguardando validação automática pelo GitHub Actions**.
+Status: **validado em CI e runtime local. Lint verde, pytest 51 passed / 4 warnings, `/health`=0.5.14 e `/ready` com Qdrant ok. PR #8 aguarda autorização explícita de merge.**
 
 ### Histórico — fase 0.5.13 — decomposição automática no chat
 
@@ -661,10 +661,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o rerun do PR #8 passou nos dois jobs. O lint retornou `All checks passed!`. A suíte pytest terminou com 51 testes aprovados e 4 warnings não bloqueantes. As Dificuldades TCC #13 e #14 estão corrigidas e verificadas na CI.
+o PR #8 passou nos dois jobs da CI. O lint retornou `All checks passed!` e a suíte pytest terminou com 51 testes aprovados e 4 warnings não bloqueantes. A validação local da imagem também passou: `/health` retornou versão 0.5.14 e `/ready` retornou Qdrant ok. As Dificuldades TCC #13 e #14 estão corrigidas e verificadas.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, reconstruir a imagem 0.5.14 e validar `/health` e `/ready`. Não executar ingestão/reindexação. Se o runtime local subir corretamente, a 0.5.14 fica pronta para autorização explícita de merge.
+aguardar autorização explícita do usuário para merge do PR #8. Depois do merge, iniciar a próxima fase sem reindexar Qdrant.
 ```
 
 

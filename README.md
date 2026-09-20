@@ -255,3 +255,13 @@ O gate automatizado foi validado no GitHub Actions:
 A primeira execução da suíte havia revelado uma expectativa obsoleta no teste de health (50 passed / 1 failed); após a correção para comparar com `get_settings().app_version`, todos os testes passaram.
 
 Os warnings restantes são não bloqueantes e vêm de depreciação do TestClient/AnyIO e da verificação de compatibilidade do cliente Qdrant em testes sem servidor real.
+
+
+### Validação local da 0.5.14
+
+Após a CI verde, a imagem Docker foi reconstruída e validada localmente:
+
+    /health: status=ok, version=0.5.14
+    /ready: status=ready, qdrant=ok
+
+Com isso, a 0.5.14 está validada tanto na suíte automatizada quanto no runtime local. Não houve mudança de corpus e nenhuma reindexação foi necessária.
