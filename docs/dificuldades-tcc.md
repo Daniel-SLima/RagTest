@@ -110,6 +110,18 @@ Correção: dense-rerank passou a ser o candidato padrão, mantendo hybrid dispo
 
 Aprendizado técnico: adicionar uma técnica mais complexa não garante melhor qualidade; a escolha da estratégia deve ser sustentada por benchmark controlado e replicável.
 
+## 10. pyproject inválido bloqueou o build Docker da 0.5.11
+
+Planejado: adicionar o comando `ragtest-check-grounding` ao bloco `[project.scripts]` e reconstruir a imagem Docker da versão 0.5.11.
+
+Observado: o build falhou em `RUN pip install --no-cache-dir .` com `TOMLDecodeError: Expected newline or end of document after a statement (at line 41, column 63)`.
+
+Diagnóstico: o `pyproject.toml` continha os dois scripts na mesma linha com os caracteres literais `\n` entre eles, em vez de uma quebra de linha TOML real.
+
+Correção: separar `ragtest-evaluate-retrieval` e `ragtest-check-grounding` em duas linhas válidas dentro de `[project.scripts]`.
+
+Aprendizado técnico: alterações automatizadas em arquivos declarativos devem preservar a sintaxe do formato e ser validadas antes de considerar a imagem pronta para build.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

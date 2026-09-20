@@ -38,7 +38,8 @@ ragtest-inspect = "app.cli.inspect_documents:main"
 ragtest-ingest = "app.cli.ingest:main"
 ragtest-search = "app.cli.search:main"
 ragtest-chat = "app.cli.chat:main"
-ragtest-evaluate-retrieval = "app.cli.evaluate_retrieval:main"\nragtest-check-grounding = "app.cli.check_grounding:main"
+ragtest-evaluate-retrieval = "app.cli.evaluate_retrieval:main"
+ragtest-check-grounding = "app.cli.check_grounding:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
