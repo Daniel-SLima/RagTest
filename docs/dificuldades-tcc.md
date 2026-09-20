@@ -194,6 +194,19 @@ Correção: testar `qwen3:8b` no mesmo ambiente. O 8B respeitou `think=false` ta
 
 Aprendizado técnico: modelos da mesma família podem apresentar contratos de saída diferentes no mesmo runtime. Antes de integrar um LLM a guardrails estruturais, é necessário validar o payload real da API e não apenas a capacidade declarada do modelo.
 
+
+## 17. Qwen3 8B local ficou lento e falhou no gate de citações no primeiro chat RAG real
+
+Planejado: validar o `OllamaProvider` com `qwen3:8b` na pergunta oficial "Quais são os direitos da pessoa usuária da saúde?", usando `dense-rerank`, `--category direitos_saude` e `--no-decompose`, preservando corpus, Qdrant e retrieval.
+
+Observado: `/health` retornou 0.5.19; `ragtest-runtime-info --skip-qdrant` confirmou `LLM_PROVIDER=ollama`, `qwen3:8b`, contexto 8192 e `think=false`; os self-checks de grounding e cobertura passaram. No chat real, o retrieval retornou cinco páginas da fonte oficial, mas a execução levou aproximadamente seis minutos, realizou um retry de citação (`citation_retry_count=1`) e terminou em fallback seguro com `grounded=false` e sem `citation_ids`.
+
+Diagnóstico: o retrieval não é o ponto de falha observado, porque os cinco resultados foram recuperados normalmente e os validadores determinísticos passaram. O fluxo de chat executa uma geração inicial e, quando o gate falha, uma segunda geração completa de reparo. O `OllamaProvider` atual envia `num_ctx=8192` e usa o orçamento global de saída, mas descarta metadados de execução retornados pelo Ollama, como `total_duration`, `prompt_eval_count`, `eval_count` e `done_reason`; além disso, o fallback não preserva as duas respostas rejeitadas para diagnóstico. Portanto, ainda não há evidência suficiente para atribuir os seis minutos a uma causa única nem para saber se a reprovação ocorreu por ausência de citações, cobertura incompleta, formato da resposta ou outra característica da geração.
+
+Correção: nenhuma correção de comportamento foi aplicada ainda. A próxima etapa é instrumentar/medir a geração local antes de alterar prompt, contexto, limite de saída ou modelo, preservando o experimento controlado.
+
+Aprendizado técnico: self-checks do gate validam a lógica determinística do RagTest, mas não validam automaticamente a aderência de um modelo local ao contrato de saída nem sua latência sob o prompt RAG real. Providers locais precisam expor métricas de geração e motivos de reprovação para que desempenho e groundedness sejam diagnosticados separadamente.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
