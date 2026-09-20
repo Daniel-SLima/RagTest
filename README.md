@@ -392,3 +392,32 @@ Para testar o caminho destrutivo sem tocar na collection real, a 0.5.16 adiciona
 O comando cria uma collection temporária exclusiva, simula um documento alterado, um adicionado e um removido, executa upsert + delete por ID, valida que o estado final fica sincronizado e apaga a collection temporária ao final.
 
 A collection `ragtest_documents` não é modificada por esse self-check.
+
+
+### Validação completa da sincronização 0.5.16
+
+O caminho destrutivo foi validado em uma collection Qdrant temporária isolada:
+
+    [PASS] initial plan detects 2 missing
+    [PASS] initial plan detects 2 stale
+    [PASS] removed source is orphan
+    [PASS] final collection has 2 points
+    [PASS] final plan has no missing points
+    [PASS] final plan has no stale points
+    [PASS] final plan has no orphan sources
+    [PASS] final plan is in sync
+
+    All Qdrant ingestion sync integration self-checks passed.
+    Main application collection was not touched.
+
+Após o teste, o fingerprint da collection principal continuou:
+
+    points_count: 767
+    indexed_vectors_count: 767
+
+CI final da branch:
+
+    ruff: All checks passed!
+    pytest: 58 passed, 4 warnings
+
+Com isso, a sincronização incremental ficou validada nos três cenários: planejamento read-only, no-op seguro na collection real e insert/delete real em collection temporária.
