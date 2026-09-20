@@ -210,3 +210,20 @@ Self-check:
     ragtest-check-decomposition
 
 Não exige reindexação.
+
+
+### Validação parcial da 0.5.13
+
+Verificado localmente:
+
+    /health: version 0.5.13
+    /ready: qdrant ok
+    ragtest-check-decomposition: todos os checks passaram
+    multi_query_used=true
+    decomposition_status=multi-query
+    retrieval_queries=[direitos..., deveres...]
+    página 13 presente nas fontes
+    grounded=true
+    citation_retry_count=0
+
+O caminho composto passou a responder direitos e deveres na mesma chamada. Antes do merge, falta apenas validar uma pergunta simples pelo endpoint real para confirmar o caminho single-query sem decomposição.
