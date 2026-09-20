@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.7`  
-**Trabalho em andamento:** `0.5.8` em `feature/default-dense-rerank-0.5.8`, implementada e aguardando validação local.
+**Trabalho em andamento:** `0.5.8` em `feature/default-dense-rerank-0.5.8`, validada localmente e aguardando autorização de merge do PR #2.
 
 ---
 
@@ -394,7 +394,7 @@ Objetivo atual:
 - parâmetros do perfil são versionados no código;
 - não exige reindexação da collection de 767 chunks.
 
-Status: **implementado, PR #2 aberto como draft e aguardando validação local**.
+Status: **implementado e validado localmente; PR #2 permanece aberto aguardando autorização de merge**.
 
 ---
 
@@ -402,37 +402,42 @@ Status: **implementado, PR #2 aberto como draft e aguardando validação local**
 
 O PR #1 da 0.5.7 foi mesclado no `main`.
 
-A 0.5.8 foi implementada na branch `feature/default-dense-rerank-0.5.8`, mas ainda **não foi validada no ambiente local do usuário**.
+A 0.5.8 foi validada no ambiente local do usuário.
 
-Próxima validação deve confirmar:
+Confirmado:
 
-1. `/health` mostra versão 0.5.8;
-2. `/ready` continua ready;
+1. `/health` retorna versão 0.5.8;
+2. `/ready` retorna ready com Qdrant ok;
 3. `ragtest-search` sem `--mode` informa `Mode: dense-rerank`;
-4. a consulta de vacinação na gestação mantém a fonte esperada em rank 1;
-5. o benchmark completo continua reproduzindo aproximadamente a baseline 0.5.7.
+4. a consulta de vacinação na gestação mantém `vacinacao/calendario_nacional_vacinacao_gestante.pdf` no rank 1;
+5. o benchmark reproduziu exatamente a baseline da 0.5.7:
+   - dense: HitRate@5=1.000, MRR@5=0.857;
+   - dense-rerank: HitRate@5=1.000, MRR@5=0.929;
+   - hybrid: HitRate@5=1.000, MRR@5=0.821.
 
-Não recriar a collection: os 767 chunks atuais já são compatíveis.
+O PR #2 ainda não foi mesclado. Próxima decisão: autorização de merge e início da ampliação do conjunto de avaliação.
+
+Não recriar a collection: os 767 chunks atuais continuam compatíveis.
 
 ---
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — validar a 0.5.8
+### Passo 1 — mesclar a 0.5.8
 
-Executar a branch `feature/default-dense-rerank-0.5.8`, conferir health/ready e verificar que a busca padrão usa `dense-rerank`.
+A validação local foi concluída. Aguardar autorização explícita do usuário para mesclar o PR #2 no `main`.
 
-### Passo 2 — repetir benchmark de regressão
+### Passo 2 — ampliar o conjunto de avaliação
 
-Executar os três modos novamente para garantir que a consolidação do runtime não alterou o benchmark validado da 0.5.7.
+Criar um conjunto maior, com consultas novas e mais difíceis, evitando ajustar parâmetros apenas nos sete casos usados durante o desenvolvimento.
 
-### Passo 3 — mesclar a 0.5.8 após validação
+### Passo 3 — medir relevância com mais granularidade
 
-Se os resultados forem consistentes, atualizar documentação e fazer merge do PR somente após autorização/validação do usuário.
+Evoluir além de HitRate/MRR por fonte, incluindo julgamentos por página/chunk quando necessário e métricas como nDCG/Recall@k em um conjunto congelado.
 
-### Passo 4 — ampliar a avaliação e groundedness
+### Passo 4 — reforçar groundedness e segurança
 
-Expandir o conjunto além de sete consultas e, em seguida, validar citações, defesa contra prompt injection, ausência de scores internos no prompt e comportamento de contexto insuficiente.
+Validar citações, remover scores internos do prompt, adicionar defesa contra prompt injection documental e revisar privacidade dos arquivos CHATSCM antes de chamadas externas.
 
 ### Passo 5 — preparar a camada de produto
 
@@ -528,10 +533,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-0.5.8 implementada, aguardando validação local.
+0.5.8 validada localmente; PR #2 aberto e ainda não mesclado.
 
 Próxima ação ao receber "continuar":
-validar health/ready, busca padrão em dense-rerank e benchmark de regressão; não reindexar Qdrant.
+confirmar estado do PR #2 e, se houver autorização do usuário, mesclar a 0.5.8 e iniciar a ampliação do conjunto de avaliação.
 ```
 
 

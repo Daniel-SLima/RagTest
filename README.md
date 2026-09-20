@@ -11,7 +11,7 @@ O benchmark 0.5.7 foi mesclado após validação no corpus corrigido de 767 chun
     dense-rerank      1.000      0.929
     hybrid            1.000      0.821
 
-A 0.5.8 torna `dense-rerank` o modo padrão da aplicação, usando exatamente os parâmetros do perfil validado no benchmark:
+A 0.5.8 torna `dense-rerank` o modo padrão da aplicação, usando exatamente os parâmetros do perfil validado no benchmark. A validação local confirmou o modo padrão e reproduziu integralmente as métricas da 0.5.7:
 
     candidate_multiplier = 8
     score_margin = 0.22
@@ -20,6 +20,16 @@ A 0.5.8 torna `dense-rerank` o modo padrão da aplicação, usando exatamente os
     sparse retrieval = desativado
 
 Os perfis `dense` e `hybrid` continuam disponíveis para benchmark e diagnóstico.
+
+Validação 0.5.8:
+
+    health: 0.5.8
+    ready: qdrant ok
+    busca padrão: Mode: dense-rerank
+    vacinação gestante: fonte esperada no rank 1
+    dense:        HitRate@5=1.000 MRR@5=0.857
+    dense-rerank: HitRate@5=1.000 MRR@5=0.929
+    hybrid:       HitRate@5=1.000 MRR@5=0.821
 
 ## Atualizar e validar
 

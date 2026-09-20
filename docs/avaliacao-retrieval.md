@@ -84,4 +84,4 @@ Mudanças:
 - `dense` e `hybrid` permanecem disponíveis para benchmark/diagnóstico;
 - collection permanece com dense + sparse, portanto não há reindexação.
 
-Status: implementado e aguardando validação local. A validação deve reproduzir o benchmark e confirmar que a busca padrão corresponde ao perfil `dense-rerank`.
+Status: validado localmente. A busca padrão informou `Mode: dense-rerank`, a consulta de vacinação na gestação manteve a fonte esperada no rank 1 e o benchmark reproduziu exatamente: dense 1.000/0.857, dense-rerank 1.000/0.929 e hybrid 1.000/0.821 (HitRate@5/MRR@5).
