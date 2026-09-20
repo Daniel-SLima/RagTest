@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.15`  
-**Trabalho em andamento:** `0.5.16` em `feature/incremental-ingestion-0.5.16`; plano somente leitura validado em 18/18 fontes e 767/767 pontos. Aplicação controlada da sincronização implementada e aguardando validação.
+**Trabalho em andamento:** `0.5.16` em `feature/incremental-ingestion-0.5.16`; plano e no-op real validados sobre a collection principal, que permaneceu 767/767. CI passou com 58 testes. Self-check isolado de escrita/exclusão em Qdrant implementado e aguardando validação local.
 
 ---
 
@@ -667,12 +667,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o plano somente leitura da 0.5.16 foi validado na collection real: 18 arquivos carregados, 767 chunks, 767 pontos, zero missing/stale/orphan e `In sync=yes`. A CI da primeira etapa também passou com 56 testes.
+o self-check lógico da sincronização passou, `ragtest-sync-ingestion --apply` foi executado sobre a collection principal já sincronizada e fez no-op explícito, e o fingerprint confirmou 767/767 pontos. A CI da segunda etapa passou com Ruff verde e 58 testes.
 
-A segunda etapa implementa `ragtest-sync-ingestion --apply` com proteções: aborta em corpus vazio ou erros de carregamento, faz upsert antes de delete e verifica o estado final. Também foi adicionado `ragtest-check-ingestion-sync`.
+Para validar o caminho real de escrita/exclusão sem arriscar a collection principal, foi adicionado `ragtest-check-ingestion-sync-qdrant`, que usa uma collection temporária isolada e a remove ao final.
 
 Próxima ação ao receber "continuar":
-atualizar/rebuildar a branch, rodar `ragtest-check-ingestion-sync` e depois `ragtest-sync-ingestion --apply` sobre a collection já sincronizada. O esperado é no-op explícito, mantendo 767 pontos. Não usar `--recreate`.
+atualizar/rebuildar a branch e executar `ragtest-check-ingestion-sync-qdrant`. Depois executar `ragtest-runtime-info` para confirmar novamente 767/767 na collection principal. Não usar `--recreate`.
 ```
 
 
