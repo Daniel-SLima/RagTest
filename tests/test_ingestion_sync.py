@@ -1,6 +1,6 @@
 from langchain_core.documents import Document
 
-from app.rag.sync import build_ingestion_sync_plan
+from app.rag.sync import build_ingestion_sync_plan, select_missing_chunks
 from app.rag.vector_store import IndexedPointRef, deterministic_point_id
 
 
@@ -62,3 +62,27 @@ def test_sync_plan_detects_removed_source() -> None:
     assert plan.missing_points == 0
     assert plan.stale_points == 1
     assert plan.orphan_sources == ("removed.pdf",)
+
+
+
+def test_select_missing_chunks_maps_ids_back_to_current_documents() -> None:
+    a = _chunk("a.pdf", "alpha")
+    b = _chunk("b.pdf", "beta")
+
+    selected = select_missing_chunks(
+        [a, b],
+        (deterministic_point_id(b),),
+    )
+
+    assert selected == [b]
+
+
+def test_select_missing_chunks_rejects_unknown_ids() -> None:
+    a = _chunk("a.pdf", "alpha")
+
+    try:
+        select_missing_chunks([a], ("unknown-id",))
+    except RuntimeError as exc:
+        assert "could not be mapped" in str(exc)
+    else:
+        raise AssertionError("Expected RuntimeError for unresolved point id")

@@ -145,6 +145,17 @@ class QdrantVectorStore:
 
         return points
 
+    async def delete_points(self, point_ids: list[str]) -> int:
+        if not point_ids:
+            return 0
+
+        await self._client.delete(
+            collection_name=self.collection_name,
+            points_selector=models.PointIdsList(points=point_ids),
+            wait=True,
+        )
+        return len(point_ids)
+
     async def upsert(
         self,
         documents: list[Document],

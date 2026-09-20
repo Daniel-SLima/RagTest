@@ -45,6 +45,8 @@ ragtest-check-multi-query = "app.cli.check_multi_query:main"
 ragtest-check-decomposition = "app.cli.check_decomposition:main"
 ragtest-runtime-info = "app.cli.runtime_info:main"
 ragtest-plan-ingestion-sync = "app.cli.plan_ingestion_sync:main"
+ragtest-sync-ingestion = "app.cli.sync_ingestion:main"
+ragtest-check-ingestion-sync = "app.cli.check_ingestion_sync:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

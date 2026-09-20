@@ -99,3 +99,31 @@ def build_ingestion_sync_plan(
         orphan_sources=orphan_sources,
         source_deltas=tuple(source_deltas),
     )
+
+
+
+@dataclass(frozen=True, slots=True)
+class IngestionSyncApplyResult:
+    inserted_points: int
+    deleted_points: int
+
+
+def select_missing_chunks(
+    chunks: list[Document],
+    missing_point_ids: tuple[str, ...],
+) -> list[Document]:
+    wanted = set(missing_point_ids)
+    selected = [
+        chunk
+        for chunk in chunks
+        if deterministic_point_id(chunk) in wanted
+    ]
+
+    selected_ids = {deterministic_point_id(chunk) for chunk in selected}
+    unresolved = wanted - selected_ids
+    if unresolved:
+        raise RuntimeError(
+            f"{len(unresolved)} missing point ids could not be mapped back to current chunks."
+        )
+
+    return selected

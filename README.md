@@ -348,3 +348,34 @@ Ele compara o corpus atual com a collection e informa:
 - diferenças por fonte.
 
 Nesta primeira etapa o comando não grava nem remove nada no Qdrant. A exclusão sincronizada só será habilitada depois de validar o plano contra a collection atual.
+
+
+### Etapa 2 — aplicação controlada da sincronização
+
+A prévia somente leitura foi validada sobre a collection real:
+
+    Source files       : 18
+    Files loaded       : 18/18
+    Current chunks     : 767
+    Indexed points     : 767
+    Missing points     : 0
+    Stale points       : 0
+    Orphan sources     : 0
+    In sync            : yes
+
+A 0.5.16 agora adiciona:
+
+    ragtest-sync-ingestion
+    ragtest-check-ingestion-sync
+
+`ragtest-sync-ingestion` é dry-run por padrão. Para aplicar uma diferença é obrigatório usar:
+
+    ragtest-sync-ingestion --apply
+
+Proteções:
+
+- recusa sincronização se nenhum arquivo fonte for encontrado;
+- recusa escrita quando houver erro de carregamento;
+- insere/reindexa os novos chunks antes de remover os antigos;
+- verifica novamente a collection após aplicar;
+- se já estiver sincronizado, `--apply` faz no-op e não altera pontos.
