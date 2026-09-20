@@ -385,7 +385,7 @@ Branch ativa:
 
 `feature/source-metrics-0.5.10`
 
-Status: **implementado e aguardando validação local**.
+Status: **implementado, PR #4 aberto como draft e aguardando validação local**.
 
 ### Histórico — fase 0.5.9 — avaliação holdout congelada
 
@@ -558,6 +558,9 @@ Em andamento:
 
 Branch:
 feature/source-metrics-0.5.10
+
+PR:
+#4 draft — Adiciona métricas source-level na avaliação 0.5.10
 
 Dataset:
 2026-09-20-v1 — dev=7, holdout=15, all=22
