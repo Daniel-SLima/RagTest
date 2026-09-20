@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.16`  
-**Trabalho em andamento:** `0.5.17` em `feature/docx-structure-audit-0.5.17`; auditoria estrutural metadata-only de DOCX implementada e aguardando validação sobre os arquivos locais.
+**Trabalho em andamento:** `0.5.17` em `feature/docx-structure-audit-0.5.17`; auditoria estrutural validada localmente. Os 3 DOCX possuem 0 tabelas e nenhum conteúdo não vazio em cabeçalhos/rodapés. Não há ganho observado em ampliar o loader para esses elementos; corpus permanece em 767 chunks. CI verde com 60 testes. PR #11 aguarda autorização explícita de merge.
 
 ---
 
@@ -670,10 +670,12 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-a 0.5.16 foi mesclada. A 0.5.17 inicia a robustez documental com uma auditoria metadata-only da estrutura dos DOCX. O objetivo é descobrir se existem tabelas, cabeçalhos ou rodapés com conteúdo que o loader atual ignora, sem imprimir texto dos arquivos CHATSCM e sem alterar o Qdrant.
+a auditoria estrutural da 0.5.17 foi validada localmente. Foram encontrados 3 DOCX; todos possuem 0 tabelas, 0 células e nenhum conteúdo não vazio em cabeçalhos ou rodapés. O comando confirmou `Files with structural content outside body paragraphs: 0` e não imprimiu conteúdo textual. A CI passou com Ruff verde e `60 passed, 4 warnings`.
+
+Conclusão: não ampliar o loader para tabelas/cabeçalhos/rodapés no corpus atual, pois não há conteúdo a recuperar nesses elementos. Preservar os 767 chunks/pontos. A revisão manual de privacidade dos CHATSCM continua pendente e separada desta auditoria.
 
 Próxima ação ao receber "continuar":
-atualizar/rebuildar a branch 0.5.17, validar `/health` e executar `ragtest-audit-docx-structure`. Usar somente as contagens estruturais para decidir se o loader deve ser ampliado. Não reindexar a collection nesta primeira etapa.
+aguardar autorização explícita para merge do PR #11. Após o merge, seguir para a próxima fase de avaliação/robustez sem reindexar a collection.
 ```
 
 

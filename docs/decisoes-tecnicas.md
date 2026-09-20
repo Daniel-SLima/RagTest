@@ -159,4 +159,4 @@ Impacto:
 **Data:** 2026-09-20  
 **Mudança:** antes de alterar o loader DOCX, a 0.5.17 adiciona uma auditoria estrutural que conta parágrafos, tabelas, células, cabeçalhos e rodapés sem imprimir o conteúdo textual.  
 **Motivo:** o loader atual indexa somente `document.paragraphs`. Incluir tabelas/cabeçalhos/rodapés pode mudar o corpus e a contagem de chunks; a existência e a relevância estrutural desses elementos devem ser medidas primeiro.  
-**Impacto:** `ragtest-audit-docx-structure` é somente leitura e não altera a collection. A saída orientará se a segunda etapa da 0.5.17 precisa ampliar o loader e, nesse caso, a mudança de corpus será tratada deliberadamente via sincronização incremental.
+**Impacto:** `ragtest-audit-docx-structure` é somente leitura e não altera a collection. A auditoria real dos 3 DOCX encontrou 0 tabelas, 0 células, cabeçalhos sem texto e rodapés sem texto. Portanto, não há evidência de ganho ao ampliar o loader para tabelas/cabeçalhos/rodapés no corpus atual; o loader permanece inalterado e os 767 chunks são preservados. A revisão manual de privacidade dos CHATSCM continua pendente e é uma questão separada.

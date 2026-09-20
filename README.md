@@ -441,3 +441,32 @@ A auditoria informa apenas contagens estruturais:
 - parágrafos/tabelas em rodapés.
 
 Por privacidade, o comando não imprime o conteúdo dos documentos. Ele não modifica Qdrant e não exige reindexação.
+
+
+### Resultado da auditoria DOCX 0.5.17
+
+A auditoria local encontrou 3 DOCX e confirmou que nenhum possui conteúdo estrutural relevante fora dos parágrafos do corpo:
+
+    chatscm.docx
+      body paragraphs: 145/208 non-empty
+      body tables: 0
+      headers with text: 0
+      footers with text: 0
+
+    chatscm_gestante.docx
+      body paragraphs: 89/115 non-empty
+      body tables: 0
+      headers with text: 0
+      footers with text: 0
+
+    chatscm_gestante_parte_2.docx
+      body paragraphs: 53/75 non-empty
+      body tables: 0
+      headers with text: 0
+      footers with text: 0
+
+    Files with structural content outside body paragraphs: 0
+
+Conclusão: para o corpus atual, não há benefício observado em ampliar o loader para tabelas/cabeçalhos/rodapés. O corpus e a collection permanecem inalterados em 767 chunks/pontos.
+
+Resultado detalhado: `docs/docx-structure-audit-0.5.17.md`.
