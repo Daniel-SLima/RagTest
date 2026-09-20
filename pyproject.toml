@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.5.16"
+version = "0.5.17"
 description = "Backend portável de RAG com FastAPI, Qdrant, OCR e Gemini"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -48,6 +48,7 @@ ragtest-plan-ingestion-sync = "app.cli.plan_ingestion_sync:main"
 ragtest-sync-ingestion = "app.cli.sync_ingestion:main"
 ragtest-check-ingestion-sync = "app.cli.check_ingestion_sync:main"
 ragtest-check-ingestion-sync-qdrant = "app.cli.check_ingestion_sync_qdrant:main"
+ragtest-audit-docx-structure = "app.cli.audit_docx_structure:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

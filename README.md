@@ -421,3 +421,52 @@ CI final da branch:
     pytest: 58 passed, 4 warnings
 
 Com isso, a sincronização incremental ficou validada nos três cenários: planejamento read-only, no-op seguro na collection real e insert/delete real em collection temporária.
+
+
+## Fase 0.5.17 — auditoria estrutural de DOCX
+
+O loader atual extrai apenas parágrafos do corpo do DOCX. Antes de incluir tabelas, cabeçalhos ou rodapés e alterar o corpus, a 0.5.17 mede a estrutura real dos arquivos.
+
+Novo comando:
+
+    ragtest-audit-docx-structure
+
+A auditoria informa apenas contagens estruturais:
+
+- parágrafos do corpo;
+- tabelas, linhas e células;
+- células não vazias;
+- seções;
+- parágrafos/tabelas em cabeçalhos;
+- parágrafos/tabelas em rodapés.
+
+Por privacidade, o comando não imprime o conteúdo dos documentos. Ele não modifica Qdrant e não exige reindexação.
+
+
+### Resultado da auditoria DOCX 0.5.17
+
+A auditoria local encontrou 3 DOCX e confirmou que nenhum possui conteúdo estrutural relevante fora dos parágrafos do corpo:
+
+    chatscm.docx
+      body paragraphs: 145/208 non-empty
+      body tables: 0
+      headers with text: 0
+      footers with text: 0
+
+    chatscm_gestante.docx
+      body paragraphs: 89/115 non-empty
+      body tables: 0
+      headers with text: 0
+      footers with text: 0
+
+    chatscm_gestante_parte_2.docx
+      body paragraphs: 53/75 non-empty
+      body tables: 0
+      headers with text: 0
+      footers with text: 0
+
+    Files with structural content outside body paragraphs: 0
+
+Conclusão: para o corpus atual, não há benefício observado em ampliar o loader para tabelas/cabeçalhos/rodapés. O corpus e a collection permanecem inalterados em 767 chunks/pontos.
+
+Resultado detalhado: `docs/docx-structure-audit-0.5.17.md`.
