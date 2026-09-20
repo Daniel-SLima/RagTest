@@ -39,13 +39,18 @@ Resultado preservado do modo padrão:
 
 Foram 13 casos com fonte esperada em rank 1 e 2 casos em rank 2, sem falhas no top 5.
 
-Agora compare os três perfis:
+Comparação concluída:
 
-    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
+    MODE            HITRATE@5   MRR@5
+    dense             1.000      0.889
+    dense-rerank      1.000      0.933
+    hybrid            1.000      0.878
 
-Para confirmar que a regressão histórica segue igual:
+A regressão histórica da suite dev também foi confirmada:
 
-    docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
+    dense             1.000      0.857
+    dense-rerank      1.000      0.929
+    hybrid            1.000      0.821
 
 A primeira saída do holdout deve ser preservada como resultado experimental. Se surgirem falhas, elas devem ser analisadas, mas não se deve recalibrar o perfil e reutilizar o mesmo holdout como se continuasse sendo um teste não visto.
 

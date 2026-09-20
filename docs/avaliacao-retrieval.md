@@ -146,3 +146,28 @@ Próximos comandos:
 
     docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
     docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
+
+
+### Comparação completa no holdout
+
+Resultado verificado:
+
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 (15/15) | 0.889 |
+| dense-rerank | 1.000 (15/15) | 0.933 |
+| hybrid | 1.000 (15/15) | 0.878 |
+
+Os três modos mantiveram recall de fonte esperado no top 5 para todos os 15 casos, mas `dense-rerank` obteve a melhor ordenação segundo MRR.
+
+A suite dev também foi executada novamente e reproduziu exatamente a baseline histórica:
+
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 (7/7) | 0.857 |
+| dense-rerank | 1.000 (7/7) | 0.929 |
+| hybrid | 1.000 (7/7) | 0.821 |
+
+Interpretação: a infraestrutura 0.5.9 não alterou os resultados anteriores e o perfil `dense-rerank` manteve o maior MRR tanto no desenvolvimento quanto no primeiro holdout congelado.
+
+Limitação importante: a métrica atual usa a primeira fonte esperada e não diferencia relevância preferencial entre várias fontes plausíveis. Em especial, consultas de gestação podem promover documentos CHATSCM ou cadernetas antes de calendários oficiais, mesmo quando todas são semanticamente relacionadas.
