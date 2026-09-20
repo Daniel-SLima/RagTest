@@ -146,6 +146,18 @@ Correção: quando subconsultas explícitas existirem, fundir apenas as subconsu
 
 Aprendizado técnico: técnicas de fusão como RRF pressupõem diversidade útil entre os rankings; consultas semanticamente redundantes podem amplificar a intenção dominante e reduzir a cobertura de subintenções minoritárias.
 
+## 13. CI bloqueava o pytest por falhas de lint
+
+Planejado: usar o workflow de CI como gate automático para lint e testes em pushes e Pull Requests.
+
+Observado: após o merge da 0.5.13, o job instalou o projeto com sucesso, mas `ruff check .` falhou com 8 violações e a etapa `pytest` foi marcada como skipped. O mesmo padrão já ocorria em execuções anteriores.
+
+Diagnóstico: havia dívida de lint acumulada em imports, ordenação de `__all__` e dois `except Exception` intencionais sem anotação explícita. Além disso, lint e testes estavam no mesmo job sequencial, então uma falha de estilo impedia qualquer execução da suíte. A versão do Ruff também era definida por faixa ampla, tornando o conjunto efetivo de regras dependente da versão instalada no momento.
+
+Correção: corrigir as 8 violações atuais; documentar com `noqa: BLE001` apenas os dois catches amplos que são deliberadamente resilientes; fixar Ruff em 0.16.8 e declarar explicitamente as regras do gate; separar `lint` e `test` em jobs independentes; ignorar alterações exclusivamente documentais para evitar execuções desnecessárias.
+
+Aprendizado técnico: um gate de qualidade deve tornar lint e testes independentes e reproduzíveis; caso contrário, uma falha de estilo pode ocultar regressões funcionais e upgrades silenciosos de ferramentas podem alterar o comportamento da CI.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

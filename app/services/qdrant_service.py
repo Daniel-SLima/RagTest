@@ -22,7 +22,7 @@ class QdrantService:
     async def is_ready(self) -> bool:
         try:
             await self._client.get_collections()
-        except Exception as exc:  # readiness must never crash the API process
+        except Exception as exc:  # noqa: BLE001 - readiness must degrade to false, not crash
             logger.warning("Qdrant readiness check failed: %s", exc)
             return False
         return True

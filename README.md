@@ -227,3 +227,19 @@ Verificado localmente:
     citation_retry_count=0
 
 O caminho composto passou a responder direitos e deveres na mesma chamada. O caminho simples também foi validado no endpoint real: pergunta sobre vacinação de idosos retornou `multi_query_used=false`, `decomposition_status=not-needed`, uma única `retrieval_query`, `grounded=true` e `citation_retry_count=0`.
+
+
+## Fase 0.5.14 — CI e execução real da suíte de testes
+
+A 0.5.14 não altera retrieval, corpus ou geração. O objetivo é restaurar o gate de qualidade automatizado.
+
+Mudanças:
+
+- corrige as 8 violações Ruff observadas no workflow do `main`;
+- mantém catches amplos apenas onde são intencionais e documentados;
+- fixa Ruff em `0.16.8`;
+- declara explicitamente as regras usadas no gate;
+- separa lint e pytest em jobs independentes;
+- evita CI para mudanças exclusivamente em documentação.
+
+Não exige reindexação.
