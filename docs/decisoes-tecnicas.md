@@ -160,3 +160,11 @@ Impacto:
 **Mudança:** antes de alterar o loader DOCX, a 0.5.17 adiciona uma auditoria estrutural que conta parágrafos, tabelas, células, cabeçalhos e rodapés sem imprimir o conteúdo textual.  
 **Motivo:** o loader atual indexa somente `document.paragraphs`. Incluir tabelas/cabeçalhos/rodapés pode mudar o corpus e a contagem de chunks; a existência e a relevância estrutural desses elementos devem ser medidas primeiro.  
 **Impacto:** `ragtest-audit-docx-structure` é somente leitura e não altera a collection. A auditoria real dos 3 DOCX encontrou 0 tabelas, 0 células, cabeçalhos sem texto e rodapés sem texto. Portanto, não há evidência de ganho ao ampliar o loader para tabelas/cabeçalhos/rodapés no corpus atual; o loader permanece inalterado e os 767 chunks são preservados. A revisão manual de privacidade dos CHATSCM continua pendente e é uma questão separada.
+
+
+## D017 — Separar fontes aceitáveis de fontes obrigatórias na avaliação
+
+**Data:** 2026-09-20  
+**Mudança:** a 0.5.18 introduz um contrato explícito para rótulos de fonte em datasets futuros: `acceptable_sources` representa alternativas OR (qualquer uma pode satisfazer o caso), enquanto `required_sources` só deve ser usado quando todas as fontes listadas forem deliberadamente exigidas para cobertura. O campo histórico `expected_sources` permanece suportado, mas é marcado como semântica legada ambígua.  
+**Motivo:** o dataset congelado 2026-09-20-v1 foi criado antes dessa distinção. Em casos com múltiplas `expected_sources`, as métricas SourceRecall/SourceNDCG tratam todas como conjuntamente relevantes, embora os rótulos não tenham sido produzidos como julgamentos completos de relevância.  
+**Impacto:** as métricas históricas e o holdout v1 permanecem intocados e reproduzíveis. A 0.5.18 não reinterpreta nem reescreve resultados antigos; ela impede que novos datasets repitam a ambiguidade e adiciona uma auditoria do contrato atual.

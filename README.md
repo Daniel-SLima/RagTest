@@ -470,3 +470,22 @@ A auditoria local encontrou 3 DOCX e confirmou que nenhum possui conteúdo estru
 Conclusão: para o corpus atual, não há benefício observado em ampliar o loader para tabelas/cabeçalhos/rodapés. O corpus e a collection permanecem inalterados em 767 chunks/pontos.
 
 Resultado detalhado: `docs/docx-structure-audit-0.5.17.md`.
+
+
+## Fase 0.5.18 — semântica explícita dos rótulos de avaliação
+
+O dataset `2026-09-20-v1` permanece congelado. Seus casos usam `expected_sources`, um campo histórico que não distingue entre:
+
+- fontes alternativas aceitáveis; e
+- fontes que precisam aparecer conjuntamente para considerar a cobertura completa.
+
+A 0.5.18 não altera os resultados históricos. Ela adiciona o contrato para datasets futuros:
+
+    acceptable_sources  -> alternativas OR
+    required_sources    -> todas são deliberadamente exigidas
+
+Novo comando:
+
+    ragtest-audit-evaluation-labels
+
+Ele audita somente a estrutura dos rótulos e ajuda a evitar interpretações excessivas de SourceRecall/SourceNDCG no dataset legado.
