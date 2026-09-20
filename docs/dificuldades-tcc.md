@@ -128,9 +128,9 @@ Planejado: responder à pergunta composta "Quais são os direitos e deveres da p
 
 Observado: a resposta real passou pela validação de citações, apresentou vários direitos com fontes válidas, mas informou que o contexto recuperado não era suficiente para detalhar os deveres. Os três resultados retornados eram páginas 10, 4 e 27 da mesma Carta.
 
-Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. A busca isolada por deveres recuperou a página 13 da Carta em rank 1, seguida por outras páginas relevantes, confirmando que os trechos estão extraídos, indexados e recuperáveis. A limitação está na cobertura da consulta composta e/ou no corte top-k usado no chat, não na ausência dos deveres no corpus.
+Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. A busca isolada por deveres recuperou a página 13 da Carta em rank 1, confirmando que os trechos estão extraídos, indexados e recuperáveis. A mesma consulta composta executada com top 5 continuou trazendo principalmente direitos e não trouxe a página 13. Isso elimina a hipótese de que o problema fosse apenas o corte top 3 usado no primeiro chat; ainda falta verificar se a página de deveres aparece logo abaixo do top 5 ou se a intenção composta está sendo semanticamente diluída no ranking.
 
-Correção: não alterar pesos nem o corpus nesta etapa. A busca isolada confirmou a recuperabilidade dos deveres. Próximo diagnóstico: repetir a consulta composta via `ragtest-search` com `--limit 5` para verificar se a página de deveres aparece fora do top 3 e separar efeito de limite de efeito de diluição multi-intent.
+Correção: não alterar pesos nem o corpus nesta etapa. A busca isolada confirmou a recuperabilidade dos deveres e a busca composta com top 5 descartou o corte top 3 como causa suficiente. Próximo diagnóstico: executar a consulta composta com `--limit 10` para localizar a posição da página de deveres antes de decidir entre aumentar contexto ou implementar decomposição/multi-query.
 
 Aprendizado técnico: uma resposta pode ter citações válidas e ainda ser incompleta quando o retrieval não cobre todas as subintenções de uma pergunta composta; validação de citações e cobertura semântica são dimensões distintas.
 
