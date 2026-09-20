@@ -328,3 +328,96 @@ A CI também passou:
     pytest: 53 passed, 4 warnings
 
 Portanto, o pinning não alterou o runtime nem a collection existente.
+
+
+## Fase 0.5.16 — sincronização segura da ingestão
+
+O primeiro passo da 0.5.16 trata uma limitação da ingestão incremental: IDs determinísticos permitem upsert, mas chunks antigos podem permanecer quando documentos são editados ou removidos.
+
+Novo comando somente leitura:
+
+    ragtest-plan-ingestion-sync
+
+Ele compara o corpus atual com a collection e informa:
+
+- chunks atuais;
+- pontos indexados;
+- pontos que faltam no índice;
+- pontos obsoletos;
+- fontes órfãs que não existem mais no diretório;
+- diferenças por fonte.
+
+Nesta primeira etapa o comando não grava nem remove nada no Qdrant. A exclusão sincronizada só será habilitada depois de validar o plano contra a collection atual.
+
+
+### Etapa 2 — aplicação controlada da sincronização
+
+A prévia somente leitura foi validada sobre a collection real:
+
+    Source files       : 18
+    Files loaded       : 18/18
+    Current chunks     : 767
+    Indexed points     : 767
+    Missing points     : 0
+    Stale points       : 0
+    Orphan sources     : 0
+    In sync            : yes
+
+A 0.5.16 agora adiciona:
+
+    ragtest-sync-ingestion
+    ragtest-check-ingestion-sync
+
+`ragtest-sync-ingestion` é dry-run por padrão. Para aplicar uma diferença é obrigatório usar:
+
+    ragtest-sync-ingestion --apply
+
+Proteções:
+
+- recusa sincronização se nenhum arquivo fonte for encontrado;
+- recusa escrita quando houver erro de carregamento;
+- insere/reindexa os novos chunks antes de remover os antigos;
+- verifica novamente a collection após aplicar;
+- se já estiver sincronizado, `--apply` faz no-op e não altera pontos.
+
+
+### Etapa 3 — self-check de escrita/exclusão em collection isolada
+
+A validação da collection principal confirmou que `--apply` faz no-op quando não há diferenças e preserva 767/767 pontos.
+
+Para testar o caminho destrutivo sem tocar na collection real, a 0.5.16 adiciona:
+
+    ragtest-check-ingestion-sync-qdrant
+
+O comando cria uma collection temporária exclusiva, simula um documento alterado, um adicionado e um removido, executa upsert + delete por ID, valida que o estado final fica sincronizado e apaga a collection temporária ao final.
+
+A collection `ragtest_documents` não é modificada por esse self-check.
+
+
+### Validação completa da sincronização 0.5.16
+
+O caminho destrutivo foi validado em uma collection Qdrant temporária isolada:
+
+    [PASS] initial plan detects 2 missing
+    [PASS] initial plan detects 2 stale
+    [PASS] removed source is orphan
+    [PASS] final collection has 2 points
+    [PASS] final plan has no missing points
+    [PASS] final plan has no stale points
+    [PASS] final plan has no orphan sources
+    [PASS] final plan is in sync
+
+    All Qdrant ingestion sync integration self-checks passed.
+    Main application collection was not touched.
+
+Após o teste, o fingerprint da collection principal continuou:
+
+    points_count: 767
+    indexed_vectors_count: 767
+
+CI final da branch:
+
+    ruff: All checks passed!
+    pytest: 58 passed, 4 warnings
+
+Com isso, a sincronização incremental ficou validada nos três cenários: planejamento read-only, no-op seguro na collection real e insert/delete real em collection temporária.

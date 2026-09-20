@@ -10,6 +10,12 @@ from qdrant_client.hybrid.fusion import reciprocal_rank_fusion
 from app.rag.embeddings.base import SparseVectorData
 
 
+@dataclass(frozen=True, slots=True)
+class IndexedPointRef:
+    id: str
+    source: str
+
+
 @dataclass(slots=True)
 class SearchHit:
     id: str
@@ -95,6 +101,60 @@ class QdrantVectorStore:
             )
 
         return True
+
+    async def list_indexed_points(
+        self,
+        *,
+        page_size: int = 256,
+    ) -> list[IndexedPointRef]:
+        if page_size <= 0:
+            raise ValueError("page_size must be greater than zero")
+        if not await self._client.collection_exists(self.collection_name):
+            raise RuntimeError(
+                "Qdrant collection does not exist yet. Run ragtest-ingest first."
+            )
+
+        points: list[IndexedPointRef] = []
+        offset: Any = None
+
+        while True:
+            records, next_offset = await self._client.scroll(
+                collection_name=self.collection_name,
+                limit=page_size,
+                offset=offset,
+                with_payload=["source"],
+                with_vectors=False,
+            )
+            for record in records:
+                payload = dict(record.payload or {})
+                source = str(payload.get("source", "")).strip()
+                if not source:
+                    raise RuntimeError(
+                        f"Indexed point {record.id} does not contain source metadata."
+                    )
+                points.append(
+                    IndexedPointRef(
+                        id=str(record.id),
+                        source=source,
+                    )
+                )
+
+            if next_offset is None:
+                break
+            offset = next_offset
+
+        return points
+
+    async def delete_points(self, point_ids: list[str]) -> int:
+        if not point_ids:
+            return 0
+
+        await self._client.delete(
+            collection_name=self.collection_name,
+            points_selector=models.PointIdsList(points=point_ids),
+            wait=True,
+        )
+        return len(point_ids)
 
     async def upsert(
         self,
