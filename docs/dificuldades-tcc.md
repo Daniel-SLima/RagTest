@@ -154,7 +154,7 @@ Observado: após o merge da 0.5.13, o job instalou o projeto com sucesso, mas `r
 
 Diagnóstico: havia dívida de lint acumulada em imports, ordenação de `__all__` e dois `except Exception` intencionais sem anotação explícita. Além disso, lint e testes estavam no mesmo job sequencial, então uma falha de estilo impedia qualquer execução da suíte. A versão do Ruff também era definida por faixa ampla, tornando o conjunto efetivo de regras dependente da versão instalada no momento.
 
-Correção: corrigir as 8 violações atuais; documentar com `noqa: BLE001` apenas os dois catches amplos que são deliberadamente resilientes; fixar Ruff em 0.16.8 e declarar explicitamente as regras do gate; separar `lint` e `test` em jobs independentes; ignorar alterações exclusivamente documentais para evitar execuções desnecessárias.
+Correção: corrigir as 8 violações atuais; documentar com `noqa: BLE001` apenas os dois catches amplos que são deliberadamente resilientes; fixar Ruff em 0.16.8 e declarar explicitamente as regras do gate; separar `lint` e `test` em jobs independentes; ignorar alterações exclusivamente documentais para evitar execuções desnecessárias. A correção foi validada no GitHub Actions: `ruff check .` retornou `All checks passed!` e o job de testes passou independentemente.
 
 Aprendizado técnico: um gate de qualidade deve tornar lint e testes independentes e reproduzíveis; caso contrário, uma falha de estilo pode ocultar regressões funcionais e upgrades silenciosos de ferramentas podem alterar o comportamento da CI.
 
@@ -166,7 +166,7 @@ Observado: o job de lint passou, e o pytest finalmente executou: 50 testes passa
 
 Diagnóstico: o teste de health carregava uma versão fixa da fase inicial do projeto. Como a suíte vinha sendo bloqueada anteriormente pelo lint, essa expectativa obsoleta permaneceu sem ser detectada.
 
-Correção: fazer o teste comparar a versão retornada com `get_settings().app_version`, validando que o endpoint reflete a configuração corrente sem exigir edição manual do teste a cada release.
+Correção: fazer o teste comparar a versão retornada com `get_settings().app_version`, validando que o endpoint reflete a configuração corrente sem exigir edição manual do teste a cada release. A correção foi validada no rerun da CI: a suíte terminou com 51 testes aprovados e 4 warnings não bloqueantes.
 
 Aprendizado técnico: testes de contratos que incluem metadados evolutivos devem validar a fonte de configuração correspondente, e não duplicar valores que mudam a cada versão.
 

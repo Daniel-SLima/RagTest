@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.13`  
-**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; lint validado no GitHub Actions. Pytest executou pela primeira vez nesta sequência (50 passed / 1 failed) e revelou a Dificuldade TCC #14; correção implementada e aguardando rerun.
+**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; GitHub Actions validado: lint passou e pytest terminou com 51 passed / 4 warnings. Falta apenas validar build/health local da imagem 0.5.14 antes da autorização de merge.
 
 ---
 
@@ -661,12 +661,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o primeiro workflow da 0.5.14 confirmou que o lint agora passa. O job de testes também executou independentemente e encontrou 1 falha real de manutenção: `test_health_returns_api_status` esperava a versão antiga `0.1.0`; o restante da suíte teve 50 testes aprovados. Isso foi registrado como Dificuldade TCC #14.
-
-Correção implementada: o teste de health agora compara o retorno com `get_settings().app_version`.
+o rerun do PR #8 passou nos dois jobs. O lint retornou `All checks passed!`. A suíte pytest terminou com 51 testes aprovados e 4 warnings não bloqueantes. As Dificuldades TCC #13 e #14 estão corrigidas e verificadas na CI.
 
 Próxima ação ao receber "continuar":
-verificar o rerun automático do PR #8. A meta é `lint=success` e `test=success`. Se ambos passarem, validar localmente apenas o build/health 0.5.14 e então aguardar autorização de merge. Não reindexar Qdrant.
+atualizar a branch local, reconstruir a imagem 0.5.14 e validar `/health` e `/ready`. Não executar ingestão/reindexação. Se o runtime local subir corretamente, a 0.5.14 fica pronta para autorização explícita de merge.
 ```
 
 

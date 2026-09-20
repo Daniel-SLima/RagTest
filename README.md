@@ -245,11 +245,13 @@ Mudanças:
 Não exige reindexação.
 
 
-### Primeiro resultado da CI 0.5.14
+### Validação da CI 0.5.14
 
-O novo job de lint passou. O job de testes executou independentemente e revelou uma expectativa obsoleta no teste de health:
+O gate automatizado foi validado no GitHub Actions:
 
-    50 passed
-    1 failed
+    lint: All checks passed!
+    pytest: 51 passed, 4 warnings
 
-A única falha esperava a versão `0.1.0` em vez da versão configurada atual. O teste foi corrigido para comparar com `get_settings().app_version`. Dificuldade TCC #14 registrada; rerun pendente.
+A primeira execução da suíte havia revelado uma expectativa obsoleta no teste de health (50 passed / 1 failed); após a correção para comparar com `get_settings().app_version`, todos os testes passaram.
+
+Os warnings restantes são não bloqueantes e vêm de depreciação do TestClient/AnyIO e da verificação de compatibilidade do cliente Qdrant em testes sem servidor real.
