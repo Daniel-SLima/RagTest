@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.13`  
-**Trabalho em andamento:** `0.5.14` em `feature/ci-quality-gate-0.5.14`; validação completa concluída: GitHub Actions com lint verde e 51 testes aprovados, `/health` local em 0.5.14 e `/ready` com Qdrant ok. PR #8 aguarda autorização explícita de merge.
+**Estado validado e mesclado no main:** `0.5.14`  
+**Trabalho em andamento:** `0.5.15` em `feature/runtime-reproducibility-0.5.15`; fingerprint de runtime implementado e aguardando validação para orientar pinning seguro de FastEmbed/Qdrant.
 
 ---
 
@@ -631,7 +631,7 @@ Se houver divergência entre este arquivo e o estado real do GitHub, o **GitHub 
 
 ```text
 Projeto: RagTest / Se Cuida Mulher
-Main validado/mesclado: 0.5.13
+Main validado/mesclado: 0.5.14
 Corpus: 18 arquivos / 767 chunks após OCR
 Qdrant: dense + sparse
 Dense: paraphrase-multilingual-MiniLM-L12-v2
@@ -641,10 +641,13 @@ OCR: Tesseract local, seletivo
 Baseline pós-OCR híbrida: HitRate@5=1.000 / MRR@5=0.821
 
 Em andamento:
-0.5.14 CI e execução real da suíte
+0.5.15 fingerprint e reprodutibilidade do runtime
 
 Branch:
-feature/ci-quality-gate-0.5.14
+feature/runtime-reproducibility-0.5.15
+
+PR:
+#9 draft — Adiciona fingerprint de runtime na 0.5.15
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
@@ -661,10 +664,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o PR #8 passou nos dois jobs da CI. O lint retornou `All checks passed!` e a suíte pytest terminou com 51 testes aprovados e 4 warnings não bloqueantes. A validação local da imagem também passou: `/health` retornou versão 0.5.14 e `/ready` retornou Qdrant ok. As Dificuldades TCC #13 e #14 estão corrigidas e verificadas.
+a 0.5.14 foi mesclada. A 0.5.15 adiciona `ragtest-runtime-info` para capturar a combinação realmente validada de pacotes, servidor Qdrant, modelos, chunking e schema/contagem da collection antes de fazer pinning adicional.
 
 Próxima ação ao receber "continuar":
-aguardar autorização explícita do usuário para merge do PR #8. Depois do merge, iniciar a próxima fase sem reindexar Qdrant.
+atualizar a branch local, rebuildar a imagem 0.5.15 e executar `ragtest-runtime-info`. Usar essa saída para decidir os pins exatos de FastEmbed/Qdrant sem reindexar Qdrant nesta primeira etapa.
 ```
 
 
