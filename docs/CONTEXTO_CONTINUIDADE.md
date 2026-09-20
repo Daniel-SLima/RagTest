@@ -486,15 +486,19 @@ A validação de runtime foi concluída. Aguardar autorização explícita do us
 
 Os novos números mostram que o perfil hybrid perdeu uma das duas fontes esperadas em um caso do holdout (SourceRecall@5 agregado=0.967), enquanto dense e dense-rerank mantiveram 1.000. Usar isso como evidência na análise, sem alterar o holdout.
 
-### Passo 3 — preparar relevância preferencial
+### Passo 3 — preparar decomposição/multi-query
+
+Implementar e avaliar detecção/decomposição de perguntas compostas sem aumentar o top-k global. O caso direitos+deveres é o primeiro caso diagnóstico.
+
+### Passo 4 — preparar relevância preferencial
 
 Definir, em uma fase separada e documentada, como distinguir fonte aceitável de fonte preferencial sem reescrever retroativamente o holdout original.
 
-### Passo 4 — reforçar groundedness e segurança
+### Passo 5 — reforçar groundedness e segurança
 
 Validar citações, remover scores internos do prompt, adicionar defesa contra prompt injection documental e revisar a privacidade dos arquivos CHATSCM antes de chamadas externas.
 
-### Passo 5 — preparar a camada de produto
+### Passo 6 — preparar a camada de produto
 
 Adicionar logs/auditoria estruturada, sessões, histórico, streaming e integração posterior com o aplicativo Se Cuida Mulher.
 
@@ -601,10 +605,12 @@ hybrid        HitRate@5=1.000 / MRR@5=0.821
 Pausado em:
 o fluxo real da 0.5.11 foi validado com Gemini: `grounded=true`, `citation_ids=[1,2,3]`, `citation_retry_count=0`, e todas as citações referenciam fontes realmente retornadas. O modelo também recusou inventar deveres que não estavam detalhados nos três trechos recuperados.
 
-A Dificuldade TCC #11 foi melhor isolada: a busca específica por deveres recuperou a página 13 em rank 1, mas a consulta composta com `--limit 5` continuou sem trazer essa página. Logo, o problema não é apenas o corte top 3 do primeiro teste. A hipótese atual é que a subintenção "deveres" esteja sendo diluída no ranking da pergunta composta ou apareça apenas abaixo do top 5.
+A Dificuldade TCC #11 foi isolada: a página 13, que ficou em rank 1 na busca específica por deveres, apareceu apenas em rank 10 na consulta composta sobre direitos e deveres. Isso confirma diluição de subintenção em perguntas multi-intent.
+
+Decisão registrada em `docs/decisoes-tecnicas.md` como D011: não aumentar o top-k global para 10; tratar perguntas compostas em uma fase própria de decomposição/multi-query, preservando `dense-rerank` como base.
 
 Próxima ação ao receber "continuar":
-executar a mesma consulta composta com `--limit 10` e localizar a página 13 antes de decidir entre aumentar contexto e implementar decomposição/multi-query. Não alterar pesos e não reindexar Qdrant.
+considerar a 0.5.11 funcionalmente validada dentro de seu escopo de groundedness; aguardar autorização explícita para merge do PR #5 e, depois, iniciar a fase de decomposição/multi-query. Não reindexar Qdrant.
 ```
 
 

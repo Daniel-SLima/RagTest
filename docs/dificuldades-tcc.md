@@ -128,9 +128,9 @@ Planejado: responder à pergunta composta "Quais são os direitos e deveres da p
 
 Observado: a resposta real passou pela validação de citações, apresentou vários direitos com fontes válidas, mas informou que o contexto recuperado não era suficiente para detalhar os deveres. Os três resultados retornados eram páginas 10, 4 e 27 da mesma Carta.
 
-Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. A busca isolada por deveres recuperou a página 13 da Carta em rank 1, confirmando que os trechos estão extraídos, indexados e recuperáveis. A mesma consulta composta executada com top 5 continuou trazendo principalmente direitos e não trouxe a página 13. Isso elimina a hipótese de que o problema fosse apenas o corte top 3 usado no primeiro chat; ainda falta verificar se a página de deveres aparece logo abaixo do top 5 ou se a intenção composta está sendo semanticamente diluída no ranking.
+Diagnóstico: o guardrail de groundedness funcionou corretamente ao não inventar deveres ausentes do contexto. A busca isolada por deveres recuperou a página 13 da Carta em rank 1, confirmando que os trechos estão extraídos, indexados e recuperáveis. Na consulta composta, a mesma página não apareceu no top 5 e só surgiu em rank 10. Portanto, o problema não é ausência no corpus nem apenas um corte top 3: a subintenção "deveres" é fortemente diluída quando combinada com "direitos".
 
-Correção: não alterar pesos nem o corpus nesta etapa. A busca isolada confirmou a recuperabilidade dos deveres e a busca composta com top 5 descartou o corte top 3 como causa suficiente. Próximo diagnóstico: executar a consulta composta com `--limit 10` para localizar a posição da página de deveres antes de decidir entre aumentar contexto ou implementar decomposição/multi-query.
+Correção: não aumentar simplesmente o contexto global para 10 resultados, pois isso elevaria custo e ruído para todas as perguntas. Levar o caso para uma fase própria de decomposição/multi-query, preservando o `dense-rerank` como retrieval base para cada subconsulta.
 
 Aprendizado técnico: uma resposta pode ter citações válidas e ainda ser incompleta quando o retrieval não cobre todas as subintenções de uma pergunta composta; validação de citações e cobertura semântica são dimensões distintas.
 

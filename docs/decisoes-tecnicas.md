@@ -112,3 +112,11 @@ Impacto:
 **Mudança:** o chat passa a validar programaticamente citações `[n]`, repetir a geração uma vez quando a resposta usa citações inválidas/ausentes, remover scores de retrieval do prompt do LLM e delimitar os documentos recuperados como dados não confiáveis.  
 **Motivo:** o prompt sozinho não garante que o LLM cite somente fontes existentes nem impede que instruções contidas em documentos sejam interpretadas como comandos. Scores internos de retrieval também não são necessários para a geração textual.  
 **Impacto:** a API passa a expor `grounded`, `citation_ids` e `citation_retry_count`; respostas que continuam sem citações verificáveis após uma tentativa de reparo são substituídas por um fallback seguro. O conteúdo documental continua sendo enviado ao LLM apenas como contexto de dados, não como instrução.
+
+
+## D011 — Tratar perguntas compostas com decomposição/multi-query em vez de aumentar o top-k global
+
+**Data:** 2026-09-20  
+**Mudança:** perguntas com múltiplas intenções relevantes devem ser candidatas a decomposição em subconsultas antes da recuperação, mantendo `dense-rerank` como estratégia base de cada busca.  
+**Motivo:** na pergunta "Quais são os direitos e deveres da pessoa usuária da saúde?", a página com deveres ficou em rank 10; quando a intenção "deveres" foi consultada isoladamente, a mesma página ficou em rank 1. Aumentar o top-k global para 10 resolveria este caso às custas de mais contexto, ruído e custo para todas as perguntas.  
+**Impacto:** a 0.5.11 permanece focada em groundedness/citações. A cobertura multi-intent será tratada em uma fase posterior, sem alterar os pesos já validados do `dense-rerank` nem reindexar o corpus.
