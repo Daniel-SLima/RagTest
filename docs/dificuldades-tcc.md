@@ -92,6 +92,18 @@ Correção: OCR seletivo local com Tesseract nas páginas sem texto, mantendo a 
 
 Aprendizado: métricas de retrieval só são interpretáveis se as fontes esperadas realmente estiverem presentes no índice. A validação do corpus deve anteceder a avaliação do mecanismo de recuperação.
 
+## 9. Retrieval híbrido não superou o dense-rerank no mesmo corpus
+
+Planejado: comparar dense, dense-rerank e hybrid no mesmo corpus pós-OCR para verificar se a busca híbrida traria vantagem mensurável quando a cobertura do índice fosse mantida constante.
+
+Observado: os três modos obtiveram HitRate@5=1.000, mas os MRR@5 foram diferentes: dense=0.857, dense-rerank=0.929 e hybrid=0.821. O modo hybrid colocou a fonte esperada de implante contraceptivo no rank 4, enquanto dense-rerank a manteve no rank 2.
+
+Diagnóstico: neste conjunto pequeno de consultas, o BM25 + RRF não trouxe ganho de recall porque todos os modos já encontraram as fontes esperadas. A fusão lexical alterou a ordenação e, em alguns casos, favoreceu documentos semanticamente relacionados porém menos alinhados à fonte esperada.
+
+Correção: considerar dense-rerank como candidato a estratégia padrão da próxima consolidação, mantendo o hybrid disponível para comparação e ampliando o conjunto de avaliação antes de uma conclusão definitiva.
+
+Aprendizado: adicionar uma técnica mais complexa não garante melhor qualidade. A escolha da estratégia deve ser baseada em benchmark controlado, com corpus constante e métricas de ranking/relevância, e não apenas em sofisticação arquitetural.
+
 ## Como registrar novos casos
 
 Registrar sempre: planejado, observado, diagnóstico, correção e aprendizado para a monografia.

@@ -7,11 +7,11 @@
 >
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
-**Última atualização:** 2026-09-19  
+**Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado testado no main:** `0.5.6`  
-**Trabalho em andamento:** `0.5.7` em branch separada, ainda não mesclada.
+**Trabalho em andamento:** `0.5.7` validada em branch separada; benchmark concluído e PR #1 continua em draft, aguardando decisão de merge/consolidação.
 
 ---
 
@@ -329,6 +329,18 @@ No modo híbrido atual:
 
 **Importante:** esta é a primeira baseline pós-correção de cobertura. Os números anteriores não são diretamente comparáveis porque o corpus mudou.
 
+### 0.5.7 — benchmark controlado no mesmo corpus
+
+Todos os modos foram executados sobre os mesmos 767 chunks:
+
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 | 0.857 |
+| dense-rerank | 1.000 | 0.929 |
+| hybrid | 1.000 | 0.821 |
+
+`dense-rerank` é o melhor resultado **medido no conjunto atual de sete consultas**, mas o conjunto ainda é pequeno e não permite concluir superioridade geral.
+
 ---
 
 ## 10. Dificuldades do TCC já registradas
@@ -346,7 +358,8 @@ Casos atuais:
 5. reranking melhorou MRR, mas não recall;
 6. retrieval híbrido inicial piorou métricas;
 7. BM25 enriquecido não resolveu a fonte problemática;
-8. fonte esperada tinha zero texto e zero chunks.
+8. fonte esperada tinha zero texto e zero chunks;
+9. retrieval híbrido não superou dense-rerank no mesmo corpus.
 
 **Regra:** quando algo planejado não funcionar como esperado, criar uma nova “Dificuldade TCC #N” com:
 
@@ -411,66 +424,37 @@ docker compose run --rm api ragtest-evaluate-retrieval --mode hybrid
 
 ## 12. Ponto exato onde o trabalho foi pausado
 
-O usuário decidiu pausar **antes de testar a 0.5.7**.
+A 0.5.7 foi executada e validada localmente sobre a collection de **767 chunks**.
 
-O ambiente local testado continua em **0.5.6**, com a collection já recriada e contendo **767 chunks dense + sparse**.
+Resultado:
 
-A branch 0.5.7 já existe no GitHub e o PR #1 está aberto como draft.
+- dense: HitRate@5=1.000, MRR@5=0.857;
+- dense-rerank: HitRate@5=1.000, MRR@5=0.929;
+- hybrid: HitRate@5=1.000, MRR@5=0.821.
 
-Ao receber a palavra **“continuar”**, a próxima ação deve ser:
+A branch `feature/retrieval-benchmark-0.5.7` continua aberta no PR #1 como draft e **não foi mesclada**.
 
-1. ler este arquivo;
-2. conferir o estado do PR #1 e da branch `feature/retrieval-benchmark-0.5.7`;
-3. orientar o usuário a entrar nessa branch;
-4. subir a imagem 0.5.7;
-5. rodar o benchmark comparativo.
+Ponto de decisão atual: consolidar `dense-rerank` como candidato a padrão da próxima versão, sem apagar os perfis de benchmark. Antes disso, o merge do PR #1 requer autorização explícita do usuário.
 
-Não recriar a collection antes do benchmark, porque os 767 chunks atuais já possuem dense + sparse.
+Não recriar a collection: os 767 chunks atuais já possuem dense + sparse.
 
 ---
 
 ## 13. Próximos 5 passos
 
-### Passo 1 — testar a 0.5.7
+### Passo 1 — concluir o PR #1
 
-No Windows CMD:
+O benchmark já foi validado. Aguardar autorização explícita do usuário para fazer merge do PR #1 no `main`.
 
-```cmd
-git fetch origin
-git switch --track origin/feature/retrieval-benchmark-0.5.7
-docker compose down
-docker compose up --build -d
-curl http://localhost:8000/health
-docker compose run --rm api ragtest-evaluate-retrieval
-```
+### Passo 2 — iniciar a consolidação 0.5.8
 
-Resultado esperado: tabela final com HitRate@5 e MRR@5 para:
+Após o merge, criar uma nova feature branch para tornar `dense-rerank` o candidato de estratégia padrão da aplicação, mantendo os perfis de benchmark para regressão.
 
-- dense;
-- dense-rerank;
-- hybrid.
+### Passo 3 — ampliar a avaliação
 
-### Passo 2 — escolher a estratégia de retrieval
-
-Comparar os três perfis usando o mesmo corpus.
-
-Não escolher por complexidade ou preferência subjetiva: usar métricas + inspeção qualitativa dos resultados.
-
-Se houver regressão ou trade-off relevante, registrar nova Dificuldade TCC.
-
-### Passo 3 — consolidar a fase 0.5
-
-Depois de escolher a estratégia:
-
-- ajustar configuração padrão;
-- atualizar documentação;
-- validar busca e chat;
-- executar testes;
-- somente depois decidir se o PR #1 pode ser finalizado/mesclado.
+Expandir o conjunto além das sete consultas atuais, incluindo casos difíceis/ambíguos e confusões entre públicos e documentos. Não ajustar parâmetros usando somente os mesmos sete casos e depois tratar o resultado como avaliação independente.
 
 ### Passo 4 — reforçar groundedness e segurança
-
-Depois da qualidade de retrieval:
 
 - validar programaticamente citações `[n]`;
 - impedir citações inexistentes;
@@ -481,7 +465,7 @@ Depois da qualidade de retrieval:
 
 ### Passo 5 — preparar camada de produto
 
-Com RAG estável:
+Com o RAG estabilizado:
 
 - logs/auditoria estruturada;
 - sessões e histórico;
@@ -574,11 +558,16 @@ feature/retrieval-benchmark-0.5.7
 PR:
 #1 draft
 
-Pausado antes de:
-rodar ragtest-evaluate-retrieval na 0.5.7
+0.5.7 validada:
+dense         HitRate@5=1.000 / MRR@5=0.857
+dense-rerank  HitRate@5=1.000 / MRR@5=0.929
+hybrid        HitRate@5=1.000 / MRR@5=0.821
+
+Pausado em:
+PR #1 draft, benchmark concluído, aguardando autorização de merge.
 
 Próxima ação ao receber "continuar":
-testar dense vs dense-rerank vs hybrid no mesmo corpus de 767 chunks.
+confirmar estado do PR #1 e, se o usuário autorizar, fazer merge e iniciar consolidação 0.5.8 com dense-rerank como candidato padrão.
 ```
 
 

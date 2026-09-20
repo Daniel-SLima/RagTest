@@ -52,3 +52,21 @@ Ou um perfil isolado:
     docker compose run --rm api ragtest-evaluate-retrieval --mode hybrid
 
 A comparação 0.5.7 é metodologicamente mais adequada para decidir a estratégia de retrieval, pois mantém o corpus constante.
+
+### Resultado verificado da 0.5.7
+
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 (7/7) | 0.857 |
+| dense-rerank | 1.000 (7/7) | 0.929 |
+| hybrid | 1.000 (7/7) | 0.821 |
+
+Todos os perfis recuperaram pelo menos uma fonte esperada no top 5. A diferença observada ficou na ordenação.
+
+No conjunto atual de sete consultas, `dense-rerank` obteve o maior MRR@5. Exemplos:
+
+- vacinação durante a gestação: fonte esperada foi de rank 2 no dense para rank 1 no dense-rerank;
+- direitos e deveres: fonte esperada permaneceu em rank 1;
+- implante contraceptivo: fonte esperada ficou em rank 2 no dense-rerank e rank 4 no hybrid.
+
+Conclusão experimental: `dense-rerank` é a estratégia com melhor resultado medido neste benchmark controlado. Isso ainda não deve ser generalizado como superioridade definitiva, pois o conjunto de avaliação possui apenas sete consultas e os julgamentos de relevância ainda são majoritariamente por fonte esperada.

@@ -15,26 +15,26 @@ O OCR seletivo corrigiu a cobertura do corpus:
 
 ## Fase 0.5.7 — benchmark justo de retrieval
 
-Os resultados anteriores a 0.5.6 foram obtidos com um corpus incompleto. A 0.5.7 compara as estratégias sobre a mesma collection corrigida:
+Benchmark verificado sobre a mesma collection corrigida de 767 chunks:
 
-    dense
-    dense-rerank
-    hybrid
+    MODE            HITRATE@5   MRR@5
+    dense             1.000      0.857
+    dense-rerank      1.000      0.929
+    hybrid            1.000      0.821
 
-Atualize e execute:
+No conjunto atual de sete consultas, dense-rerank obteve o maior MRR@5. Este resultado é experimental e não deve ser generalizado antes de ampliar o conjunto de avaliação.
 
-    git pull origin feature/retrieval-benchmark-0.5.7
-    docker compose down
-    docker compose up --build -d
+Para repetir:
+
     docker compose run --rm api ragtest-evaluate-retrieval
 
-Não é necessário recriar a collection: os 767 chunks da 0.5.6 já contêm vetores dense e sparse.
-
-Para testar um perfil isolado:
+Ou por perfil:
 
     docker compose run --rm api ragtest-evaluate-retrieval --mode dense
     docker compose run --rm api ragtest-evaluate-retrieval --mode dense-rerank
     docker compose run --rm api ragtest-evaluate-retrieval --mode hybrid
+
+Não é necessário recriar a collection: os 767 chunks já contêm vetores dense e sparse.
 
 ## Dificuldades TCC
 
