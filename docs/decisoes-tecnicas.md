@@ -136,3 +136,11 @@ Impacto:
 **Mudança:** lint e pytest passam a rodar em jobs independentes no GitHub Actions. O Ruff usado pela suite dev fica fixado em 0.16.8 e o conjunto de regras do gate é declarado explicitamente. Commits que alteram somente `docs/**` ou `README.md` não disparam CI.  
 **Motivo:** o workflow anterior parava no lint, deixando o pytest como `skipped`; além disso, a faixa ampla de versão do Ruff deixava o gate sujeito a mudanças de comportamento da ferramenta.  
 **Impacto:** regressões funcionais podem ser observadas mesmo quando houver falha de lint; a política de lint passa a ser reprodutível; atualizações futuras do Ruff tornam-se mudanças deliberadas.
+
+
+## D014 — Medir o fingerprint real do runtime antes de pinning adicional
+
+**Data:** 2026-09-20  
+**Mudança:** antes de fixar novas versões de FastEmbed/Qdrant, a 0.5.15 adiciona um fingerprint reproduzível do ambiente com versões instaladas, versão do servidor Qdrant, modelos configurados, parâmetros de chunking e schema/contagem da collection.  
+**Motivo:** o projeto já observou mudança de semântica de pooling no FastEmbed e ainda usa imagem Qdrant `latest`. Fixar versões sem registrar primeiro o ambiente realmente validado poderia cristalizar uma combinação diferente da que gerou os 767 chunks atuais.  
+**Impacto:** o próximo pinning será baseado no runtime observado e validado, não em suposição. O comando `ragtest-runtime-info` não altera a collection e não exige reindexação.

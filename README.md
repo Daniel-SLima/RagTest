@@ -265,3 +265,23 @@ Após a CI verde, a imagem Docker foi reconstruída e validada localmente:
     /ready: status=ready, qdrant=ok
 
 Com isso, a 0.5.14 está validada tanto na suíte automatizada quanto no runtime local. Não houve mudança de corpus e nenhuma reindexação foi necessária.
+
+
+## Fase 0.5.15 — fingerprint e reprodutibilidade do runtime
+
+Antes de fixar novas versões de FastEmbed e da imagem Qdrant, a 0.5.15 registra o ambiente efetivamente validado.
+
+Novo comando:
+
+    ragtest-runtime-info
+
+Ele mostra:
+
+- versão do RagTest e dos principais pacotes;
+- versão/commit do servidor Qdrant;
+- modelos dense/sparse configurados;
+- estratégia de retrieval;
+- chunk size/overlap;
+- nome, schema, metadata e contagem da collection.
+
+O comando é somente diagnóstico: não escreve na collection e não exige reindexação.
