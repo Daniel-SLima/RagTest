@@ -2,68 +2,69 @@
 
 Módulo RAG reutilizável via API.
 
-## Fase 0.5.8 — dense-rerank como candidato padrão
+## Fase 0.5.9 — avaliação holdout
 
-O benchmark 0.5.7 foi mesclado após validação no corpus corrigido de 767 chunks:
+A 0.5.8 foi validada e mesclada. O modo padrão continua sendo `dense-rerank`.
 
-    MODE            HITRATE@5   MRR@5
-    dense             1.000      0.857
-    dense-rerank      1.000      0.929
-    hybrid            1.000      0.821
+A 0.5.9 amplia a avaliação sem alterar os parâmetros de retrieval:
 
-A 0.5.8 torna `dense-rerank` o modo padrão da aplicação, usando exatamente os parâmetros do perfil validado no benchmark. A validação local confirmou o modo padrão e reproduziu integralmente as métricas da 0.5.7:
+- `dev`: 7 consultas já usadas durante o desenvolvimento;
+- `holdout`: 15 consultas novas, congeladas antes da primeira execução;
+- `all`: combinação das duas suites, totalizando 22 consultas.
 
-    candidate_multiplier = 8
-    score_margin = 0.22
-    source_lexical_weight = 0.25
-    content_lexical_weight = 0.05
-    sparse retrieval = desativado
+Dataset:
 
-Os perfis `dense` e `hybrid` continuam disponíveis para benchmark e diagnóstico.
+    2026-09-20-v1
 
-Validação 0.5.8:
+O objetivo é verificar generalização. O holdout não deve ser usado para ajustar pesos e depois ser apresentado como uma avaliação independente.
 
-    health: 0.5.8
-    ready: qdrant ok
-    busca padrão: Mode: dense-rerank
-    vacinação gestante: fonte esperada no rank 1
-    dense:        HitRate@5=1.000 MRR@5=0.857
-    dense-rerank: HitRate@5=1.000 MRR@5=0.929
-    hybrid:       HitRate@5=1.000 MRR@5=0.821
-
-## Atualizar e validar
-
-No .env, adicione ou confirme:
-
-    RETRIEVAL_MODE=dense-rerank
-
-As variáveis antigas de tuning de perfil podem permanecer no arquivo local, mas a 0.5.8 usa os parâmetros versionados do perfil selecionado e ignora essas chaves antigas.
-
-Depois:
+## Atualizar
 
     git fetch origin
-    git switch --track origin/feature/default-dense-rerank-0.5.8
+    git switch --track origin/feature/holdout-evaluation-0.5.9
     docker compose down
     docker compose up --build -d
     curl http://localhost:8000/health
     curl http://localhost:8000/ready
 
-Não recrie a collection. Os 767 chunks atuais continuam compatíveis.
+Não recrie a collection. O corpus permanece com 767 chunks.
 
-Valide a busca padrão:
+## Primeira execução do holdout — concluída
 
-    docker compose run --rm api ragtest-search "Quais vacinas são indicadas durante a gestação?" --limit 5
+Resultado preservado do modo padrão:
 
-A saída deve informar:
+    dense-rerank
+    HitRate@5=1.000 (15/15)
+    MRR@5=0.933
 
-    Mode: dense-rerank
+Foram 13 casos com fonte esperada em rank 1 e 2 casos em rank 2, sem falhas no top 5.
 
-Repita o benchmark:
+Comparação concluída:
 
-    docker compose run --rm api ragtest-evaluate-retrieval
+    MODE            HITRATE@5   MRR@5
+    dense             1.000      0.889
+    dense-rerank      1.000      0.933
+    hybrid            1.000      0.878
 
-E valide o chat apenas com documentos aprovados para envio ao Gemini.
+A regressão histórica da suite dev também foi confirmada:
+
+    dense             1.000      0.857
+    dense-rerank      1.000      0.929
+    hybrid            1.000      0.821
+
+A primeira saída do holdout deve ser preservada como resultado experimental. Se surgirem falhas, elas devem ser analisadas, mas não se deve recalibrar o perfil e reutilizar o mesmo holdout como se continuasse sendo um teste não visto.
 
 ## Segurança
 
 Nunca versione GEMINI_API_KEY. Use apenas .env local.
+
+
+## Documentação de decisões
+
+Mudanças de arquitetura, comportamento padrão e metodologia são registradas em:
+
+    docs/decisoes-tecnicas.md
+
+Problemas e correções continuam sendo registrados separadamente em:
+
+    docs/dificuldades-tcc.md

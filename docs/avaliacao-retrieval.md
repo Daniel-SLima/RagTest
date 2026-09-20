@@ -85,3 +85,89 @@ Mudanças:
 - collection permanece com dense + sparse, portanto não há reindexação.
 
 Status: validado localmente. A busca padrão informou `Mode: dense-rerank`, a consulta de vacinação na gestação manteve a fonte esperada no rank 1 e o benchmark reproduziu exatamente: dense 1.000/0.857, dense-rerank 1.000/0.929 e hybrid 1.000/0.821 (HitRate@5/MRR@5).
+
+
+## 0.5.9 — suite holdout congelada
+
+A 0.5.9 amplia a avaliação sem alterar os parâmetros dos perfis de retrieval.
+
+Dataset versionado:
+
+    2026-09-20-v1
+
+Divisão:
+
+- dev: 7 consultas já utilizadas ao longo do desenvolvimento;
+- holdout: 15 consultas novas, congeladas antes da primeira execução;
+- all: 22 consultas.
+
+Objetivo metodológico: medir generalização e reduzir o risco de concluir qualidade com base apenas nos mesmos casos usados para orientar os ajustes anteriores.
+
+O primeiro teste deve ser:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode dense-rerank
+
+Em seguida:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
+
+E a regressão histórica:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
+
+Regra experimental: a primeira execução do holdout deve ser preservada. Se forem observadas falhas, elas podem orientar novos experimentos, mas o mesmo holdout deixa de ser considerado totalmente não visto para uma nova alegação de validação independente.
+
+
+### Primeira execução do holdout — resultado preservado
+
+Modo avaliado primeiro, antes de comparar com alternativas:
+
+    dense-rerank
+
+Resultado:
+
+    HitRate@5: 1.000 (15/15)
+    MRR@5: 0.933
+
+Distribuição dos primeiros ranks esperados:
+
+- 13 casos em rank 1;
+- 2 casos em rank 2;
+- 0 falhas no top 5.
+
+Casos em rank 2:
+
+1. `holdout-caderneta-gestante`: a Caderneta da Gestante apareceu em rank 2, atrás de `gestacao/cartilha_saude_bucal_gestante.pdf`.
+2. `holdout-vacinas-gestante-parafrase`: a Caderneta da Gestante apareceu em rank 2 e o calendário nacional da gestante em rank 5; `chatscm/chatscm_gestante.docx` ficou em rank 1.
+
+Interpretação: o perfil padrão mostrou boa recuperação no primeiro holdout congelado, sem casos FAIL. A métrica é source-level e permite múltiplas fontes esperadas, portanto um PASS não implica que o documento mais específico esteja sempre no primeiro lugar. O conjunto ainda é pequeno e foi construído dentro do corpus conhecido, então o resultado deve ser tratado como evidência positiva de generalização, não como prova definitiva.
+
+Próximos comandos:
+
+    docker compose run --rm api ragtest-evaluate-retrieval --suite holdout --mode all
+    docker compose run --rm api ragtest-evaluate-retrieval --suite dev --mode all
+
+
+### Comparação completa no holdout
+
+Resultado verificado:
+
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 (15/15) | 0.889 |
+| dense-rerank | 1.000 (15/15) | 0.933 |
+| hybrid | 1.000 (15/15) | 0.878 |
+
+Os três modos mantiveram recall de fonte esperado no top 5 para todos os 15 casos, mas `dense-rerank` obteve a melhor ordenação segundo MRR.
+
+A suite dev também foi executada novamente e reproduziu exatamente a baseline histórica:
+
+| Modo | HitRate@5 | MRR@5 |
+| --- | ---: | ---: |
+| dense | 1.000 (7/7) | 0.857 |
+| dense-rerank | 1.000 (7/7) | 0.929 |
+| hybrid | 1.000 (7/7) | 0.821 |
+
+Interpretação: a infraestrutura 0.5.9 não alterou os resultados anteriores e o perfil `dense-rerank` manteve o maior MRR tanto no desenvolvimento quanto no primeiro holdout congelado.
+
+Limitação importante: a métrica atual usa a primeira fonte esperada e não diferencia relevância preferencial entre várias fontes plausíveis. Em especial, consultas de gestação podem promover documentos CHATSCM ou cadernetas antes de calendários oficiais, mesmo quando todas são semanticamente relacionadas.

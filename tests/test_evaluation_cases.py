@@ -1,11 +1,30 @@
-from app.cli.evaluate_retrieval import _load_cases
-from app.evaluation import DEFAULT_RETRIEVAL_CASES
+from app.evaluation import (
+    DEV_RETRIEVAL_CASES,
+    EVALUATION_DATASET_VERSION,
+    HOLDOUT_RETRIEVAL_CASES,
+    select_retrieval_cases,
+)
 
 
-def test_packaged_retrieval_cases_are_available_without_external_file() -> None:
-    cases = _load_cases(None)
+def test_evaluation_suites_have_stable_sizes() -> None:
+    assert len(DEV_RETRIEVAL_CASES) == 7
+    assert len(HOLDOUT_RETRIEVAL_CASES) == 15
+    assert len(select_retrieval_cases("all")) == 22
 
-    assert cases == DEFAULT_RETRIEVAL_CASES
-    assert len(cases) >= 1
-    assert all("query" in case for case in cases)
-    assert all("expected_sources" in case for case in cases)
+
+def test_dev_and_holdout_queries_are_disjoint() -> None:
+    dev_queries = {str(case["query"]) for case in DEV_RETRIEVAL_CASES}
+    holdout_queries = {str(case["query"]) for case in HOLDOUT_RETRIEVAL_CASES}
+
+    assert dev_queries.isdisjoint(holdout_queries)
+
+
+def test_every_case_has_id_query_and_expected_sources() -> None:
+    for case in select_retrieval_cases("all"):
+        assert case["id"]
+        assert case["query"]
+        assert case["expected_sources"]
+
+
+def test_dataset_version_is_frozen_identifier() -> None:
+    assert EVALUATION_DATASET_VERSION == "2026-09-20-v1"
