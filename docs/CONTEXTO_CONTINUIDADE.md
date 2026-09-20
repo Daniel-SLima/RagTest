@@ -1040,3 +1040,29 @@ Ollama defaults:
 Sem fallback automático nesta etapa. A intenção é permitir comparação controlada do mesmo RAG entre Gemini e Qwen3 8B.
 
 Próximo teste após CI/rebuild: definir `LLM_PROVIDER=ollama`, executar `ragtest-runtime-info --skip-qdrant` e repetir a pergunta oficial de direitos com `--category direitos_saude --no-decompose`. Não reindexar.
+
+
+### Primeira validação RAG real com Qwen3 8B — aguardando diagnóstico
+
+A validação local do provider Ollama foi executada com `LLM_PROVIDER=ollama`, `qwen3:8b`, `OLLAMA_CONTEXT_WINDOW=8192`, `OLLAMA_THINK=false` e `LLM_MAX_OUTPUT_TOKENS=4096`.
+
+Verificado:
+
+- `/health` retornou versão 0.5.19;
+- `ragtest-runtime-info --skip-qdrant` confirmou provider/modelo/configuração esperados;
+- `ragtest-check-grounding`: PASS;
+- `ragtest-check-grounding-coverage`: PASS;
+- o retrieval real para "Quais são os direitos da pessoa usuária da saúde?" com `--category direitos_saude --no-decompose` retornou cinco páginas da Carta oficial.
+
+Falha observada:
+
+- execução do chat levou aproximadamente seis minutos;
+- `citation_retry_count=1`, portanto houve geração inicial + uma geração de reparo;
+- ambas não produziram saída aceita pelo gate;
+- resultado final: `grounded=false`, sem `citation_ids`, com fallback seguro.
+
+Registrado como Dificuldade TCC #17.
+
+Diagnóstico atual: retrieval e validadores determinísticos estão funcionando no cenário observado, mas o provider não expõe ainda os metadados de timing/tokenização retornados pelo Ollama nem preserva para diagnóstico as respostas rejeitadas pelo gate. A causa exata da latência e da reprovação estrutural ainda é hipótese e não deve ser tratada como corrigida.
+
+Próxima ação: medir/instrumentar a geração local antes de alterar prompt, contexto, limite de saída ou modelo. Não reindexar Qdrant e não fazer merge do PR #13.
