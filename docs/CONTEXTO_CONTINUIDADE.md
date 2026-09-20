@@ -11,7 +11,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.10`  
-**Trabalho em andamento:** `0.5.11` em `feature/grounded-citations-0.5.11`; guardrails de citações e prompt injection implementados e aguardando validação.
+**Trabalho em andamento:** `0.5.11` em `feature/grounded-citations-0.5.11`; build, health/ready e self-check de groundedness validados. Falta validar o fluxo real `/v1/chat`.
 
 ---
 
@@ -388,7 +388,7 @@ Branch ativa:
 
 `feature/grounded-citations-0.5.11`
 
-Status: **correção implementada após falha de build; PR #5 permanece draft e aguarda nova validação local**.
+Status: **build corrigido e validado; health/ready e `ragtest-check-grounding` passaram. PR #5 permanece draft e aguarda teste real do `/v1/chat`.**
 
 ### Histórico — fase 0.5.10 — métricas source-level
 
@@ -598,10 +598,10 @@ dense-rerank  HitRate@5=1.000 / MRR@5=0.929
 hybrid        HitRate@5=1.000 / MRR@5=0.821
 
 Pausado em:
-o primeiro build da 0.5.11 falhou antes de subir a API porque o `pyproject.toml` tinha um `\n` literal entre dois scripts. A correção foi aplicada na branch e registrada como Dificuldade TCC #10. Ainda aguarda nova execução local.
+a correção da Dificuldade TCC #10 foi validada. A imagem 0.5.11 foi construída com sucesso, `/health` retornou 0.5.11, `/ready` retornou Qdrant ok e o `ragtest-check-grounding` passou em todos os checks determinísticos.
 
 Próxima ação ao receber "continuar":
-atualizar a branch local, reconstruir Docker, validar `/health` 0.5.11, executar `ragtest-check-grounding` e só depois testar `/v1/chat`. Não reindexar Qdrant.
+executar o teste real do `/v1/chat` com a categoria `direitos_saude`, conferir `grounded`, `citation_ids`, `citation_retry_count` e a correspondência entre citações e `sources`. Não reindexar Qdrant.
 ```
 
 
