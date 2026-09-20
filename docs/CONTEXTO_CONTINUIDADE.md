@@ -389,7 +389,7 @@ Branch ativa:
 
 `feature/multi-query-retrieval-0.5.12`
 
-Status: **implementado e aguardando validação local**.
+Status: **implementado, PR #6 aberto como draft e aguardando validação local**.
 
 ### Histórico — fase 0.5.11 — groundedness e citações verificáveis
 
@@ -604,6 +604,9 @@ Em andamento:
 
 Branch:
 feature/multi-query-retrieval-0.5.12
+
+PR:
+#6 draft — Adiciona experimento multi-query controlado na 0.5.12
 
 PR:
 #4 draft — Adiciona métricas source-level na avaliação 0.5.10
