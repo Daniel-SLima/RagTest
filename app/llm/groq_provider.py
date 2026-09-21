@@ -163,6 +163,8 @@ class GroqProvider:
                 self._record_rate_limits(response.headers)
                 raw = response.read().decode("utf-8")
         except HTTPError as exc:
+            if exc.headers is not None:
+                self._record_rate_limits(exc.headers)
             try:
                 detail = exc.read().decode("utf-8").strip()
             except Exception:  # noqa: BLE001 - best-effort extraction of provider error body.
