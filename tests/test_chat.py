@@ -128,6 +128,20 @@ class CoverageRepairingFakeLLM:
         )
 
 
+class PersistentlyUncitedConclusionFakeLLM:
+    model_name = "persistently-uncited-conclusion-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        return (
+            "Direito informado pela fonte [1].\n"
+            "Esta conclusão adicional continua sem referência."
+        )
+
+
 class UnrepairableCoverageFakeLLM:
     model_name = "unrepairable-coverage-fake-llm"
 
@@ -210,3 +224,28 @@ async def test_answer_with_rag_normalizes_unicode_citations_before_validation() 
     assert result.citation_retry_count == 0
     assert "【1】" not in result.answer
     assert result.answer.endswith("[1].")
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_prunes_uncited_blocks_after_failed_repair() -> None:
+    llm = PersistentlyUncitedConclusionFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 2
+    assert result.grounded is True
+    assert result.citation_ids == [1]
+    assert result.citation_retry_count == 1
+    assert "conclusão adicional" not in result.answer
+    assert len(result.citation_validation_attempts) == 3
+    assert result.citation_validation_attempts[0].stage == "initial"
+    assert result.citation_validation_attempts[1].stage == "repair"
+    assert result.citation_validation_attempts[2].stage == "postprocess"
+    assert result.citation_validation_attempts[2].valid is True
+    assert result.citation_validation_attempts[2].coverage == 1.0
