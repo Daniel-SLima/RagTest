@@ -298,6 +298,19 @@ Correção: adicionar um último estágio determinístico após o único repair.
 
 Aprendizado técnico: guardrails de groundedness não devem depender exclusivamente de instruction-following do LLM. Quando a regra de segurança é estrutural e determinística, um pós-processamento limitado e auditável pode ser mais confiável do que retries adicionais de geração.
 
+
+## 25. Grounding passou em três domínios, mas o repair duplicou chamadas externas
+
+Planejado: validar se o fluxo Groq/GPT-OSS 120B generalizava além da pergunta de direitos e acompanhar o consumo de chamadas durante o desenvolvimento.
+
+Observado: três cenários oficiais distintos retornaram grounded=true: direitos da pessoa usuária, vacinação de pessoas idosas e saúde bucal na gestação. Nos três, porém, citation_retry_count=1, portanto cada pergunta exigiu duas gerações externas antes da resposta final. No caso de direitos, já havia sido demonstrado que um único claim sem citação podia ser removido deterministicamente e a resposta revalidada em 100%.
+
+Diagnóstico: o repair é necessário para falhas estruturais maiores, mas estava sendo acionado também em respostas com cobertura inicial alta e apenas um bloco uncited. Nesse padrão, a chamada adicional consome requisições e tokens da cota Groq sem necessariamente acrescentar conteúdo útil.
+
+Correção: introduzir uma condição conservadora de pós-processamento antes do repair: sintaxe válida, exatamente um bloco uncited, pelo menos um bloco citado e cobertura inicial >= 0,80. A poda só é aceita se a revalidação atingir 100%; caso contrário, o repair tradicional continua. TDD confirmou o comportamento: o teste novo falhou primeiro com duas chamadas ao LLM e a implementação final passou na CI com 109 passed, 4 warnings.
+
+Aprendizado técnico: otimização de custo em RAG deve preservar o guardrail e ser acionada por evidência estrutural mensurável, não apenas por heurísticas de prompt. Evitar uma chamada externa é seguro apenas quando a transformação local é estritamente limitada e seguida de revalidação completa.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
