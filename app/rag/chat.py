@@ -4,7 +4,7 @@ from app.llm.base import LLMProvider
 from app.rag.citations import extract_citation_ids
 from app.rag.decomposition import decompose_question
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
-from app.rag.grounding import validate_citation_coverage
+from app.rag.grounding import CitationCoverage, validate_citation_coverage
 from app.rag.multi_query import multi_query_search
 from app.rag.prompting import (
     SYSTEM_PROMPT,
@@ -13,6 +13,29 @@ from app.rag.prompting import (
 )
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore, SearchHit
+
+
+@dataclass(frozen=True, slots=True)
+class CitationValidationAttempt:
+    valid: bool
+    syntax_valid: bool
+    total_claim_blocks: int
+    cited_claim_blocks: int
+    uncited_claim_blocks: int
+    coverage: float
+    reason: str | None
+
+    @classmethod
+    def from_coverage(cls, coverage: CitationCoverage) -> "CitationValidationAttempt":
+        return cls(
+            valid=coverage.valid,
+            syntax_valid=coverage.syntax_valid,
+            total_claim_blocks=coverage.total_claim_blocks,
+            cited_claim_blocks=coverage.cited_claim_blocks,
+            uncited_claim_blocks=coverage.uncited_claim_blocks,
+            coverage=coverage.coverage,
+            reason=coverage.reason,
+        )
 
 
 @dataclass(slots=True)
@@ -26,6 +49,7 @@ class ChatResult:
     multi_query_used: bool = False
     retrieval_queries: list[str] | None = None
     decomposition_status: str = "not-needed"
+    citation_validation_attempts: tuple[CitationValidationAttempt, ...] = ()
 
 
 _GROUNDING_FALLBACK = (
@@ -38,15 +62,17 @@ async def _generate_with_validated_citations(
     question: str,
     hits: list[SearchHit],
     llm: LLMProvider,
-) -> tuple[str, bool, list[int], int]:
+) -> tuple[str, bool, list[int], int, tuple[CitationValidationAttempt, ...]]:
     answer = await llm.generate(
         system_prompt=SYSTEM_PROMPT,
         user_prompt=build_user_prompt(question, hits),
     )
     validation = validate_citation_coverage(answer, len(hits))
 
+    first_attempt = CitationValidationAttempt.from_coverage(validation)
+
     if validation.valid:
-        return answer, True, list(extract_citation_ids(answer)), 0
+        return answer, True, list(extract_citation_ids(answer)), 0, (first_attempt,)
 
     repaired_answer = await llm.generate(
         system_prompt=SYSTEM_PROMPT,
@@ -54,10 +80,13 @@ async def _generate_with_validated_citations(
     )
     repaired_validation = validate_citation_coverage(repaired_answer, len(hits))
 
-    if repaired_validation.valid:
-        return repaired_answer, True, list(extract_citation_ids(repaired_answer)), 1
+    second_attempt = CitationValidationAttempt.from_coverage(repaired_validation)
+    attempts = (first_attempt, second_attempt)
 
-    return _GROUNDING_FALLBACK, False, [], 1
+    if repaired_validation.valid:
+        return repaired_answer, True, list(extract_citation_ids(repaired_answer)), 1, attempts
+
+    return _GROUNDING_FALLBACK, False, [], 1, attempts
 
 
 async def answer_with_rag(
@@ -146,7 +175,13 @@ async def answer_with_rag(
             decomposition_status=decomposition.status,
         )
 
-    answer, grounded, citation_ids, retry_count = await _generate_with_validated_citations(
+    (
+        answer,
+        grounded,
+        citation_ids,
+        retry_count,
+        citation_validation_attempts,
+    ) = await _generate_with_validated_citations(
         question,
         hits,
         llm,
@@ -162,4 +197,5 @@ async def answer_with_rag(
         multi_query_used=decomposition.used,
         retrieval_queries=list(retrieval_queries),
         decomposition_status=decomposition.status,
+        citation_validation_attempts=citation_validation_attempts,
     )
