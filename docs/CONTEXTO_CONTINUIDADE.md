@@ -1135,3 +1135,30 @@ Após o rebuild com a correção do gate, duas execuções do chat oficial com `
 Isso não invalida a correção do gate; o teste real dessa correção continua pendente porque o provider externo não chegou a produzir resposta. A Dificuldade #15 foi atualizada para registrar que a indisponibilidade do Gemini agora também se manifesta como rate limit/cota, além do 503 já observado.
 
 Próxima decisão: avaliar um terceiro provider de desenvolvimento/fallback manual sem alterar corpus, retrieval ou Qdrant. O Ollama continua disponível localmente; nenhum fallback automático foi habilitado.
+
+
+### Integração Groq / GPT-OSS 120B
+
+Após novas falhas 429 do Gemini, foi iniciada a integração de um terceiro provider explícito para desenvolvimento e contingência manual:
+
+    LLM_PROVIDER=groq
+    GROQ_MODEL=openai/gpt-oss-120b
+    GROQ_BASE_URL=https://api.groq.com/openai/v1
+    GROQ_REASONING_EFFORT=low
+
+A integração preserva a interface `LLMProvider`, corpus, retrieval, Qdrant e gate de grounding. Não existe fallback automático nesta etapa.
+
+Características implementadas:
+
+- API OpenAI-compatible da Groq via HTTP, sem nova dependência Python;
+- `include_reasoning=false` para não expor reasoning;
+- citações nativas da Groq desabilitadas para preservar o contrato `[n]` do RagTest;
+- retry limitado para 429/498/500/502/503/504;
+- respeito a `Retry-After` com espera limitada;
+- métricas de prompt/output e latência expostas ao CLI;
+- chave somente via `GROQ_API_KEY` no ambiente;
+- runtime-info identifica provider/modelo/configuração.
+
+D021 registra a decisão. A validação real deve usar somente a categoria oficial `direitos_saude`; CHATSCM continua proibido em providers externos antes de revisão manual de privacidade.
+
+Próximo passo: validar CI, adicionar a chave Groq somente no `.env` local, rebuildar e testar primeiro o provider isolado/runtime-info e depois o chat RAG oficial. Não reindexar Qdrant.

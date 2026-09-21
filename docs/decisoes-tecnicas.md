@@ -193,3 +193,11 @@ Impacto:
 **Motivo:** o Gemini ficou temporariamente indisponível durante a validação da 0.5.19, e o notebook local confirmou execução do Qwen3 8B com API acessível a partir do container Docker.  
 **Evidência local:** `qwen3:8b` Q4_K_M, 8.2B parâmetros, resposta sem reasoning com `think=false`, contexto 8192, carga observada de aproximadamente 36% CPU / 64% GPU nesse contexto e acesso via `http://host.docker.internal:11434`.  
 **Impacto:** o mesmo retrieval, corpus, Qdrant e gate de grounding podem ser testados com Gemini ou Ollama sem reindexação. A troca é explícita para preservar rastreabilidade experimental; não há fallback automático Gemini→Ollama nesta etapa. O provider rejeita vazamento de `</think>` quando thinking está desativado.
+
+
+## D021 — Groq como terceiro provider explícito para contingência e comparação
+
+**Data:** 2026-09-20  
+**Mudança:** adicionar `GroqProvider` à interface de LLM, inicialmente com `openai/gpt-oss-120b`, seleção explícita por `LLM_PROVIDER=groq` e sem fallback automático entre providers.  
+**Motivo:** o Gemini apresentou indisponibilidade transitória por 503 e, posteriormente, 429 mesmo após retries; o Qwen3 8B local é funcional, mas a geração medida no notebook ficou em aproximadamente 8,94 tokens/s. A Groq oferece endpoint OpenAI-compatible e permite testar o GPT-OSS 120B sem alterar retrieval, corpus ou Qdrant.  
+**Impacto:** o mesmo RAG pode ser executado explicitamente com Gemini, Groq/GPT-OSS 120B ou Ollama/Qwen3 8B. O provider Groq desativa reasoning na resposta, mantém reasoning effort baixo, registra tokens/latência e trata 429/498/5xx como falhas transitórias limitadas. Testes externos continuam restritos a fontes oficiais enquanto CHATSCM não tiver revisão manual de privacidade.

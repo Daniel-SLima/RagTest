@@ -1,9 +1,9 @@
 import pytest
+from app.llm.groq_provider import GroqProvider
 
 from app.core.config import Settings
 from app.llm.factory import create_llm_provider
 from app.llm.gemini_provider import GeminiProvider
-from app.llm.groq_provider import GroqProvider
 from app.llm.ollama_provider import OllamaProvider
 
 

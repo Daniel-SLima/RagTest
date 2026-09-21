@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.6-flash"
+    groq_api_key: str | None = None
+    groq_model: str = "openai/gpt-oss-120b"
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    groq_reasoning_effort: Literal["low", "medium", "high"] = "low"
+    groq_request_timeout_seconds: float = Field(default=120.0, ge=1.0, le=600.0)
     ollama_base_url: str = "http://host.docker.internal:11434"
     ollama_model: str = "qwen3:8b"
     ollama_context_window: int = Field(default=8192, ge=2048, le=65536)
@@ -67,7 +72,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @field_validator("qdrant_api_key", "gemini_api_key", mode="before")
+    @field_validator("qdrant_api_key", "gemini_api_key", "groq_api_key", mode="before")
     @classmethod
     def empty_secret_is_none(cls, value: object) -> object:
         if value == "":

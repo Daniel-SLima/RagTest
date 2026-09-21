@@ -84,6 +84,10 @@ async def run(args: argparse.Namespace) -> None:
         print(f"ollama_base_url: {settings.ollama_base_url}")
         print(f"ollama_context_window: {settings.ollama_context_window}")
         print(f"ollama_think: {settings.ollama_think}")
+    elif settings.llm_provider == "groq":
+        print(f"llm_model: {settings.groq_model}")
+        print(f"groq_base_url: {settings.groq_base_url}")
+        print(f"groq_reasoning_effort: {settings.groq_reasoning_effort}")
     else:
         print(f"llm_model: {settings.gemini_model}")
     print(f"llm_max_output_tokens: {settings.llm_max_output_tokens}")
