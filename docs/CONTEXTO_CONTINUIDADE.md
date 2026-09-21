@@ -1305,3 +1305,36 @@ Correção implementada:
 - CI após implementação: Ruff `All checks passed!`; pytest `106 passed, 4 warnings`.
 
 Próxima ação: rebuildar e repetir exatamente o mesmo chat curto com Groq e 1024 tokens. O resultado esperado é primeira tentativa possivelmente 8/9 e segunda tentativa 100%, ou primeira tentativa já 100% se a geração variar. Não reindexar Qdrant.
+
+
+### Pós-processamento determinístico após repair — D022 / Dificuldade #24
+
+O reteste real do repair localizado ainda retornou:
+
+    tentativa 1: syntax=yes | coverage=0.889 | blocks=8/9
+    tentativa 2: syntax=yes | coverage=0.889 | blocks=8/9
+    done_reason=stop nas duas gerações
+
+Como o bloco uncited já era explicitamente enviado ao repair, a estratégia baseada apenas em prompting foi considerada insuficiente.
+
+Implementação atual:
+
+1. geração inicial;
+2. validação estrutural;
+3. um único repair com blocos uncited explícitos;
+4. nova validação;
+5. se a sintaxe estiver válida, houver pelo menos um claim citado e restarem claims sem citação, remover deterministicamente apenas esses claims;
+6. revalidar;
+7. aceitar somente se a cobertura final for 100%; caso contrário, fallback seguro.
+
+O CLI passa a mostrar:
+
+    stage=initial
+    stage=repair
+    stage=postprocess
+
+`citation_retry_count` continua contando somente retries de LLM, portanto permanece 1 quando o postprocess é usado.
+
+TDD confirmado e CI verificada: Ruff `All checks passed!`; pytest `108 passed, 3 warnings`.
+
+Próxima ação: rebuildar e repetir o mesmo chat curto com Groq e 1024 tokens. O resultado esperado, caso o modelo repita o padrão observado, é initial 8/9, repair 8/9, postprocess 100% e `Grounded: yes`. Não reindexar Qdrant.
