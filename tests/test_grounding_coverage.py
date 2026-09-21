@@ -43,6 +43,19 @@ def test_citation_coverage_ignores_short_heading_blocks() -> None:
     assert result.cited_claim_blocks == 1
 
 
+def test_citation_coverage_ignores_long_list_intro_ending_with_colon() -> None:
+    result = validate_citation_coverage(
+        "Alguns dos direitos da pessoa usuária da saúde, conforme os trechos recuperados, são:\n"
+        "1. Direito ao acolhimento imediato conforme a fonte [1].\n"
+        "2. Direito a acompanhante conforme a fonte [2].",
+        2,
+    )
+
+    assert result.valid is True
+    assert result.total_claim_blocks == 2
+    assert result.cited_claim_blocks == 2
+
+
 def test_citation_coverage_ignores_markdown_heading_without_colon() -> None:
     result = validate_citation_coverage(
         "## Direitos da pessoa usuária\n"
