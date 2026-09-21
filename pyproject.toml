@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ragtest"
 version = "0.5.19"
-description = "Backend portável de RAG com FastAPI, Qdrant, OCR e Gemini"
+description = "Backend portável de RAG com FastAPI, Qdrant, OCR e múltiplos providers de LLM"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
