@@ -225,3 +225,18 @@ Impacto:
 **Mudança:** a 0.5.20 captura e expõe os headers oficiais de rate limit da Groq no provider e no CLI antes de introduzir qualquer fallback automático entre LLMs.  
 **Motivo:** a Groq se mostrou adequada para desenvolvimento pela velocidade, mas possui cotas de requisições e tokens. Sem observabilidade local, um fallback automático poderia mascarar consumo de cota, misturar providers em avaliações e dificultar o diagnóstico de 429.  
 **Impacto:** cada resposta Groq pode atualizar um snapshot de RPD/TPM e respectivos resets, inclusive em HTTP 429. O CLI identifica explicitamente `requests_rpd` e `tokens_tpm`. Os headers não fornecem saldo de TPD diário, portanto essa métrica continua fora do snapshot. A seleção de provider permanece explícita e sem fallback automático. Validação real com `openai/gpt-oss-120b` confirmou `requests_rpd: 999/1000 reset=1m26.4s` e `tokens_tpm: 6069/8000 reset=14.482s`.
+
+
+## D025 — Manter o cliente demonstrativo multiplataforma desacoplado do núcleo RAG
+
+**Data:** 2026-09-21  
+**Mudança:** a interface de demonstração passa a usar React Native + Expo + TypeScript, substituindo o scaffold experimental Next.js criado no início da 0.5.21.  
+**Motivo:** o e-mail completo do orientador define um frontend/aplicativo multiplataforma como parte da arquitetura sugerida e, principalmente, deixa claro que o artefato central deve ser um módulo conversacional integrável ao Se Cuida Mulher. Um cliente Expo atende a demonstração do TCC sem tornar o backend dependente do aplicativo oficial.  
+**Impacto:** o frontend fica em `frontend/`, possui dependências e testes próprios e consome apenas o contrato da API. Nenhuma regra de retrieval, grounding, ingestão ou provider é movida para o cliente. O Se Cuida Mulher poderá substituir esse cliente futuramente sem reescrever o núcleo RAG.
+
+## D026 — Usar REST como transporte inicial do cliente
+
+**Data:** 2026-09-21  
+**Mudança:** a primeira integração do cliente multiplataforma usará `POST /v1/chat` por REST/JSON. WebSocket não é requisito da 0.5.x inicial.  
+**Motivo:** o endpoint REST já está implementado e validado, atende respostas não-streaming e simplifica testes, observabilidade e futura integração com clientes diferentes. WebSocket adicionaria complexidade sem necessidade funcional demonstrada neste momento.  
+**Impacto:** o contrato TypeScript do frontend espelha o schema FastAPI. WebSocket/streaming permanece uma evolução possível caso a experiência futura realmente exija resposta incremental.
