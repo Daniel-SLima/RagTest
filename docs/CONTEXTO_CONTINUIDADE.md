@@ -1646,7 +1646,7 @@ Não existe atualmente watcher/daemon que monitore automaticamente a pasta e fa�
 
 ### Checkpoint da 0.5.21 — scaffold Expo e contrato REST
 
-Estado aproximado da versão: 90% concluída.
+Estado da versão: 100% concluída e verificada.
 
 Implementado:
 
@@ -1687,17 +1687,32 @@ Verificado:
 - backend: 113 passed, 4 warnings;
 - Ruff: All checks passed!.
 
-Aguardando validação:
+Verificação de runtime local concluída:
 
-- abertura real do app Expo no ambiente local do usuário.
+- `npm install`: concluído;
+- `npm test`: 2 suites / 3 testes aprovados;
+- `npm run typecheck`: concluído sem erros;
+- `npm run web`: Metro Bundler iniciado com sucesso;
+- Expo Web disponível em `http://localhost:8081`;
+- interface visual abriu corretamente no navegador;
+- campo de pergunta e botão Enviar renderizados;
+- comportamento esperado confirmado: botão ainda não chama o backend nesta versão.
+
+Observação de segurança do ambiente local:
+
+- o npm reportou 10 vulnerabilidades de severidade moderada em dependências;
+- não executar `npm audit fix --force` automaticamente;
+- classificar dependências diretas/transitivas antes de qualquer correção;
+- revisão fica registrada para a fase de segurança/produção, sem bloquear o protótipo atual.
 
 Próximo passo exato:
 
-1. usuário atualizar a branch local;
-2. instalar dependências do frontend;
-3. iniciar Expo;
-4. confirmar que a tela inicial abre no navegador/emulador/dispositivo;
-5. após essa evidência, fechar 0.5.21 e iniciar 0.5.22 com integração real da tela ao FastAPI.
+1. fechar a 0.5.21 no PR #16;
+2. após merge autorizado, abrir a 0.5.22 em branch limpa;
+3. conectar o botão Enviar ao cliente `sendChatMessage`;
+4. configurar a URL do FastAPI por ambiente;
+5. renderizar pergunta, loading e resposta real do `POST /v1/chat`;
+6. validar o fluxo ponta a ponta com o backend local.
 
 Observação de dependências:
 
@@ -1715,3 +1730,51 @@ Posição no roadmap:
     0.8.x   agendamento/lembretes ........... futuro
     0.9.x   avaliação/usabilidade ........... futuro
     1.0     artefato de apresentação ........ futuro
+
+
+### 0.5.21 — runtime local do cliente Expo verificado
+
+Data da validação: 2026-09-21.
+
+Ambiente do usuário:
+
+    Windows
+    branch: feature/chatbot-demo-frontend-0.5.21
+
+Comandos executados:
+
+    npm install
+    npm test
+    npm run typecheck
+    npm run web
+
+Resultados:
+
+    Test Suites: 2 passed, 2 total
+    Tests:       3 passed, 3 total
+    TypeScript:  tsc --noEmit sem erros
+    Metro:       iniciado com sucesso
+    Web:         http://localhost:8081
+    bundle web:  concluído
+
+A interface foi observada visualmente no navegador e exibiu:
+
+- identificação RagTest;
+- título Assistente de Saúde;
+- texto introdutório;
+- card inicial "Olá! Como posso ajudar?";
+- campo "Digite sua pergunta...";
+- botão "Enviar".
+
+O botão ainda não envia perguntas ao backend por desenho da versão. A conexão com FastAPI é escopo da 0.5.22.
+
+Status final da 0.5.21:
+
+    scaffold Expo/React Native ........ verificado
+    TypeScript ........................ verificado
+    contrato REST tipado .............. verificado por teste
+    cliente sendChatMessage ........... verificado por teste
+    primeira tela ..................... verificada em runtime
+    backend ........................... inalterado
+    corpus/Qdrant ..................... inalterados
+    integração tela -> FastAPI ........ próxima versão (0.5.22)
