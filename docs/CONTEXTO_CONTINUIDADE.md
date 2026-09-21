@@ -1917,3 +1917,48 @@ Status da 0.5.22 permanece:
     implementação remota ............ verificada em CI
     runtime local ponta a ponta ..... aguardando validação válida
     PR #17 .......................... draft
+
+
+### 0.5.22 — backend verificado em runtime local
+
+Data: 2026-09-21.
+
+Após corrigir a branch local, o backend 0.5.22 foi rebuildado e iniciado sem recriar volumes ou Qdrant.
+
+Resultados observados:
+
+    docker compose ps
+    api: Up (healthy)
+    qdrant: Up
+
+    GET /health
+    {"status":"ok","service":"RagTest API","version":"0.5.22","environment":"development"}
+
+    GET /ready
+    {"status":"ready","dependencies":{"qdrant":"ok"}}
+
+Logs da API confirmaram:
+
+    Application startup complete
+    Uvicorn running on http://0.0.0.0:8000
+    GET /health -> 200
+    GET /ready -> 200
+
+Status atualizado da 0.5.22:
+
+    implementação remota ............ verificada em CI
+    backend runtime 0.5.22 .......... verificado
+    Qdrant/ready .................... verificado
+    Expo -> FastAPI -> RAG .......... aguardando validação final
+
+Estado aproximado da 0.5.22: 95%.
+
+Próximo passo exato:
+
+1. validar preflight CORS local para Origin http://localhost:8081;
+2. iniciar frontend Expo 0.5.22;
+3. confirmar npm test = 6 testes e typecheck verde;
+4. enviar uma pergunta pela tela;
+5. confirmar POST /v1/chat nos logs da API;
+6. confirmar resposta RAG real renderizada;
+7. registrar runtime final e fechar a 0.5.22 para merge.
