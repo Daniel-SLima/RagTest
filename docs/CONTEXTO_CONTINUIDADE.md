@@ -1338,3 +1338,35 @@ O CLI passa a mostrar:
 TDD confirmado e CI verificada: Ruff `All checks passed!`; pytest `108 passed, 3 warnings`.
 
 Próxima ação: rebuildar e repetir o mesmo chat curto com Groq e 1024 tokens. O resultado esperado, caso o modelo repita o padrão observado, é initial 8/9, repair 8/9, postprocess 100% e `Grounded: yes`. Não reindexar Qdrant.
+
+
+### Groq/GPT-OSS 120B — grounding estrutural validado em runtime
+
+O reteste após a D022 confirmou o fluxo completo:
+
+    Grounded: yes
+    Citation ids: [1, 2]
+    Citation retries: 1
+
+    [1] stage=initial     valid=no  syntax=yes coverage=0.889 blocks=8/9
+    [2] stage=repair      valid=no  syntax=yes coverage=0.889 blocks=8/9
+    [3] stage=postprocess valid=yes syntax=yes coverage=1.000 blocks=8/8
+
+Métricas observadas:
+
+    geração inicial: 1,14 s | 516 tokens | ~476,58 tok/s | stop
+    repair:          1,63 s | 488 tokens | ~316,53 tok/s | stop
+
+A resposta final manteve apenas os oito blocos citados e removeu o claim final sem fonte.
+
+Status:
+
+- `GroqProvider`: verificado em runtime;
+- `openai/gpt-oss-120b`: verificado para geração RAG oficial;
+- normalização `【n】 -> [n]`: verificada em runtime;
+- repair localizado: implementado, mas insuficiente sozinho no caso observado;
+- pós-processamento determinístico D022: verificado em runtime;
+- grounding estrutural final: verificado com `coverage=1.000`;
+- grounding semântico/entailment de cada claim para a fonte citada: ainda não verificado automaticamente.
+
+O Groq pode ser usado como provider principal de desenvolvimento enquanto o Gemini estiver limitado, mantendo a seleção explícita e sem fallback automático. CHATSCM continua proibido em providers externos antes da revisão manual de privacidade.
