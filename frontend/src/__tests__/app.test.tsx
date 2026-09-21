@@ -50,4 +50,30 @@ describe("RagTest demo app", () => {
     })
   })
 
+
+  it("renders a user-facing error when the API request fails", async () => {
+    const sendChat = jest.fn().mockRejectedValue(new Error("offline"))
+
+    await render(
+      <App
+        apiBaseUrl="http://localhost:8000"
+        sendChat={sendChat}
+      />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais vacinas?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.",
+        ),
+      ).toBeTruthy()
+    })
+  })
+
 })
