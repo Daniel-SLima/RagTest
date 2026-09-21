@@ -1267,3 +1267,19 @@ Correção implementada:
 - CI verificada: Ruff `All checks passed!`; pytest `106 passed, 4 warnings`.
 
 Próxima ação: rebuildar e repetir exatamente o mesmo chat curto com Groq e 1024 tokens. Não reindexar Qdrant.
+
+
+### Reteste após correção da introdução de lista
+
+O chat curto com Groq/GPT-OSS 120B e 1024 tokens foi repetido após a correção contextual da introdução de lista.
+
+Resultado real permaneceu:
+
+    tentativa 1: syntax=yes | coverage=0.889 | blocks=8/9
+    tentativa 2: syntax=yes | coverage=0.889 | blocks=8/9
+    grounded=false
+    done_reason=stop nas duas gerações
+
+Conclusão: a regra de introdução de lista está coberta por teste e CI, mas não explica sozinha o bloco uncited do caso real. A Dificuldade #22 continua aberta em runtime.
+
+Próxima ação: capturar novamente a resposta RAG bruta e comparar linha a linha com a classificação do gate para identificar exatamente qual bloco está sendo contado como uncited. Não alterar o gate até essa identificação.
