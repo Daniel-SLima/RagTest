@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -12,6 +13,16 @@ logger = logging.getLogger(__name__)
 
 _TRANSIENT_HTTP_STATUS_CODES = {429, 498, 500, 502, 503, 504}
 _MAX_RETRY_AFTER_SECONDS = 30.0
+
+
+@dataclass(frozen=True, slots=True)
+class GroqRateLimits:
+    limit_requests: int | None
+    limit_tokens: int | None
+    remaining_requests: int | None
+    remaining_tokens: int | None
+    reset_requests: str | None
+    reset_tokens: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +76,7 @@ class GroqProvider:
         self._service_retry_attempts = service_retry_attempts
         self._service_retry_base_delay_seconds = service_retry_base_delay_seconds
         self._generation_metrics: list[GroqGenerationMetrics] = []
+        self._rate_limits: GroqRateLimits | None = None
 
     @property
     def model_name(self) -> str:
@@ -73,6 +85,37 @@ class GroqProvider:
     @property
     def generation_metrics(self) -> tuple[GroqGenerationMetrics, ...]:
         return tuple(self._generation_metrics)
+
+    @property
+    def rate_limits(self) -> GroqRateLimits | None:
+        return self._rate_limits
+
+    @staticmethod
+    def _header_int(headers: Mapping[str, str], name: str) -> int | None:
+        value = headers.get(name)
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return None
+
+    def _record_rate_limits(self, headers: Mapping[str, str]) -> None:
+        normalized = {key.lower(): value for key, value in headers.items()}
+        self._rate_limits = GroqRateLimits(
+            limit_requests=self._header_int(normalized, "x-ratelimit-limit-requests"),
+            limit_tokens=self._header_int(normalized, "x-ratelimit-limit-tokens"),
+            remaining_requests=self._header_int(
+                normalized,
+                "x-ratelimit-remaining-requests",
+            ),
+            remaining_tokens=self._header_int(
+                normalized,
+                "x-ratelimit-remaining-tokens",
+            ),
+            reset_requests=normalized.get("x-ratelimit-reset-requests"),
+            reset_tokens=normalized.get("x-ratelimit-reset-tokens"),
+        )
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -117,6 +160,7 @@ class GroqProvider:
 
         try:
             with urlopen(request, timeout=self._request_timeout_seconds) as response:
+                self._record_rate_limits(response.headers)
                 raw = response.read().decode("utf-8")
         except HTTPError as exc:
             try:
