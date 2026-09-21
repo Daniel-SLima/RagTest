@@ -1850,7 +1850,7 @@ Decisão de compatibilidade:
 - CORS só afeta clientes web em navegador; origens adicionais precisam ser explicitamente autorizadas;
 - não usar allow_origins=["*"] como atalho.
 
-Estado aproximado da 0.5.22: 85% implementada.
+Estado da 0.5.22: 100% concluída e verificada.
 
 Aguardando:
 
@@ -1962,3 +1962,90 @@ Próximo passo exato:
 5. confirmar POST /v1/chat nos logs da API;
 6. confirmar resposta RAG real renderizada;
 7. registrar runtime final e fechar a 0.5.22 para merge.
+
+
+### 0.5.22 — fluxo ponta a ponta verificado em runtime
+
+Data: 2026-09-21.
+
+Validação executada com a branch correta `feature/frontend-fastapi-0.5.22`.
+
+Evidências locais:
+
+    frontend/package.json
+    version: 0.5.22
+
+    CORS preflight:
+    OPTIONS /v1/chat -> HTTP 200
+    access-control-allow-origin: http://localhost:8081
+
+    npm test:
+    Test Suites: 2 passed, 2 total
+    Tests: 6 passed, 6 total
+
+    npm run typecheck:
+    concluído sem erros
+
+    Expo Web:
+    http://localhost:8081
+    bundle concluído
+
+Fluxo funcional observado visualmente:
+
+    pergunta digitada na interface
+        ->
+    botão Enviar
+        ->
+    FastAPI /v1/chat
+        ->
+    retrieval/Qdrant/LLM/grounding
+        ->
+    resposta real renderizada no cliente Expo
+
+Pergunta usada:
+
+    Quais vacinas são recomendadas para pessoas idosas?
+
+A interface mostrou a pergunta da usuária e uma resposta real do assistente com citações numéricas no texto.
+
+Limitações visuais observadas e deliberadamente deixadas para a próxima versão:
+
+- Markdown ainda aparece como texto cru, por exemplo `**negrito**`;
+- fontes/citações ainda não possuem cartões visuais;
+- metadados de grounding/modelo ainda não são mostrados na interface;
+- refinamentos de UX pertencem à 0.5.23/0.5.24.
+
+Status final da 0.5.22:
+
+    CORS Expo Web ...................... verificado
+    backend 0.5.22 .................... verificado
+    Qdrant/ready ...................... verificado
+    cliente REST ...................... verificado
+    tela -> FastAPI -> RAG ............ verificado
+    resposta renderizada .............. verificada
+    testes frontend ................... 6/6
+    typecheck ......................... verificado
+    backend tests ..................... 115 passed
+    Ruff .............................. verificado
+    corpus/embeddings/Qdrant .......... inalterados
+
+Roadmap após validação:
+
+    0.5.21  Expo + contrato REST ............ concluída/merged
+    0.5.22  tela -> FastAPI real ............ concluída/aguardando merge
+    0.5.23  rich-text + fontes + citações ... próxima
+    0.5.24  UX + grounding/refinamentos ..... futura
+    0.6.x   sessões .......................... futura
+    0.7.x   auditoria/LGPD/segurança ........ futura
+    0.8.x   agendamento/lembretes ........... futura
+    0.9.x   avaliação/usabilidade ........... futura
+    1.0     artefato final do TCC ........... futura
+
+Próximo passo exato:
+
+1. manter PR #17 aberto até autorização explícita de merge;
+2. após merge, abrir a 0.5.23 em branch limpa;
+3. implementar renderização rich-text/Markdown;
+4. transformar `sources` em cartões de fontes com documento/página;
+5. expor citações de forma navegável/legível na interface;
+6. manter grounding e metadados técnicos disponíveis sem poluir a experiência principal.
