@@ -128,6 +128,27 @@ class CoverageRepairingFakeLLM:
         )
 
 
+class HighCoverageSingleUncitedFakeLLM:
+    model_name = "high-coverage-single-uncited-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        return (
+            "Item um sustentado pela fonte [1].\n"
+            "Item dois sustentado pela fonte [1].\n"
+            "Item três sustentado pela fonte [1].\n"
+            "Item quatro sustentado pela fonte [1].\n"
+            "Item cinco sustentado pela fonte [1].\n"
+            "Item seis sustentado pela fonte [1].\n"
+            "Item sete sustentado pela fonte [1].\n"
+            "Item oito sustentado pela fonte [1].\n"
+            "Conclusão adicional sem referência."
+        )
+
+
 class PersistentlyUncitedConclusionFakeLLM:
     model_name = "persistently-uncited-conclusion-fake-llm"
 
@@ -246,3 +267,28 @@ async def test_answer_with_rag_prunes_uncited_blocks_after_failed_repair() -> No
     assert result.citation_validation_attempts[2].stage == "postprocess"
     assert result.citation_validation_attempts[2].valid is True
     assert result.citation_validation_attempts[2].coverage == 1.0
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_prunes_high_coverage_single_uncited_before_repair() -> None:
+    llm = HighCoverageSingleUncitedFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 1
+    assert result.grounded is True
+    assert result.citation_ids == [1]
+    assert result.citation_retry_count == 0
+    assert "Conclusão adicional" not in result.answer
+    assert len(result.citation_validation_attempts) == 2
+    assert result.citation_validation_attempts[0].stage == "initial"
+    assert result.citation_validation_attempts[0].coverage == pytest.approx(8 / 9)
+    assert result.citation_validation_attempts[1].stage == "postprocess"
+    assert result.citation_validation_attempts[1].valid is True
+    assert result.citation_validation_attempts[1].coverage == 1.0
