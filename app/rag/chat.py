@@ -69,7 +69,7 @@ _GROUNDING_FALLBACK = (
 )
 
 
-def _can_postprocess_before_repair(validation: CitationCoverage) -> bool:
+def _can_postprocess_safely(validation: CitationCoverage) -> bool:
     return (
         validation.syntax_valid
         and validation.uncited_claim_blocks == 1
@@ -112,7 +112,7 @@ async def _generate_with_validated_citations(
     if validation.valid:
         return answer, True, list(extract_citation_ids(answer)), 0, (first_attempt,)
 
-    if _can_postprocess_before_repair(validation):
+    if _can_postprocess_safely(validation):
         postprocessed = _postprocess_if_fully_grounded(answer, len(hits))
         if postprocessed is not None:
             postprocessed_answer, postprocessed_validation = postprocessed
@@ -150,11 +150,7 @@ async def _generate_with_validated_citations(
     if repaired_validation.valid:
         return repaired_answer, True, list(extract_citation_ids(repaired_answer)), 1, attempts
 
-    if (
-        repaired_validation.syntax_valid
-        and repaired_validation.cited_claim_blocks > 0
-        and repaired_validation.uncited_claim_blocks > 0
-    ):
+    if _can_postprocess_safely(repaired_validation):
         postprocessed = _postprocess_if_fully_grounded(
             repaired_answer,
             len(hits),
