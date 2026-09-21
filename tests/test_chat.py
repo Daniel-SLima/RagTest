@@ -150,10 +150,7 @@ class UnrepairableCoverageFakeLLM:
 
     async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
         self.calls += 1
-        return (
-            "A fonte informa vacinação anual contra influenza [1].\n"
-            "Outra afirmação informativa continua sem referência."
-        )
+        return "Resposta permanece com citação fora do intervalo [9]."
 
 
 @pytest.mark.asyncio
@@ -200,9 +197,9 @@ async def test_answer_with_rag_falls_back_when_coverage_still_fails() -> None:
     assert len(result.citation_validation_attempts) == 2
     for attempt in result.citation_validation_attempts:
         assert attempt.valid is False
-        assert attempt.syntax_valid is True
-        assert attempt.coverage == 0.5
-        assert attempt.reason == "one or more informative answer blocks have no valid citation"
+        assert attempt.syntax_valid is False
+        assert attempt.coverage == 0.0
+        assert attempt.reason == "answer contains citation ids outside the available source range"
     assert "Não foi possível gerar uma resposta" in result.answer
 
 
