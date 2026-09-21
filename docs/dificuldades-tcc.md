@@ -233,6 +233,19 @@ Correção: headings Markdown iniciados por `#` deixam de ser considerados claim
 
 Aprendizado técnico: guardrails estruturais precisam distinguir conteúdo semântico de elementos de apresentação; caso contrário, podem produzir falsos negativos de groundedness. Um retry de reparo também precisa receber o artefato que falhou e o motivo da falha, em vez de simplesmente repetir a geração.
 
+
+## 20. Groq foi bloqueada pelo Cloudflare 1010 devido à assinatura HTTP do urllib
+
+Planejado: validar o novo `GroqProvider` com `openai/gpt-oss-120b` usando a categoria oficial `direitos_saude`, primeiro com saída limitada a 512 tokens e depois com a pergunta completa.
+
+Observado: o `runtime-info` confirmou `llm_provider=groq`, modelo `openai/gpt-oss-120b`, endpoint correto e `reasoning_effort=low`. Porém as duas chamadas reais ao chat falharam antes da geração com `HTTP 403 Forbidden` e corpo `error code: 1010`. O traceback mostrou que a requisição era feita por `urllib.request.urlopen`.
+
+Diagnóstico: o erro 1010 é um bloqueio de assinatura de cliente na camada Cloudflare, não um erro de retrieval nem evidência de chave inválida. O provider usava o `User-Agent` padrão do `urllib`, assinatura que pode ser classificada como cliente automatizado/bot pelo Browser Integrity Check. A requisição foi rejeitada antes de chegar ao modelo e antes de qualquer validação de grounding.
+
+Correção: adicionar cabeçalhos HTTP explícitos ao `GroqProvider`, incluindo `Accept: application/json` e um `User-Agent` compatível com navegador identificando o RagTest. Foi adicionado teste de regressão para impedir que o provider volte a usar o `User-Agent` padrão do `urllib`. A correção permanece aguardando validação real contra a Groq.
+
+Aprendizado técnico: uma integração pode passar em testes unitários e ainda falhar na borda do provedor por políticas de WAF/anti-bot. Para providers protegidos por Cloudflare, o cliente HTTP real e seus cabeçalhos fazem parte do contrato de integração e precisam ser validados no ambiente de execução.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
