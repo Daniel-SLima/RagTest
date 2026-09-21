@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from app.llm.base import LLMProvider
-from app.rag.citations import extract_citation_ids
+from app.rag.citations import extract_citation_ids, normalize_citation_markup
 from app.rag.decomposition import decompose_question
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.grounding import CitationCoverage, validate_citation_coverage
@@ -67,6 +67,7 @@ async def _generate_with_validated_citations(
         system_prompt=SYSTEM_PROMPT,
         user_prompt=build_user_prompt(question, hits),
     )
+    answer = normalize_citation_markup(answer)
     validation = validate_citation_coverage(answer, len(hits))
 
     first_attempt = CitationValidationAttempt.from_coverage(validation)
@@ -83,6 +84,7 @@ async def _generate_with_validated_citations(
             validation_reason=validation.reason,
         ),
     )
+    repaired_answer = normalize_citation_markup(repaired_answer)
     repaired_validation = validate_citation_coverage(repaired_answer, len(hits))
 
     second_attempt = CitationValidationAttempt.from_coverage(repaired_validation)
