@@ -1161,4 +1161,4 @@ Características implementadas:
 
 D021 registra a decisão. A validação real deve usar somente a categoria oficial `direitos_saude`; CHATSCM continua proibido em providers externos antes de revisão manual de privacidade.
 
-Próximo passo: validar CI, adicionar a chave Groq somente no `.env` local, rebuildar e testar primeiro o provider isolado/runtime-info e depois o chat RAG oficial. Não reindexar Qdrant.
+CI da integração Groq verificada: Ruff `All checks passed!`; pytest `101 passed, 4 warnings`. Próximo passo: adicionar a chave Groq somente no `.env` local, rebuildar e testar primeiro o `runtime-info` e depois o chat RAG oficial. Não reindexar Qdrant.
