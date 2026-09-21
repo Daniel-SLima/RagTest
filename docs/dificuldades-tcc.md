@@ -333,7 +333,7 @@ Observado: o provider registrava tokens e latência do corpo JSON, mas descartav
 
 Diagnóstico: a camada HTTP com urllib lia somente o corpo da resposta e o Retry-After usado no backoff. Os demais headers de quota nunca eram persistidos no provider.
 
-Correção: adicionar um snapshot tipado de rate limits ao GroqProvider, atualizado em respostas normais e também em HTTPError quando os headers estiverem presentes. O ragtest-chat passa a mostrar requests_rpd e tokens_tpm com limites, valores restantes e resets. O desenvolvimento seguiu TDD: o primeiro RED falhou pela ausência de rate_limits; o segundo RED comprovou que o snapshot ficava vazio em 429.
+Correção: adicionar um snapshot tipado de rate limits ao GroqProvider, atualizado em respostas normais e também em HTTPError quando os headers estiverem presentes. O ragtest-chat passa a mostrar requests_rpd e tokens_tpm com limites, valores restantes e resets. O desenvolvimento seguiu TDD: o primeiro RED falhou pela ausência de rate_limits; o segundo RED comprovou que o snapshot ficava vazio em 429. Em runtime real, a Groq retornou requests_rpd 999/1000 e tokens_tpm 6069/8000, confirmando a captura e exibição.
 
 Aprendizado técnico: métricas de uso e rate limit fazem parte da observabilidade operacional do provider. Capturá-las antes de implementar fallback automático mantém rastreabilidade e evita esconder a causa real de indisponibilidades ou mudanças de modelo.
 
