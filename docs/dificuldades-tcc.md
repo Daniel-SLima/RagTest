@@ -272,6 +272,19 @@ Correção: o gate passa a ignorar uma linha terminada em `:` somente quando o p
 
 Aprendizado técnico: guardrails de cobertura precisam considerar relações estruturais entre blocos, não apenas o conteúdo isolado de cada linha. Introduções de lista e itens informativos têm papéis diferentes e devem ser classificados de forma contextual.
 
+
+## 23. Repair sabia que havia cobertura incompleta, mas não qual bloco precisava ser corrigido
+
+Planejado: quando o gate encontrasse cobertura incompleta, o único retry de repair deveria corrigir especificamente os blocos sem citação.
+
+Observado: a análise linha a linha da resposta real do GPT-OSS mostrou que a introdução da lista estava corretamente ignorada e os dez itens estavam citados. O único bloco uncited era a frase final: "Esses direitos são extraídos dos documentos citados e refletem as garantias previstas para as pessoas usuárias dos serviços de saúde." Apesar disso, o repair repetia cobertura incompleta porque recebia apenas o motivo genérico `one or more informative answer blocks have no valid citation`, sem saber qual trecho específico havia falhado.
+
+Diagnóstico: o gate estava correto em exigir citação para a frase final, pois ela contém uma afirmação informativa. O problema estava na falta de granularidade do feedback enviado ao repair. Ignorar esse tipo de conclusão enfraqueceria o guardrail; o comportamento correto é direcionar o repair ao bloco exato.
+
+Correção: `CitationCoverage` passa a preservar os textos dos blocos sem citação válida. O prompt de repair recebe esses blocos em uma seção explícita `BLOCOS SEM CITAÇÃO VÁLIDA` e instrui o modelo a adicionar somente uma citação sustentada pelas fontes ou remover o bloco se ele for desnecessário e não puder ser sustentado. O gate e seus critérios permanecem inalterados. A mudança foi desenvolvida por TDD: os testes falharam primeiro nos três pontos ausentes e, após a implementação, a CI passou com Ruff verde e `106 passed, 4 warnings`. A validação real com Groq ainda está pendente.
+
+Aprendizado técnico: um repair baseado em validação programática é mais eficaz quando recebe feedback localizado sobre o artefato que falhou. Um motivo agregado identifica a classe do problema, mas não necessariamente fornece informação suficiente para uma correção determinística.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
