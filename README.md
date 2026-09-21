@@ -56,7 +56,7 @@ A primeira saída do holdout deve ser preservada como resultado experimental. Se
 
 ## Segurança
 
-Nunca versione GEMINI_API_KEY. Use apenas .env local.
+Nunca versione `GEMINI_API_KEY` nem `GROQ_API_KEY`. Use segredos somente no `.env` local.
 
 
 ## Documentação de decisões
@@ -565,13 +565,16 @@ Nesta primeira etapa o endpoint `/v1/chat` não muda de comportamento e nenhum c
 Após o self-check estrutural passar, a 0.5.19 passa a usar a cobertura de citações no fluxo de geração:
 
     resposta do LLM
-      -> valida sintaxe das citações
-      -> valida cobertura por bloco informativo
+      -> normaliza variantes de citação como 【1】 para [1]
+      -> valida sintaxe e cobertura por bloco informativo
       -> se completa: grounded=true
-      -> se incompleta: tenta reparar uma vez
-      -> se continuar incompleta: fallback seguro + grounded=false
+      -> se houver alta cobertura (>= 80%) e exatamente 1 claim sem citação:
+           tenta postprocess determinístico e revalida
+      -> caso contrário, tenta reparar uma vez
+      -> após o repair, a mesma regra conservadora pode aplicar postprocess
+      -> se ainda não houver cobertura completa: fallback seguro + grounded=false
 
-O retry existente continua limitado a uma tentativa. Não há chamada adicional a um juiz externo; a segunda chamada é a própria regeneração já prevista pelo fluxo de correção de citações.
+O repair continua limitado a uma tentativa. O postprocess não chama LLM: ele remove somente o único claim sem citação elegível e só aceita a resposta após nova validação em 100% de cobertura. Casos com baixa cobertura, múltiplos claims sem citação ou sintaxe inválida não são "salvos" por poda.
 
 O critério continua sendo estrutural. Uma citação presente no bloco não é prova de entailment semântico.
 
@@ -628,3 +631,26 @@ Para voltar ao Gemini:
 A seleção é deliberadamente explícita. Não existe fallback automático entre providers nesta fase, para que testes e métricas não misturem modelos sem rastreabilidade.
 
 O `qwen3:4b` foi testado, mas não é o baseline local: ele expôs reasoning no campo `content` mesmo com thinking desativado. O provider local rejeita esse padrão quando `OLLAMA_THINK=false`.
+
+
+### Provider Groq / GPT-OSS 120B — 0.5.19
+
+Além de Gemini e Ollama, o RagTest suporta Groq como provider explícito:
+
+    LLM_PROVIDER=groq
+    GROQ_MODEL=openai/gpt-oss-120b
+    GROQ_BASE_URL=https://api.groq.com/openai/v1
+    GROQ_REASONING_EFFORT=low
+    GROQ_REQUEST_TIMEOUT_SECONDS=120
+
+A chave deve ficar somente no `.env` local em `GROQ_API_KEY`. Não existe fallback automático entre providers.
+
+Validações reais com fontes oficiais confirmaram `grounded=true` em três domínios distintos:
+
+- direitos da pessoa usuária da saúde;
+- vacinação de pessoas idosas;
+- saúde bucal durante a gestação.
+
+No cenário de direitos, após a otimização D023, uma execução real terminou com `citation_retry_count=0`, evitando uma segunda geração externa. O endpoint `/v1/chat` permanece com grounding estrutural; entailment semântico automático entre claim e trecho citado ainda não faz parte da validação desta versão.
+
+Enquanto a revisão manual de privacidade dos documentos CHATSCM estiver pendente, testes com providers externos devem permanecer restritos às fontes oficiais.
