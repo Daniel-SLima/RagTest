@@ -120,6 +120,7 @@ class CoverageRepairingFakeLLM:
             )
         assert "VALIDAÇÃO AUTOMÁTICA DE CITAÇÕES" in user_prompt
         assert "Outra afirmação informativa ficou sem referência." in user_prompt
+        assert "BLOCOS SEM CITAÇÃO VÁLIDA" in user_prompt
         assert "Cada parágrafo ou item informativo" in user_prompt
         return (
             "A fonte informa vacinação anual contra influenza [1].\n"
