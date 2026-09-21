@@ -1879,3 +1879,41 @@ Roadmap após este checkpoint:
     0.8.x   agendamento/lembretes ........... futura
     0.9.x   avaliação/usabilidade ........... futura
     1.0     artefato final do TCC ........... futura
+
+
+### Validação local 0.5.22 — tentativa não válida por branch local desatualizada
+
+Data: 2026-09-21.
+
+A primeira tentativa de runtime ponta a ponta não valida a 0.5.22.
+
+Evidências do terminal:
+
+    git switch feature/frontend-fastapi-0.5.22
+    -> abortado por alteração local em frontend/tsconfig.json
+
+    git pull --ff-only origin feature/frontend-fastapi-0.5.22
+    -> abortado pelo mesmo arquivo
+
+    npm test
+    -> ragtest-frontend@0.5.21
+
+    npm run web
+    -> ragtest-frontend@0.5.21
+
+A interface abriu, mas o botão Enviar não executou a chamada. Esse comportamento é esperado na 0.5.21 e não constitui falha do código 0.5.22.
+
+Também foi observado:
+
+    curl http://localhost:8000/health -> Empty reply from server
+    curl http://localhost:8000/ready  -> Empty reply from server
+
+Esses resultados foram obtidos antes de corrigir a branch local e, portanto, não devem ser usados para concluir falha do backend 0.5.22. Se persistirem após a atualização correta da branch, investigar com docker compose ps e logs da API.
+
+Hipótese confirmada para o bloqueio de checkout: o Expo havia alterado localmente frontend/tsconfig.json em execução anterior. A próxima ação é inspecionar/descartar apenas essa alteração local, trocar para a branch 0.5.22 e confirmar a versão antes de qualquer novo teste.
+
+Status da 0.5.22 permanece:
+
+    implementação remota ............ verificada em CI
+    runtime local ponta a ponta ..... aguardando validação válida
+    PR #17 .......................... draft
