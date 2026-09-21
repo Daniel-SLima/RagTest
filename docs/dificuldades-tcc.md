@@ -337,6 +337,19 @@ Correção: adicionar um snapshot tipado de rate limits ao GroqProvider, atualiz
 
 Aprendizado técnico: métricas de uso e rate limit fazem parte da observabilidade operacional do provider. Capturá-las antes de implementar fallback automático mantém rastreabilidade e evita esconder a causa real de indisponibilidades ou mudanças de modelo.
 
+
+## 28. Integração Expo encontrou diferenças de teste assíncrono e tipagem de ambiente
+
+Planejado: conectar a primeira tela React Native/Expo ao cliente REST já tipado, mantendo testes de interação e typecheck verdes.
+
+Observado: no primeiro GREEN da interface, o teste ainda mostrava o campo vazio e o botão desabilitado após `fireEvent.changeText`; depois da correção funcional, o typecheck falhou com `TS2591: Cannot find name 'process'` ao ler `EXPO_PUBLIC_RAG_API_BASE_URL`.
+
+Diagnóstico: a React Native Testing Library 14 usa eventos assíncronos com React 19, portanto `fireEvent.changeText` e `fireEvent.press` precisam ser aguardados. Separadamente, o projeto Expo não incluía os tipos Node necessários para tipar `process.env` durante `tsc --noEmit`.
+
+Correção: aguardar os eventos do RNTL 14 nos testes; manter a configuração oficial `EXPO_PUBLIC_*`; adicionar `@types/node` e incluir `node` nos tipos do TypeScript. A lógica funcional da interface não precisou ser removida nem contornada.
+
+Aprendizado técnico: em stacks modernas, testes de interação e validação estática exercitam contratos diferentes. A CI do frontend deve manter os dois gates separados: Jest/RNTL para comportamento e TypeScript para integração/configuração de ambiente.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
