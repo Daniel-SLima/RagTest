@@ -1370,3 +1370,14 @@ Status:
 - grounding semântico/entailment de cada claim para a fonte citada: ainda não verificado automaticamente.
 
 O Groq pode ser usado como provider principal de desenvolvimento enquanto o Gemini estiver limitado, mantendo a seleção explícita e sem fallback automático. CHATSCM continua proibido em providers externos antes da revisão manual de privacidade.
+
+
+### D023 — otimização de cota validada em CI
+
+Três testes reais com fontes oficiais distintas passaram com grounded=true: direitos_saude, vacinacao/idoso e gestacao/saude bucal. Nos três houve citation_retry_count=1.
+
+Foi implementado postprocess antes do repair apenas quando a resposta inicial tem sintaxe válida, exatamente um claim sem citação, pelo menos um claim citado e cobertura >= 0,80. A poda é aceita somente após revalidação em 100%; caso contrário, o repair normal continua.
+
+TDD confirmado: o novo teste falhou primeiro com duas chamadas ao LLM. Após a implementação, CI verde com 109 testes aprovados e 4 warnings.
+
+Próxima ação: rebuildar e repetir um único teste real com Groq. Esperado no padrão conhecido: grounded=true e citation_retry_count=0. Não reindexar Qdrant.
