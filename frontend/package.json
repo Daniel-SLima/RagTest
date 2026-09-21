@@ -1,32 +1,32 @@
 {
   "name": "ragtest-frontend",
-  "version": "0.1.0",
+  "version": "0.5.21",
   "private": true,
+  "main": "expo/AppEntry",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint .",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "test": "jest --runInBand",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "16.3.3",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "expo": "57.0.22",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "0.21.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
-    "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^16.0.0",
-    "@types/node": "^24.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "16.3.3",
-    "jsdom": "^26.0.0",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^3.0.0"
+    "@testing-library/react-native": "14.0.1",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.2.0",
+    "jest": "^30.0.0",
+    "jest-expo": "57.0.5",
+    "typescript": "^5.9.0"
+  },
+  "jest": {
+    "preset": "jest-expo"
   }
 }
