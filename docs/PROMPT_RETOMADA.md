@@ -38,7 +38,7 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - PR atual: **#18 draft**.
 - A branch 0.5.23 já foi reconciliada com o head documental de `main`.
 - O merge do PR #18 para `main` ainda **não foi realizado**.
-- Antes do merge final, confirme a CI do head reconciliado e peça autorização explícita ao usuário.
+- A CI do head reconciliado foi verificada com sucesso. Antes do merge final, peça autorização explícita ao usuário.
 
 ## 0.5.23 — estado verificado
 
@@ -62,7 +62,7 @@ Verificado:
 - retrieval sem filtros retornou `pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf`, página 34, sem `chatscm/`;
 - corpus, embeddings e Qdrant permaneceram inalterados.
 
-A CI do **head pós-reconciliação** deve ser conferida novamente antes de chamar a versão de pronta para merge.
+A CI do **head pós-reconciliação** foi verificada: lint, backend test, frontend tests e frontend typecheck concluíram com sucesso. A 0.5.23 está pronta para decisão de merge, ainda dependente de autorização explícita.
 
 ## Arquitetura que deve ser preservada
 
@@ -182,7 +182,7 @@ Antes de trocar branch após executar Expo:
 0.5.20  observabilidade Groq ................ merged
 0.5.21  Expo + contrato REST ............... merged
 0.5.22  Expo -> FastAPI -> RAG ............. merged
-0.5.23  rich-text + fontes + citações ...... validada / aguardando CI final e merge
+0.5.23  rich-text + fontes + citações ...... validada / pronta para decisão de merge
 0.5.24  UX + grounding/refinamentos ........ próxima
 0.6.x   sessões ............................. futura
 0.7.x   auditoria/LGPD/segurança ........... futura

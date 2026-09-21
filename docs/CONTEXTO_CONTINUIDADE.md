@@ -22,7 +22,7 @@
 - Branch de trabalho: `feature/richtext-sources-0.5.23`
 - PR #18: **draft**
 - Versão em validação: **0.5.23**
-- Implementação, CI anterior e runtime local da 0.5.23: **verificados**
+- Implementação, CI pós-reconciliação e runtime local da 0.5.23: **verificados**
 - Esta branch foi reconciliada com os commits documentais mais recentes de `main` por merge de sincronização autorizado pelo usuário.
 - O merge do PR #18 para `main` **não foi realizado** e continua dependente de autorização explícita.
 
@@ -43,11 +43,10 @@ Verificado no Expo Web com resposta RAG real:
 
 ### Próximo passo imediato
 
-1. aguardar/verificar a CI do head reconciliado;
-2. confirmar que o PR #18 ficou sem divergência em relação a `main`;
-3. manter o PR draft até a checagem final;
-4. solicitar autorização explícita antes do merge do PR #18 para `main`;
-5. após a 0.5.23 ser integrada, iniciar a 0.5.24 com foco em UX + grounding/refinamentos.
+1. PR #18 está sem divergência em relação a `main` e `mergeable=true`;
+2. CI do head reconciliado foi verificada com sucesso;
+3. solicitar autorização explícita antes do merge do PR #18 para `main`;
+4. após a 0.5.23 ser integrada, iniciar a 0.5.24 com foco em UX + grounding/refinamentos.
 
 ### Regras críticas preservadas
 
@@ -65,7 +64,7 @@ Verificado no Expo Web com resposta RAG real:
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.22`  
-**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; implementação e runtime validados, branch reconciliada com `main`, aguardando CI final e decisão de merge do PR #18.
+**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; implementação, runtime e CI pós-reconciliação validados; PR #18 mergeable e aguardando decisão/autorização de merge.
 
 ---
 
@@ -2248,9 +2247,41 @@ Fechamento da versão:
 
 Pendência antes do merge do PR #18 para `main`:
 
-A reconciliação da branch com `main` foi realizada por merge de sincronização autorizado. Falta verificar a CI do head reconciliado e, depois, solicitar autorização explícita para o merge do PR #18.
+A reconciliação da branch com `main` foi realizada por merge de sincronização autorizado e a CI do head reconciliado foi verificada com sucesso. Resta apenas a autorização explícita do usuário para o merge do PR #18.
 
 Roadmap:
 
     0.5.23  rich-text + fontes + citações ... implementação/runtime concluídos
     0.5.24  UX + grounding/refinamentos ..... próxima
+
+
+### CI pós-reconciliação da 0.5.23
+
+Head reconciliado verificado:
+
+    fc391ca5b88753953b5ca4e6bc7042cb4f8d2f7d
+
+GitHub Actions:
+
+    workflow: CI
+    run: #290
+    lint: success
+    backend test: success
+    frontend tests: success
+    frontend typecheck: success
+
+Estado do PR #18 após a reconciliação:
+
+    base: main
+    behind_by: 0
+    mergeable: true
+    draft: true
+    merge em main: não realizado
+
+Status da 0.5.23:
+
+    implementação ...................... verificada
+    runtime local ...................... verificado
+    CI pós-reconciliação ............... verificada
+    compatibilidade com main ........... verificada
+    decisão de merge ................... aguardando autorização explícita
