@@ -242,9 +242,22 @@ Observado: o `runtime-info` confirmou `llm_provider=groq`, modelo `openai/gpt-os
 
 Diagnóstico: o erro 1010 é um bloqueio de assinatura de cliente na camada Cloudflare, não um erro de retrieval nem evidência de chave inválida. O provider usava o `User-Agent` padrão do `urllib`, assinatura que pode ser classificada como cliente automatizado/bot pelo Browser Integrity Check. A requisição foi rejeitada antes de chegar ao modelo e antes de qualquer validação de grounding.
 
-Correção: adicionar cabeçalhos HTTP explícitos ao `GroqProvider`, incluindo `Accept: application/json` e um `User-Agent` compatível com navegador identificando o RagTest. Foi adicionado teste de regressão para impedir que o provider volte a usar o `User-Agent` padrão do `urllib`. A correção passou na CI com Ruff verde e `102 passed, 4 warnings`; permanece aguardando validação real contra a Groq.
+Correção: adicionar cabeçalhos HTTP explícitos ao `GroqProvider`, incluindo `Accept: application/json` e um `User-Agent` compatível com navegador identificando o RagTest. Foi adicionado teste de regressão para impedir que o provider volte a usar o `User-Agent` padrão do `urllib`. A correção passou na CI com Ruff verde e `102 passed, 4 warnings` e foi validada em runtime: o erro 403/1010 desapareceu e o GPT-OSS 120B respondeu normalmente.
 
 Aprendizado técnico: uma integração pode passar em testes unitários e ainda falhar na borda do provedor por políticas de WAF/anti-bot. Para providers protegidos por Cloudflare, o cliente HTTP real e seus cabeçalhos fazem parte do contrato de integração e precisam ser validados no ambiente de execução.
+
+
+## 21. GPT-OSS 120B respondeu rapidamente, mas não produziu citações verificáveis
+
+Planejado: após corrigir o bloqueio Cloudflare 1010, validar o `openai/gpt-oss-120b` com uma pergunta curta sobre direitos da pessoa usuária da saúde, duas fontes oficiais e limite de 512 tokens.
+
+Observado: a chamada chegou ao modelo e o provider funcionou. A primeira geração levou 1,12 s, processou 1121 tokens de prompt e gerou exatamente 512 tokens a aproximadamente 478,05 tokens/s, terminando por `length`. O gate encontrou 0/9 blocos citados e nenhuma citação verificável. O repair foi executado; a segunda geração levou 0,94 s, processou 1719 tokens de prompt, gerou 409 tokens a aproximadamente 478,22 tokens/s e terminou por `stop`, mas novamente apresentou 0/9 blocos citados e nenhuma citação `[n]`. O resultado final foi o fallback seguro com `grounded=false`.
+
+Diagnóstico: a integração de transporte e autenticação Groq está funcionando e a latência é muito inferior à do Qwen3 8B local. A primeira falha pode ter sido influenciada pelo teto de 512 tokens, pois terminou por `length`, mas a segunda tentativa terminou normalmente e ainda assim não produziu citações, portanto o problema não pode ser atribuído apenas ao limite de saída. A causa exata ainda precisa ser isolada entre aderência do GPT-OSS ao formato literal `[n]`, efeito do prompt RAG/contexto e uso de tokens de reasoning.
+
+Correção: nenhuma correção de comportamento aplicada ainda. O próximo diagnóstico mínimo é uma chamada direta ao mesmo `GroqProvider`, sem retrieval, pedindo uma saída literal curta contendo `[1]`. Se o formato funcionar isoladamente, a investigação volta ao prompt/contexto RAG; se falhar, o contrato de saída do provider precisará ser adaptado. Não afrouxar o gate antes desse teste.
+
+Aprendizado técnico: alta velocidade e conclusão normal da geração não garantem aderência ao contrato estrutural exigido pelo RAG. Desempenho do provider e groundedness devem continuar sendo medidos separadamente.
 
 ## Como registrar novos casos
 
