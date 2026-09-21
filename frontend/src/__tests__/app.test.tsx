@@ -31,11 +31,11 @@ describe("RagTest demo app", () => {
       />,
     )
 
-    fireEvent.changeText(
+    await fireEvent.changeText(
       screen.getByPlaceholderText("Digite sua pergunta..."),
       "Quais vacinas são recomendadas?",
     )
-    fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
 
     expect(screen.getByText("Quais vacinas são recomendadas?")).toBeTruthy()
 
