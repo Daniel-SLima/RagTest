@@ -2442,9 +2442,20 @@ TDD local observado:
 
 Status:
 
-    retry manual da última pergunta ........ implementado e verificado localmente
+    retry manual da última pergunta ........ implementado e verificado em CI
     documentação ........................... atualizada
-    CI do novo head ........................ aguardando execução
+    CI do commit 69d7868 ................... success (run 35643606329)
+    lint ................................... success (36 s)
+    backend test ........................... success (46 s)
+    frontend-test + typecheck .............. success (1 min 20 s)
+    validação visual Expo Web .............. verificada sem provider externo
     PR #19 ................................. draft
 
-Não foi registrada nova dificuldade em `docs/dificuldades-tcc.md`: o RED foi intencional e a implementação não revelou falha real de ferramenta, ambiente ou arquitetura.
+Validação visual segura:
+
+- Expo Web apontou para `http://127.0.0.1:65534`, porta local sem serviço, sem acessar provider, corpus ou Qdrant;
+- a primeira captura revelou que o cartão crescia além da viewport rolável e deixava parte do botão sob o limite do composer;
+- o histórico passou a executar `scrollToEnd` quando loading, resposta ou erro mudam;
+- após reiniciar o Metro com bundle novo, o botão ficou totalmente visível: `y=247–286` dentro da viewport rolável que termina em `y=330`;
+- o navegador registrou exatamente duas chamadas `POST /v1/chat`: envio inicial e retry explícito;
+- a Dificuldade #31 registra o recorte visual e o cuidado com bundle congelado no Expo em modo CI.

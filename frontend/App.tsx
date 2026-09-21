@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Pressable,
@@ -30,6 +30,7 @@ export default function App({
   apiBaseUrl = DEFAULT_API_BASE_URL,
   sendChat = sendChatMessage,
 }: AppProps) {
+  const conversationRef = useRef<ScrollView>(null)
   const [draft, setDraft] = useState("")
   const [question, setQuestion] = useState<string | null>(null)
   const [response, setResponse] = useState<ChatApiResponse | null>(null)
@@ -37,6 +38,10 @@ export default function App({
   const [error, setError] = useState<string | null>(null)
 
   const canSend = draft.trim().length >= 2 && !isLoading
+
+  useEffect(() => {
+    conversationRef.current?.scrollToEnd({ animated: false })
+  }, [error, isLoading, response])
 
   async function requestAnswer(message: string) {
     if (isLoading) {
@@ -98,6 +103,7 @@ export default function App({
           styles.content,
           question ? styles.contentConversation : styles.contentWelcome,
         ]}
+        ref={conversationRef}
       >
         {!question ? (
           <View style={styles.welcomeCard}>

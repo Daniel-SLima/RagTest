@@ -43,6 +43,7 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
 - Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
 - Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
+- Retry manual validado visualmente no Expo Web com falha de rede exclusivamente local; botão visível e duas chamadas explícitas observadas.
 - Antes de continuar, confirme o head atual da feature, o estado da CI e o checkout local.
 
 ## 0.5.24 — estado atual
@@ -54,7 +55,9 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - falha de rede/outro erro: preserva a mensagem genérica;
 - detalhes técnicos de provider não são exibidos à usuária;
 - erros apresentam `Tentar novamente`, que reenvia manualmente a última pergunta;
+- o histórico rola para o fim após mudanças de loading, resposta ou erro, evitando que o botão fique cortado em viewports baixas;
 - suíte frontend local após o terceiro recorte: 13/13 e typecheck verde;
+- CI do terceiro recorte no commit `69d7868`: run `35643606329`, com lint, backend test e frontend-test/typecheck em success;
 - CI do commit funcional `d207b89`: run `35641533624`, com lint, backend test e frontend-test/typecheck em success;
 - avisos não bloqueantes da CI: actions Node.js 20 forçadas para Node.js 24 e migração futura de `ubuntu-latest` para Ubuntu 26;
 - corpus, embeddings e Qdrant permanecem inalterados em 767 pontos.

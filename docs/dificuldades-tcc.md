@@ -376,6 +376,19 @@ Correção: manter `jest-expo` como preset e adicionar `@ronradtke/react-native-
 
 Aprendizado técnico: uma dependência ser JS-only não significa que seu artefato publicado já esteja em sintaxe diretamente consumível pelo Jest. Bibliotecas React Native podem exigir transpile explícito em testes mesmo sem possuir código nativo.
 
+
+## 31. Validação visual revelou botão cortado e bundle congelado no Expo Web
+
+Planejado: validar que o botão `Tentar novamente` ficava visível e reenviava a última pergunta sem provocar falha em provider externo.
+
+Observado: em uma viewport de 488 px de altura, o botão terminava em `y=349`, enquanto a área rolável terminava em `y=330`; a parte inferior era cortada pelo limite do histórico. As primeiras tentativas de correção repetiram exatamente as mesmas medidas, mesmo após o código mudar.
+
+Diagnóstico: o conteúdo da conversa crescia após o erro, mas o histórico permanecia com `scrollTop=0`. Além disso, o Metro iniciado com `CI=true` continuou servindo um bundle já gerado; o JavaScript entregue não continha as alterações de diagnóstico, fazendo execuções posteriores testarem código antigo. A ausência da string diagnóstica no bundle comprovou esse segundo problema.
+
+Correção: disparar `scrollToEnd` após mudanças de loading, resposta ou erro; encerrar somente o processo Node identificado na porta 8081; reiniciar o Metro; desabilitar cache no Edge headless; e repetir o mesmo gate visual. O resultado final colocou o botão entre `y=247–286` dentro da viewport que termina em `y=330` e registrou duas chamadas POST locais, uma inicial e uma de retry.
+
+Aprendizado técnico: testes de interação comprovam o fluxo, mas não detectam recortes causados pela geometria real da viewport. Validações visuais automatizadas devem medir limites dos elementos e confirmar que o bundle carregado contém a alteração atual; do contrário, um servidor de desenvolvimento congelado pode produzir falsos negativos e levar a correções sobre código que nem chegou ao navegador.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

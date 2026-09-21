@@ -279,4 +279,4 @@ Impacto:
 **Data:** 2026-09-21
 **Mudança:** o cartão de erro do cliente Expo passa a oferecer `Tentar novamente`, reutilizando a última pergunta e o mesmo fluxo de envio. A repetição ocorre somente após ação explícita da usuária.
 **Motivo:** a mensagem de indisponibilidade recomendava uma nova tentativa, mas o campo já havia sido limpo e não existia uma forma direta de repetir a pergunta. Um retry automático poderia gerar chamadas externas inesperadas, aumentar consumo de cota e esconder indisponibilidades persistentes.
-**Impacto:** falhas transitórias ficam recuperáveis sem redigitação e sem alterar o contrato REST ou o backend. O loading e a proteção contra envios concorrentes permanecem compartilhados entre o envio inicial e a repetição manual.
+**Impacto:** falhas transitórias ficam recuperáveis sem redigitação e sem alterar o contrato REST ou o backend. O loading e a proteção contra envios concorrentes permanecem compartilhados entre o envio inicial e a repetição manual. A conversa rola para o fim quando loading, resposta ou erro mudam, mantendo a ação visível em viewports menores.

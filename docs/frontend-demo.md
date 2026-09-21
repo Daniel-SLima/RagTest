@@ -246,3 +246,5 @@ Quando uma requisição falha, o cartão de erro apresenta o botão `Tentar nova
 - não executa retry automático nem altera mensagens internas do provider.
 
 O comportamento foi validado deterministicamente com uma primeira chamada simulando HTTP 503 e uma segunda chamada bem-sucedida. Nenhuma falha externa foi provocada e nenhuma alteração foi feita no backend, corpus ou Qdrant.
+
+Na validação visual do Expo Web, a API foi configurada para uma porta local sem serviço. A primeira captura mostrou o botão parcialmente fora da viewport rolável; o cliente passou então a rolar o histórico para o fim após mudanças de loading, resposta ou erro. Com bundle novo, o botão apareceu integralmente e o navegador observou duas chamadas `POST /v1/chat`, correspondentes ao envio inicial e ao retry manual. Nenhum provider externo foi acessado.
