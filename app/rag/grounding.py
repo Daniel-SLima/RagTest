@@ -115,3 +115,25 @@ def validate_citation_coverage(
         reason=reason,
         uncited_blocks=tuple(uncited_block_texts),
     )
+
+
+def prune_uncited_claim_blocks(answer: str, source_count: int) -> str:
+    lines = answer.splitlines()
+    kept_lines: list[str] = []
+
+    for index, line in enumerate(lines):
+        if not line.strip():
+            kept_lines.append(line)
+            continue
+
+        if _is_claim_block(line) and not _is_list_intro(lines, index):
+            ids = extract_citation_ids(line)
+            has_valid_citation = bool(ids) and all(
+                1 <= citation_id <= source_count for citation_id in ids
+            )
+            if not has_valid_citation:
+                continue
+
+        kept_lines.append(line)
+
+    return "\n".join(kept_lines).strip()
