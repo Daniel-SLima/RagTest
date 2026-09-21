@@ -181,4 +181,134 @@ describe("RagTest demo app", () => {
     })
   })
 
+
+  it("shows a verified-citations status for grounded answers", async () => {
+    const sendChat = jest.fn().mockResolvedValue({
+      answer: "A vacinação deve seguir o calendário oficial [1].",
+      model: "openai/gpt-oss-120b",
+      grounded: true,
+      citation_ids: [1],
+      citation_retry_count: 0,
+      multi_query_used: false,
+      retrieval_queries: ["Quais vacinas são recomendadas?"],
+      decomposition_status: "not-needed",
+      sources: [
+        {
+          citation_id: 1,
+          score: 0.91,
+          source: "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+          category: "vacinacao",
+          audience: "idoso",
+          page: 1,
+          chunk_count: 1,
+          excerpt: "Vacinação da pessoa idosa.",
+        },
+      ],
+    })
+
+    await render(
+      <App apiBaseUrl="http://localhost:8000" sendChat={sendChat} />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais vacinas são recomendadas?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Citações verificadas")).toBeTruthy()
+      expect(
+        screen.getByText(
+          "As afirmações informativas estão acompanhadas de referências do corpus.",
+        ),
+      ).toBeTruthy()
+    })
+  })
+
+  it("shows retrieved sources separately when citation grounding fails", async () => {
+    const sendChat = jest.fn().mockResolvedValue({
+      answer:
+        "Não foi possível gerar uma resposta com citações verificáveis a partir dos trechos recuperados. Consulte as fontes retornadas antes de usar a informação.",
+      model: "openai/gpt-oss-120b",
+      grounded: false,
+      citation_ids: [],
+      citation_retry_count: 1,
+      multi_query_used: false,
+      retrieval_queries: ["Quais vacinas são recomendadas?"],
+      decomposition_status: "not-needed",
+      sources: [
+        {
+          citation_id: 1,
+          score: 0.84,
+          source: "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+          category: "vacinacao",
+          audience: "idoso",
+          page: 1,
+          chunk_count: 1,
+          excerpt: "Vacinação da pessoa idosa.",
+        },
+      ],
+    })
+
+    await render(
+      <App apiBaseUrl="http://localhost:8000" sendChat={sendChat} />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais vacinas são recomendadas?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Citações não verificadas")).toBeTruthy()
+      expect(
+        screen.getByText(
+          "Não foi possível validar as citações desta resposta. Consulte as fontes recuperadas abaixo.",
+        ),
+      ).toBeTruthy()
+      expect(screen.getByText("Fontes recuperadas para consulta")).toBeTruthy()
+      expect(
+        screen.getByText("calendario_nacional_vacinacao_idoso.pdf"),
+      ).toBeTruthy()
+      expect(screen.queryByText("[1]")).toBeNull()
+    })
+  })
+
+  it("shows insufficient-document-basis status when no sources were retrieved", async () => {
+    const sendChat = jest.fn().mockResolvedValue({
+      answer:
+        "Não encontrei trechos com relevância suficiente na base documental para responder a essa pergunta.",
+      model: "openai/gpt-oss-120b",
+      grounded: false,
+      citation_ids: [],
+      citation_retry_count: 0,
+      multi_query_used: false,
+      retrieval_queries: ["Pergunta sem cobertura"],
+      decomposition_status: "not-needed",
+      sources: [],
+    })
+
+    await render(
+      <App apiBaseUrl="http://localhost:8000" sendChat={sendChat} />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Pergunta sem cobertura",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Sem base documental suficiente")).toBeTruthy()
+      expect(
+        screen.getByText(
+          "Não foram encontrados trechos relevantes o bastante para fundamentar uma resposta.",
+        ),
+      ).toBeTruthy()
+      expect(screen.queryByText("Fontes recuperadas para consulta")).toBeNull()
+    })
+  })
+
 })
