@@ -363,6 +363,19 @@ Correção: antes de repetir o runtime, inspecionar e descartar apenas a altera�
 
 Aprendizado técnico: uma validação ponta a ponta precisa confirmar branch e versão efetivamente executadas antes de interpretar o comportamento da aplicação. Ferramentas como Expo podem ajustar arquivos de configuração localmente e impedir uma troca de branch sem que o código remoto tenha qualquer defeito.
 
+
+## 30. Renderer Markdown exigiu transpile explícito no Jest do Expo
+
+Planejado: adicionar rich-text ao cliente Expo com um renderer Markdown JS-only e manter a suíte Jest/RNTL funcionando sem alterar a arquitetura do app.
+
+Observado: após integrar `@ronradtke/react-native-markdown-display`, a execução do frontend falhou antes dos testes com `SyntaxError: Unexpected token '<'` dentro do próprio pacote em `node_modules`.
+
+Diagnóstico: o pacote distribuía código que ainda continha JSX, enquanto o Jest ignora a maior parte de `node_modules` no processo de transformação. O problema era específico ao ambiente de testes; não indicava falha do componente React Native nem do contrato do backend.
+
+Correção: manter `jest-expo` como preset e adicionar `@ronradtke/react-native-markdown-display` à whitelist de `transformIgnorePatterns`, seguindo o mecanismo previsto pela documentação oficial do Expo para módulos que precisam ser transpilados. Após o ajuste, a suíte voltou a executar e os testes de rich-text/fontes passaram.
+
+Aprendizado técnico: uma dependência ser JS-only não significa que seu artefato publicado já esteja em sintaxe diretamente consumível pelo Jest. Bibliotecas React Native podem exigir transpile explícito em testes mesmo sem possuir código nativo.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
