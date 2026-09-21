@@ -1472,3 +1472,309 @@ Rate limits observados:
     tokens_tpm: 6069/8000 reset=14.482s
 
 A captura de headers da D024 está, portanto, verificada em runtime. Os resets são preservados exatamente como retornados pela Groq; não são reinterpretados localmente. TPD diário continua não disponível nesses headers.
+
+
+## Diretriz oficial do TCC — escopo alinhado ao e-mail do orientador
+
+### Título da proposta
+
+Desenvolvimento de Módulo Conversacional Baseado em RAG para Apoio ao Letramento em Saúde e Acesso a Serviços no Aplicativo "Se Cuida Mulher".
+
+### Interpretação arquitetural consolidada
+
+O artefato central do TCC é um módulo conversacional RAG reutilizável e independente da interface cliente. O backend, pipeline de ingestão, recuperação, grounding, auditoria e integração com provedores de LLM não devem depender especificamente do aplicativo Se Cuida Mulher nem de um único chatbot/front-end.
+
+O Se Cuida Mulher é o sistema-alvo de integração previsto pela proposta. Antes dessa integração, o projeto pode e deve possuir uma interface de demonstração própria para validar funcionalmente o módulo conversacional, apresentar o artefato na banca e exercitar o contrato da API. Essa interface é um cliente do módulo, não parte inseparável do núcleo RAG.
+
+Arquitetura desejada:
+
+    Cliente de chat multiplataforma
+        -> REST (inicialmente) / WebSocket apenas se necessário
+        -> FastAPI
+        -> Orquestração RAG
+        -> Retrieval / Grounding / Auditoria
+        -> Qdrant
+        -> Provider de LLM configurável
+
+Essa separação deve permitir substituir o cliente de demonstração pelo Se Cuida Mulher ou por outro chatbot sem reescrever o núcleo do RAG.
+
+### Objetivo geral oficial
+
+Desenvolver e integrar um módulo de chat inteligente baseado em arquitetura RAG para o aplicativo Se Cuida Mulher, atuando como ferramenta de suporte ao letramento informacional e orientação de agendamento de serviços de saúde.
+
+### Objetivos específicos e situação atual
+
+1. Pipeline de ingestão e processamento: extração, limpeza, chunking e vetorização de documentos do SUS, bulários e fluxogramas. O RagTest já possui pipeline funcional, OCR, chunking, embeddings e ingestão no Qdrant.
+
+2. Orquestração de recuperação e contexto: busca vetorial por intenção da usuária e recuperação de trechos normativos. O projeto já possui retrieval dense-rerank, sparse/BM25 disponível, multi-query e filtros por metadados.
+
+3. Resiliência e segurança: mitigação de alucinações e logs/auditoria estruturados. O projeto já possui grounding estrutural por citações, repair controlado, postprocess determinístico, fallback seguro, métricas de provider e rate limits. Segurança, privacidade/LGPD e auditoria persistente ainda precisam de uma fase própria.
+
+4. Interface de conversação reativa: ainda é a principal lacuna funcional do artefato. Deve suportar chat fluido, responsividade, rich-text, fontes/links e futuramente gatilhos de lembrete/agendamento quando o contrato de integração estiver definido.
+
+### Stack tecnológica alinhada à proposta
+
+- Backend: Python + FastAPI.
+- Banco vetorial: Qdrant.
+- Orquestração RAG: implementação própria em Python, utilizando componentes do ecossistema LangChain quando aplicável; não reescrever o backend apenas para aumentar dependência de framework.
+- Front-end/aplicativo: cliente multiplataforma desacoplado do backend; React Native/Expo ou Flutter são compatíveis com a proposta. A decisão deve priorizar reaproveitamento e integração futura.
+- Comunicação inicial: REST/JSON usando o contrato já existente em /v1/chat. WebSocket fica reservado para uma necessidade real de streaming ou comunicação bidirecional contínua.
+- Infraestrutura: Docker e Docker Compose para backend, Qdrant e serviços aplicáveis; o cliente mobile pode usar seu fluxo nativo de build/desenvolvimento.
+
+### Fases da proposta e mapeamento do projeto
+
+Fase 1 — levantamento e domínio: parcialmente concluída para o corpus técnico atual; fluxos locais de agendamento ainda precisam ser modelados quando as fontes institucionais correspondentes estiverem disponíveis.
+
+Fase 2 — pipeline de dados e RAG: estágio avançado e funcional. Retrieval, ingestão, embeddings, Qdrant, avaliação e grounding foram implementados e testados.
+
+Fase 3 — API e integração com chat: API /v1/chat funcional; falta evoluir o contrato conversacional para sessões/histórico apenas se isso for necessário ao protótipo e à integração final.
+
+Fase 4 — interface e testes funcionais: próxima prioridade prática. Construir um cliente demonstrável independente, validar UX e fluxos e só depois adaptar/integrar ao Se Cuida Mulher oficial.
+
+### Entregáveis oficiais
+
+- Artefato de software funcional em ambiente simulado ou homologado.
+- Repositório GitHub com backend RAG, ingestão, testes automatizados e cliente de demonstração/integracão.
+- Monografia descrevendo arquitetura, decisões de engenharia, métricas de retrieval, grounding, desempenho, limitações e contribuição tecnológica.
+
+### Regra de escopo para próximas versões
+
+O RagTest deve continuar funcionando de forma independente de qualquer frontend específico. Interfaces futuras devem consumir contratos públicos da API. Nenhuma regra de negócio do RAG deve depender de componentes visuais, navegação ou estado do Se Cuida Mulher. A integração oficial deve ocorrer como adaptação do cliente/contrato, não como reescrita do backend.
+
+
+## Protocolo de continuidade entre chats
+
+Este arquivo deve ser mantido como fonte principal de retomada do projeto. Ao concluir uma etapa relevante, atualizar sempre:
+
+1. estado atual da versão/branch/PR;
+2. o que foi implementado;
+3. o que foi verificado por CI/runtime;
+4. o que permanece hipótese ou aguardando validação;
+5. próximo passo exato;
+6. posição atual no roadmap geral;
+7. decisões arquiteturais e dificuldades novas;
+8. comandos de validação necessários para o usuário, quando houver.
+
+### Padrão de status usado nas conversas
+
+- implementado: código/documentação já alterados;
+- aguardando validação: alteração feita, mas falta CI ou runtime;
+- verificado: existe evidência de CI, teste automatizado ou runtime real;
+- hipótese: explicação ainda não confirmada por evidência.
+
+### Fluxo de trabalho preferido
+
+    alteração
+        -> comandos/testes
+        -> usuário executa quando runtime local é necessário
+        -> logs retornam ao chat
+        -> análise
+        -> próxima alteração
+
+Não declarar sucesso sem evidência. Mudanças funcionais devem seguir TDD RED -> GREEN sempre que aplicável. Evitar vários comandos/blocos independentes ao mesmo tempo quando o próximo passo depende do resultado anterior.
+
+### Regra de comunicação de progresso
+
+Após cada avanço relevante, informar explicitamente ao usuário:
+
+- versão atual;
+- etapa atual;
+- percentual/posição qualitativa no roadmap quando isso ajudar;
+- o que acabou de ser concluído;
+- o que vem imediatamente depois;
+- se há algo aguardando ação do usuário.
+
+## Roadmap consolidado do TCC
+
+### Estado atual
+
+Versão integrada em main: 0.5.20.
+Versão em desenvolvimento: 0.5.21.
+Branch atual de trabalho: `feature/chatbot-demo-frontend-0.5.21`.
+PR atual: #16 draft.
+
+A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O scaffold Next.js criado inicialmente no PR #16 foi substituído por React Native + Expo + TypeScript. O frontend demonstrativo agora segue a linha multiplataforma sugerida no TCC e continua desacoplado do backend.
+
+### Roadmap
+
+    0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat
+       ->
+    0.5.22  Chat funcional consumindo FastAPI por REST
+       ->
+    0.5.23  Rich-text, citações, fontes e links
+       ->
+    0.5.24  UX mobile, loading, erros, estados de grounding/fallback
+       ->
+    0.6.x   Sessões conversacionais controladas
+       ->
+    0.7.x   Auditoria estruturada, privacidade/LGPD e segurança
+       ->
+    0.8.x   Fluxos institucionais de serviços/agendamento + lembretes
+       ->
+    0.9.x   Avaliação experimental e testes de usabilidade
+       ->
+    1.0     Artefato funcional/documentado pronto para apresentação
+       ->
+    etapa posterior: integração no Se Cuida Mulher oficial
+
+### Posição atual no roadmap
+
+O núcleo RAG/backend está em estágio avançado e funcional. A camada cliente multiplataforma da 0.5.21 já foi iniciada com React Native + Expo, primeira superfície visual, contrato TypeScript e cliente REST para `/v1/chat`. A próxima validação é abrir o app no ambiente local do usuário; depois disso, a 0.5.22 conecta a tela ao cliente REST e passa a renderizar respostas reais.
+
+## Comportamento atual para novos documentos no corpus
+
+O diretório configurado por `SOURCE_DIR` (em Docker, `/app/data/source`; no repositório, `data/source`) é a origem do corpus. O loader descobre recursivamente arquivos `.pdf` e `.docx` em qualquer subpasta suportada.
+
+Adicionar um arquivo ao diretório NÃO o torna consultável imediatamente. O chat consulta apenas os chunks já indexados na collection Qdrant. Portanto, após adicionar, alterar ou remover arquivos, é necessário sincronizar o corpus com o índice.
+
+Fluxo seguro atual:
+
+    1. colocar/remover/alterar PDF ou DOCX em data/source/<categoria>/...
+    2. executar `ragtest-plan-ingestion-sync` ou `ragtest-sync-ingestion` sem --apply para dry-run
+    3. revisar missing/stale/orphan sources e erros de carregamento
+    4. executar `ragtest-sync-ingestion --apply`
+    5. o sistema faz upsert dos chunks novos/alterados antes de excluir pontos obsoletos
+    6. o próprio comando revalida a collection e exige estado final em sync
+    7. somente depois disso o novo conteúdo fica disponível para retrieval e chat
+
+Proteções atuais: recusa corpus vazio; recusa escrita se houver erro de carregamento; não usa recreate; IDs são determinísticos; exclusões ocorrem apenas após upsert de substituições; verificação final é obrigatória.
+
+Metadados: a primeira pasta relativa abaixo de `data/source` vira `category`; alguns públicos são inferidos pelo caminho/nome do arquivo (por exemplo gestante, idoso, adulto). Arquivos soltos diretamente na raiz recebem category `uncategorized`.
+
+Não existe atualmente watcher/daemon que monitore automaticamente a pasta e faça ingestão ao detectar novos arquivos. Automatizar isso pode ser uma evolução futura, mas deve preservar o mesmo fluxo de planejamento, validação e auditoria antes de mutar Qdrant.
+
+
+### Checkpoint da 0.5.21 — scaffold Expo e contrato REST
+
+Estado da versão: 100% concluída e verificada.
+
+Implementado:
+
+- Expo SDK 57 estável;
+- React Native 0.86 / React 19.2;
+- TypeScript;
+- app multiplataforma Android/iOS/web;
+- primeira tela do Assistente de Saúde;
+- campo de pergunta e botão Enviar;
+- contrato TypeScript equivalente ao schema FastAPI;
+- suporte opcional a min_score;
+- sendChatMessage para POST /v1/chat;
+- Jest + jest-expo + React Native Testing Library;
+- typecheck TypeScript integrado à CI;
+- versão do repositório/backend/frontend alinhada em 0.5.21;
+- documentação do frontend atualizada;
+- decisões D025 e D026 registradas.
+
+TDD observado:
+
+1. RED da tela: App inexistente; teste de contrato existente passou;
+2. GREEN da tela: 2 suites / 2 testes passaram;
+3. RED do cliente REST: sendChatMessage inexistente; App permaneceu verde;
+4. GREEN do cliente REST: 2 suites / 3 testes passaram.
+
+Última CI funcional antes do bump final de versão:
+
+    frontend: 2 suites, 3 testes aprovados
+    frontend typecheck: success
+    backend: 113 passed, 4 warnings
+    Ruff: All checks passed!
+
+Verificado:
+
+- CI final após alinhamento da versão 0.5.21;
+- frontend: 2 suites / 3 testes aprovados;
+- TypeScript typecheck: success;
+- backend: 113 passed, 4 warnings;
+- Ruff: All checks passed!.
+
+Verificação de runtime local concluída:
+
+- `npm install`: concluído;
+- `npm test`: 2 suites / 3 testes aprovados;
+- `npm run typecheck`: concluído sem erros;
+- `npm run web`: Metro Bundler iniciado com sucesso;
+- Expo Web disponível em `http://localhost:8081`;
+- interface visual abriu corretamente no navegador;
+- campo de pergunta e botão Enviar renderizados;
+- comportamento esperado confirmado: botão ainda não chama o backend nesta versão.
+
+Observação de segurança do ambiente local:
+
+- o npm reportou 10 vulnerabilidades de severidade moderada em dependências;
+- não executar `npm audit fix --force` automaticamente;
+- classificar dependências diretas/transitivas antes de qualquer correção;
+- revisão fica registrada para a fase de segurança/produção, sem bloquear o protótipo atual.
+
+Próximo passo exato:
+
+1. fechar a 0.5.21 no PR #16;
+2. após merge autorizado, abrir a 0.5.22 em branch limpa;
+3. conectar o botão Enviar ao cliente `sendChatMessage`;
+4. configurar a URL do FastAPI por ambiente;
+5. renderizar pergunta, loading e resposta real do `POST /v1/chat`;
+6. validar o fluxo ponta a ponta com o backend local.
+
+Observação de dependências:
+
+O npm install da CI reportou vulnerabilidades transitivas moderadas no ecossistema do frontend. Não executar npm audit fix --force automaticamente. A análise de segurança das dependências será feita de forma deliberada antes da versão de apresentação/produção; nenhuma vulnerabilidade de severidade alta foi usada como evidência de bloqueio nesta etapa.
+
+Posição no roadmap:
+
+    0.5.20  observabilidade Groq ............ concluída/merged
+    0.5.21  scaffold Expo + contrato REST ... em validação final
+    0.5.22  chat real -> FastAPI ............ próximo
+    0.5.23  rich-text/fontes/citações ....... futuro
+    0.5.24  UX/erros/grounding .............. futuro
+    0.6.x   sessões .......................... futuro
+    0.7.x   auditoria/LGPD/segurança ........ futuro
+    0.8.x   agendamento/lembretes ........... futuro
+    0.9.x   avaliação/usabilidade ........... futuro
+    1.0     artefato de apresentação ........ futuro
+
+
+### 0.5.21 — runtime local do cliente Expo verificado
+
+Data da validação: 2026-09-21.
+
+Ambiente do usuário:
+
+    Windows
+    branch: feature/chatbot-demo-frontend-0.5.21
+
+Comandos executados:
+
+    npm install
+    npm test
+    npm run typecheck
+    npm run web
+
+Resultados:
+
+    Test Suites: 2 passed, 2 total
+    Tests:       3 passed, 3 total
+    TypeScript:  tsc --noEmit sem erros
+    Metro:       iniciado com sucesso
+    Web:         http://localhost:8081
+    bundle web:  concluído
+
+A interface foi observada visualmente no navegador e exibiu:
+
+- identificação RagTest;
+- título Assistente de Saúde;
+- texto introdutório;
+- card inicial "Olá! Como posso ajudar?";
+- campo "Digite sua pergunta...";
+- botão "Enviar".
+
+O botão ainda não envia perguntas ao backend por desenho da versão. A conexão com FastAPI é escopo da 0.5.22.
+
+Status final da 0.5.21:
+
+    scaffold Expo/React Native ........ verificado
+    TypeScript ........................ verificado
+    contrato REST tipado .............. verificado por teste
+    cliente sendChatMessage ........... verificado por teste
+    primeira tela ..................... verificada em runtime
+    backend ........................... inalterado
+    corpus/Qdrant ..................... inalterados
+    integração tela -> FastAPI ........ próxima versão (0.5.22)
