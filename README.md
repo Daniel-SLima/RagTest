@@ -654,3 +654,29 @@ Validações reais com fontes oficiais confirmaram `grounded=true` em três dom�
 No cenário de direitos, após a otimização D023, uma execução real terminou com `citation_retry_count=0`, evitando uma segunda geração externa. O endpoint `/v1/chat` permanece com grounding estrutural; entailment semântico automático entre claim e trecho citado ainda não faz parte da validação desta versão.
 
 Enquanto a revisão manual de privacidade dos documentos CHATSCM estiver pendente, testes com providers externos devem permanecer restritos às fontes oficiais.
+
+
+## Fase 0.5.20 — observabilidade de rate limits da Groq
+
+A 0.5.20 começa pela observabilidade de cota antes de qualquer fallback automático entre providers.
+
+O `GroqProvider` passa a preservar os headers oficiais retornados pela API:
+
+    x-ratelimit-limit-requests
+    x-ratelimit-remaining-requests
+    x-ratelimit-reset-requests
+    x-ratelimit-limit-tokens
+    x-ratelimit-remaining-tokens
+    x-ratelimit-reset-tokens
+
+Esses dados são atualizados tanto em respostas bem-sucedidas quanto em erros HTTP que contenham os headers, inclusive 429.
+
+O `ragtest-chat` exibe explicitamente as janelas:
+
+    Groq rate limits:
+      requests_rpd: 987/1000 reset=23h59m
+      tokens_tpm: 6543/8000 reset=7.66s
+
+Importante: segundo o contrato da Groq, os headers de requests representam RPD e os headers de tokens representam TPM. Portanto, `remaining_tokens` não é saldo diário de tokens e não substitui o acompanhamento de TPD no console/uso da conta.
+
+A 0.5.20 não adiciona fallback automático entre Gemini, Groq e Ollama nesta etapa. Também não altera retrieval, corpus, embeddings ou Qdrant.

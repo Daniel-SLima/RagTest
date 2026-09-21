@@ -1413,3 +1413,62 @@ Correção final:
 TDD: RED com 1 falha e 109 testes passando; GREEN após correção com Ruff verde e 110 testes aprovados, 4 warnings.
 
 A auditoria também confirmou que o PR #13 não altera data/source, corpus, OCR, chunks, embeddings ou a collection Qdrant. README e metadados do pacote foram atualizados para refletir Groq, múltiplos providers e o fluxo final da 0.5.19.
+
+
+### Início da 0.5.20 — observabilidade de cota Groq
+
+Branch: `feature/groq-rate-limits-0.5.20`  
+PR: #14 (draft)
+
+Escopo inicial:
+
+- preservar headers oficiais de rate limit no GroqProvider;
+- capturar os mesmos dados também em HTTP 429;
+- exibir RPD/TPM e resets no ragtest-chat;
+- não introduzir fallback automático ainda;
+- não alterar corpus, retrieval, embeddings ou Qdrant.
+
+TDD observado:
+
+1. RED: GroqProvider não possuía `rate_limits` — 1 falha / 110 passes;
+2. GREEN: captura em resposta normal — 111 passes;
+3. RED do CLI: formatter inexistente — 1 falha / 111 passes;
+4. GREEN do CLI — 112 passes;
+5. RED 429: snapshot permanecia None — 1 falha / 112 passes;
+6. GREEN 429 — 113 passes.
+
+Semântica dos headers:
+
+- requests: RPD;
+- tokens: TPM;
+- resets preservados como texto retornado pela Groq;
+- TPD diário não é fornecido por esses headers.
+
+Próxima validação: rebuild local e uma única chamada real com Groq para confirmar que o CLI mostra os headers recebidos do serviço.
+
+
+### 0.5.20 — rate limits verificados em runtime
+
+Validação real com Groq/GPT-OSS 120B:
+
+    app_version: 0.5.20
+    python_package_ragtest: 0.5.20
+    llm_provider: groq
+    llm_model: openai/gpt-oss-120b
+    llm_max_output_tokens: 1024
+
+Grounding observado:
+
+    initial: coverage=0.875, blocks=7/8
+    postprocess: coverage=1.000, blocks=7/7
+    citation_retry_count=0
+    grounded=yes
+
+Isso fornece evidência direta em runtime de que o caminho initial -> postprocess da D023 foi acionado sem segunda geração externa.
+
+Rate limits observados:
+
+    requests_rpd: 999/1000 reset=1m26.4s
+    tokens_tpm: 6069/8000 reset=14.482s
+
+A captura de headers da D024 está, portanto, verificada em runtime. Os resets são preservados exatamente como retornados pela Groq; não são reinterpretados localmente. TPD diário continua não disponível nesses headers.

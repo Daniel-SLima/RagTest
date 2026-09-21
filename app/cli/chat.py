@@ -4,6 +4,7 @@ import asyncio
 from app.core.config import get_settings
 from app.llm.base import LLMServiceUnavailableError
 from app.llm.factory import create_llm_provider
+from app.llm.groq_provider import GroqRateLimits
 from app.rag.chat import answer_with_rag
 from app.rag.embeddings.factory import (
     create_embedding_provider,
@@ -20,6 +21,23 @@ def _format_seconds(value: float | None) -> str:
 
 def _format_rate(value: float | None) -> str:
     return "-" if value is None else f"{value:.2f} tok/s"
+
+
+def _format_groq_rate_limits(rate_limits: GroqRateLimits) -> tuple[str, str]:
+    def value_or_dash(value: int | None) -> str:
+        return "-" if value is None else str(value)
+
+    requests = (
+        f"requests_rpd: {value_or_dash(rate_limits.remaining_requests)}/"
+        f"{value_or_dash(rate_limits.limit_requests)} "
+        f"reset={rate_limits.reset_requests or '-'}"
+    )
+    tokens = (
+        f"tokens_tpm: {value_or_dash(rate_limits.remaining_tokens)}/"
+        f"{value_or_dash(rate_limits.limit_tokens)} "
+        f"reset={rate_limits.reset_tokens or '-'}"
+    )
+    return requests, tokens
 
 
 def parse_args() -> argparse.Namespace:
@@ -114,6 +132,12 @@ async def run(args: argparse.Namespace) -> None:
                     f"rate={_format_rate(metric.output_tokens_per_second)} "
                     f"done_reason={metric.done_reason or '-'}"
                 )
+
+        rate_limits = getattr(llm, "rate_limits", None)
+        if rate_limits is not None:
+            print("Groq rate limits:")
+            for line in _format_groq_rate_limits(rate_limits):
+                print(f"  {line}")
 
         print("Answer:")
         print(result.answer)
