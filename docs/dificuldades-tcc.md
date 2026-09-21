@@ -207,6 +207,19 @@ Correção: o teste controlado com 512 confirmou que reduzir o orçamento de sa�
 
 Aprendizado técnico: self-checks do gate validam a lógica determinística do RagTest, mas não validam automaticamente a aderência de um modelo local ao contrato de saída nem sua latência sob o prompt RAG real. Providers locais precisam expor métricas de geração e motivos de reprovação para que desempenho e groundedness sejam diagnosticados separadamente.
 
+
+## 18. O mesmo gate de grounding falhou com Gemini após recuperação de um 503
+
+Planejado: verificar se o Gemini 3.6 Flash havia voltado a responder no mesmo cenário oficial de `direitos_saude`, mantendo a pergunta, retrieval, corpus e `--no-decompose`.
+
+Observado: a primeira tentativa ao Gemini recebeu erro transitório 503; o retry de aplicação foi acionado após 1 segundo e a execução conseguiu prosseguir. O retrieval retornou as mesmas cinco páginas da Carta oficial, porém o chat terminou com `grounded=false`, sem `citation_ids` e com `citation_retry_count=1`, exatamente como no teste anterior com Qwen3 8B.
+
+Diagnóstico: o Gemini voltou a estar acessível, mas ainda apresentou indisponibilidade transitória. Como dois providers diferentes chegaram ao mesmo fallback estrutural sobre o mesmo contexto recuperado, a hipótese de que a reprovação seja específica do Qwen ficou enfraquecida. A causa exata do gate ainda não está identificada porque esse teste usou uma imagem anterior à instrumentação que expõe validade, sintaxe, cobertura e motivo por tentativa.
+
+Correção: nenhuma mudança funcional ainda. Atualizar/rebuildar a imagem com a instrumentação já implementada e repetir o mesmo teste com Gemini para observar o motivo preciso da reprovação antes de alterar prompt ou regras do gate. O Gemini pode voltar a ser usado como provider principal de desenvolvimento, mantendo o Ollama como contingência manual enquanto a disponibilidade externa oscilar.
+
+Aprendizado técnico: disponibilidade do provider e groundedness são dimensões independentes. Um retry pode recuperar uma falha 503 e ainda assim a resposta subsequente ser rejeitada pelo gate; além disso, quando o mesmo comportamento aparece em providers diferentes, a investigação deve priorizar o contrato compartilhado de prompt/validação antes de atribuir o problema ao modelo.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
