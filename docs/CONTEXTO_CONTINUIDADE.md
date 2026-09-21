@@ -1472,3 +1472,71 @@ Rate limits observados:
     tokens_tpm: 6069/8000 reset=14.482s
 
 A captura de headers da D024 está, portanto, verificada em runtime. Os resets são preservados exatamente como retornados pela Groq; não são reinterpretados localmente. TPD diário continua não disponível nesses headers.
+
+
+## Diretriz oficial do TCC — escopo alinhado ao e-mail do orientador
+
+### Título da proposta
+
+Desenvolvimento de Módulo Conversacional Baseado em RAG para Apoio ao Letramento em Saúde e Acesso a Serviços no Aplicativo "Se Cuida Mulher".
+
+### Interpretação arquitetural consolidada
+
+O artefato central do TCC é um módulo conversacional RAG reutilizável e independente da interface cliente. O backend, pipeline de ingestão, recuperação, grounding, auditoria e integração com provedores de LLM não devem depender especificamente do aplicativo Se Cuida Mulher nem de um único chatbot/front-end.
+
+O Se Cuida Mulher é o sistema-alvo de integração previsto pela proposta. Antes dessa integração, o projeto pode e deve possuir uma interface de demonstração própria para validar funcionalmente o módulo conversacional, apresentar o artefato na banca e exercitar o contrato da API. Essa interface é um cliente do módulo, não parte inseparável do núcleo RAG.
+
+Arquitetura desejada:
+
+    Cliente de chat multiplataforma
+        -> REST (inicialmente) / WebSocket apenas se necessário
+        -> FastAPI
+        -> Orquestração RAG
+        -> Retrieval / Grounding / Auditoria
+        -> Qdrant
+        -> Provider de LLM configurável
+
+Essa separação deve permitir substituir o cliente de demonstração pelo Se Cuida Mulher ou por outro chatbot sem reescrever o núcleo do RAG.
+
+### Objetivo geral oficial
+
+Desenvolver e integrar um módulo de chat inteligente baseado em arquitetura RAG para o aplicativo Se Cuida Mulher, atuando como ferramenta de suporte ao letramento informacional e orientação de agendamento de serviços de saúde.
+
+### Objetivos específicos e situação atual
+
+1. Pipeline de ingestão e processamento: extração, limpeza, chunking e vetorização de documentos do SUS, bulários e fluxogramas. O RagTest já possui pipeline funcional, OCR, chunking, embeddings e ingestão no Qdrant.
+
+2. Orquestração de recuperação e contexto: busca vetorial por intenção da usuária e recuperação de trechos normativos. O projeto já possui retrieval dense-rerank, sparse/BM25 disponível, multi-query e filtros por metadados.
+
+3. Resiliência e segurança: mitigação de alucinações e logs/auditoria estruturados. O projeto já possui grounding estrutural por citações, repair controlado, postprocess determinístico, fallback seguro, métricas de provider e rate limits. Segurança, privacidade/LGPD e auditoria persistente ainda precisam de uma fase própria.
+
+4. Interface de conversação reativa: ainda é a principal lacuna funcional do artefato. Deve suportar chat fluido, responsividade, rich-text, fontes/links e futuramente gatilhos de lembrete/agendamento quando o contrato de integração estiver definido.
+
+### Stack tecnológica alinhada à proposta
+
+- Backend: Python + FastAPI.
+- Banco vetorial: Qdrant.
+- Orquestração RAG: implementação própria em Python, utilizando componentes do ecossistema LangChain quando aplicável; não reescrever o backend apenas para aumentar dependência de framework.
+- Front-end/aplicativo: cliente multiplataforma desacoplado do backend; React Native/Expo ou Flutter são compatíveis com a proposta. A decisão deve priorizar reaproveitamento e integração futura.
+- Comunicação inicial: REST/JSON usando o contrato já existente em /v1/chat. WebSocket fica reservado para uma necessidade real de streaming ou comunicação bidirecional contínua.
+- Infraestrutura: Docker e Docker Compose para backend, Qdrant e serviços aplicáveis; o cliente mobile pode usar seu fluxo nativo de build/desenvolvimento.
+
+### Fases da proposta e mapeamento do projeto
+
+Fase 1 — levantamento e domínio: parcialmente concluída para o corpus técnico atual; fluxos locais de agendamento ainda precisam ser modelados quando as fontes institucionais correspondentes estiverem disponíveis.
+
+Fase 2 — pipeline de dados e RAG: estágio avançado e funcional. Retrieval, ingestão, embeddings, Qdrant, avaliação e grounding foram implementados e testados.
+
+Fase 3 — API e integração com chat: API /v1/chat funcional; falta evoluir o contrato conversacional para sessões/histórico apenas se isso for necessário ao protótipo e à integração final.
+
+Fase 4 — interface e testes funcionais: próxima prioridade prática. Construir um cliente demonstrável independente, validar UX e fluxos e só depois adaptar/integrar ao Se Cuida Mulher oficial.
+
+### Entregáveis oficiais
+
+- Artefato de software funcional em ambiente simulado ou homologado.
+- Repositório GitHub com backend RAG, ingestão, testes automatizados e cliente de demonstração/integracão.
+- Monografia descrevendo arquitetura, decisões de engenharia, métricas de retrieval, grounding, desempenho, limitações e contribuição tecnológica.
+
+### Regra de escopo para próximas versões
+
+O RagTest deve continuar funcionando de forma independente de qualquer frontend específico. Interfaces futuras devem consumir contratos públicos da API. Nenhuma regra de negócio do RAG deve depender de componentes visuais, navegação ou estado do Se Cuida Mulher. A integração oficial deve ocorrer como adaptação do cliente/contrato, não como reescrita do backend.
