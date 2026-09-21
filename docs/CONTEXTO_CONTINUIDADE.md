@@ -7,11 +7,65 @@
 >
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
-**Última atualização:** 2026-09-20  
+
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS VALIDAÇÃO DA 0.5.23
+
+> **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
+> O restante do arquivo preserva o histórico do projeto e pode mencionar estados anteriores.
+
+### Estado exato do repositório
+
+- Repositório: `Daniel-SLima/RagTest`
+- Branch padrão: `main`
+- Versão integrada em `main`: **0.5.22**
+- Head de `main` antes desta reconciliação: `c7d9a47c2a7b46eb648bedc3c7f859b7e3e12f4e`
+- Branch de trabalho: `feature/richtext-sources-0.5.23`
+- PR #18: **draft**
+- Versão em validação: **0.5.23**
+- Implementação, CI anterior e runtime local da 0.5.23: **verificados**
+- Esta branch foi reconciliada com os commits documentais mais recentes de `main` por merge de sincronização autorizado pelo usuário.
+- O merge do PR #18 para `main` **não foi realizado** e continua dependente de autorização explícita.
+
+### Estado funcional da 0.5.23
+
+Verificado no Expo Web com resposta RAG real:
+
+- Markdown/rich-text renderizado sem marcadores crus;
+- negrito e listas renderizados;
+- seção `Fontes consultadas`;
+- cartões com `citation_id`, documento, página e excerpt;
+- somente fontes presentes em `citation_ids` aparecem na seção principal;
+- `POST /v1/chat` respondeu `200 OK`;
+- `GET /health` respondeu versão `0.5.23`;
+- `GET /ready` confirmou Qdrant `ok`;
+- retrieval sem filtros da pergunta de vacinação para idosos retornou fonte oficial e não retornou `chatscm/`;
+- `git status --short` permaneceu limpo após o runtime local.
+
+### Próximo passo imediato
+
+1. aguardar/verificar a CI do head reconciliado;
+2. confirmar que o PR #18 ficou sem divergência em relação a `main`;
+3. manter o PR draft até a checagem final;
+4. solicitar autorização explícita antes do merge do PR #18 para `main`;
+5. após a 0.5.23 ser integrada, iniciar a 0.5.24 com foco em UX + grounding/refinamentos.
+
+### Regras críticas preservadas
+
+- não usar `ragtest-ingest --recreate`;
+- não usar `docker compose down -v`;
+- não recriar corpus, embeddings, collection Qdrant ou os 767 pontos atuais sem autorização;
+- não enviar conteúdo `chatscm/*.docx` para provider externo antes de revisão manual de privacidade;
+- providers continuam explícitos, sem fallback automático;
+- `grounded=true` continua significando cobertura estrutural de citações, não entailment semântico automático;
+- backend RAG permanece desacoplado do frontend Expo.
+
+---
+
+**Última atualização:** 2026-09-21  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.22`  
-**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; foco atual em rich-text/Markdown e apresentação correta das fontes efetivamente citadas no cliente Expo.
+**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; implementação e runtime validados, branch reconciliada com `main`, aguardando CI final e decisão de merge do PR #18.
 
 ---
 
@@ -2192,9 +2246,9 @@ Fechamento da versão:
     PR #18 ............................ draft
     merge em main ..................... não realizado
 
-Pendência antes do merge:
+Pendência antes do merge do PR #18 para `main`:
 
-A branch `feature/richtext-sources-0.5.23` está divergente de `main` porque `main` recebeu commits de documentação após a base original do PR. Reconciliar a branch com `main`, revalidar CI e somente então solicitar autorização explícita para o merge do PR #18.
+A reconciliação da branch com `main` foi realizada por merge de sincronização autorizado. Falta verificar a CI do head reconciliado e, depois, solicitar autorização explícita para o merge do PR #18.
 
 Roadmap:
 
