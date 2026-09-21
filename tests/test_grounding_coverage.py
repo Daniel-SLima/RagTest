@@ -28,6 +28,7 @@ def test_citation_coverage_detects_uncited_informative_block() -> None:
     assert result.total_claim_blocks == 2
     assert result.cited_claim_blocks == 1
     assert result.uncited_claim_blocks == 1
+    assert result.uncited_blocks == ("Outra afirmação informativa sem referência.",)
     assert result.coverage == 0.5
 
 
