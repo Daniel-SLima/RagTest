@@ -680,3 +680,51 @@ O `ragtest-chat` exibe explicitamente as janelas:
 Importante: segundo o contrato da Groq, os headers de requests representam RPD e os headers de tokens representam TPM. Portanto, `remaining_tokens` não é saldo diário de tokens e não substitui o acompanhamento de TPD no console/uso da conta.
 
 A 0.5.20 não adiciona fallback automático entre Gemini, Groq e Ollama nesta etapa. Também não altera retrieval, corpus, embeddings ou Qdrant.
+
+
+## Frontend demonstrativo — Expo / React Native
+
+A partir da 0.5.21, o RagTest possui um cliente multiplataforma em `frontend/`. O cliente é desacoplado do núcleo RAG e consome o FastAPI por REST.
+
+Na 0.5.22, a tela já pode enviar perguntas reais para:
+
+    POST /v1/chat
+
+### Execução local no navegador
+
+Com o backend/Qdrant já iniciados:
+
+    cd frontend
+    npm install
+    npm test
+    npm run typecheck
+    npm run web
+
+Por padrão, o frontend usa:
+
+    http://localhost:8000
+
+Para alterar sem modificar código, copie `frontend/.env.example` para `frontend/.env.local` e ajuste:
+
+    EXPO_PUBLIC_RAG_API_BASE_URL=http://localhost:8000
+
+O FastAPI aceita por padrão, em desenvolvimento:
+
+    http://localhost:8081
+    http://127.0.0.1:8081
+
+Outras origens web devem ser declaradas explicitamente em `CORS_ALLOWED_ORIGINS`.
+
+### Dispositivos móveis
+
+O `localhost` do dispositivo não é o computador que executa o FastAPI.
+
+Android Emulator:
+
+    EXPO_PUBLIC_RAG_API_BASE_URL=http://10.0.2.2:8000
+
+Dispositivo físico:
+
+    EXPO_PUBLIC_RAG_API_BASE_URL=http://IP_LAN_DO_COMPUTADOR:8000
+
+O módulo RAG continua independente do cliente; futuramente o Se Cuida Mulher poderá consumir o mesmo contrato da API.

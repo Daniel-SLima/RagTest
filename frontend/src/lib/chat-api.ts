@@ -1,3 +1,27 @@
+
+export class ChatApiError extends Error {
+  readonly status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.name = "ChatApiError"
+    this.status = status
+  }
+}
+
+function getErrorMessage(body: unknown, status: number): string {
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "detail" in body &&
+    typeof body.detail === "string"
+  ) {
+    return body.detail
+  }
+
+  return `RagTest API retornou HTTP ${status}.`
+}
+
 export type ChatRequestInput = {
   message: string
   category?: string | null
@@ -85,5 +109,14 @@ export async function sendChatMessage(
     body: JSON.stringify(buildChatRequest(input)),
   })
 
-  return (await response.json()) as ChatApiResponse
+  const body = await response.json()
+
+  if (!response.ok) {
+    throw new ChatApiError(
+      response.status,
+      getErrorMessage(body, response.status),
+    )
+  }
+
+  return body as ChatApiResponse
 }

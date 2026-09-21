@@ -100,3 +100,37 @@ Quando o Se Cuida Mulher for integrado:
 - alteração de corpus, embeddings ou Qdrant;
 - ingestão automática sem aprovação;
 - integração definitiva com o Se Cuida Mulher.
+
+
+## Integração funcional — 0.5.22
+
+A 0.5.22 conecta a tela ao backend real mantendo o mesmo contrato REST.
+
+Implementado:
+
+- CORS restrito/configurável no FastAPI para Expo Web;
+- URL da API configurável por `EXPO_PUBLIC_RAG_API_BASE_URL`;
+- padrão web local em `http://localhost:8000`;
+- cliente REST conectado ao botão Enviar;
+- mensagem da usuária renderizada na conversa;
+- estado `Buscando resposta...`;
+- resposta textual do `/v1/chat` renderizada;
+- bloqueio de envio vazio ou com menos de 2 caracteres;
+- bloqueio de novo envio enquanto a chamada está em andamento;
+- tratamento de erro de rede na interface;
+- `ChatApiError` para HTTP não-2xx, preservando status e `detail` do FastAPI.
+
+Configuração de ambiente:
+
+    # web na mesma máquina
+    EXPO_PUBLIC_RAG_API_BASE_URL=http://localhost:8000
+
+    # Android Emulator
+    EXPO_PUBLIC_RAG_API_BASE_URL=http://10.0.2.2:8000
+
+    # dispositivo físico
+    EXPO_PUBLIC_RAG_API_BASE_URL=http://IP_DA_MAQUINA:8000
+
+Para Expo Web, a origem usada pelo navegador também precisa constar em `CORS_ALLOWED_ORIGINS` no backend.
+
+A 0.5.22 ainda mostra a resposta como texto simples. Rich-text, cartões de fontes/citações e apresentação de grounding pertencem às versões seguintes.

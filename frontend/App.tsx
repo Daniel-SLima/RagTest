@@ -1,6 +1,68 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { useState } from "react"
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native"
 
-export default function App() {
+import {
+  type ChatApiResponse,
+  sendChatMessage,
+} from "./src/lib/chat-api"
+
+type SendChat = typeof sendChatMessage
+
+type AppProps = {
+  apiBaseUrl?: string
+  sendChat?: SendChat
+}
+
+const DEFAULT_API_BASE_URL =
+  process.env.EXPO_PUBLIC_RAG_API_BASE_URL ?? "http://localhost:8000"
+
+export default function App({
+  apiBaseUrl = DEFAULT_API_BASE_URL,
+  sendChat = sendChatMessage,
+}: AppProps) {
+  const [draft, setDraft] = useState("")
+  const [question, setQuestion] = useState<string | null>(null)
+  const [response, setResponse] = useState<ChatApiResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const canSend = draft.trim().length >= 2 && !isLoading
+
+  async function handleSend() {
+    const message = draft.trim()
+    if (message.length < 2 || isLoading) {
+      return
+    }
+
+    setQuestion(message)
+    setDraft("")
+    setResponse(null)
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      const result = await sendChat(
+        { message },
+        { baseUrl: apiBaseUrl },
+      )
+      setResponse(result)
+    } catch {
+      setError(
+        "Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.",
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
@@ -11,29 +73,70 @@ export default function App() {
         </Text>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeTitle}>Olá! Como posso ajudar?</Text>
-          <Text style={styles.welcomeText}>
-            Faça uma pergunta sobre saúde e consulte respostas fundamentadas
-            nos documentos disponíveis no módulo RAG.
-          </Text>
-        </View>
-      </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          question ? styles.contentConversation : styles.contentWelcome,
+        ]}
+      >
+        {!question ? (
+          <View style={styles.welcomeCard}>
+            <Text style={styles.welcomeTitle}>Olá! Como posso ajudar?</Text>
+            <Text style={styles.welcomeText}>
+              Faça uma pergunta sobre saúde e consulte respostas fundamentadas
+              nos documentos disponíveis no módulo RAG.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.conversation}>
+            <View style={styles.userMessage}>
+              <Text style={styles.messageLabel}>Você</Text>
+              <Text style={styles.messageText}>{question}</Text>
+            </View>
+
+            {isLoading ? (
+              <View style={styles.assistantMessage}>
+                <ActivityIndicator accessibilityLabel="Carregando resposta" />
+                <Text style={styles.loadingText}>Buscando resposta...</Text>
+              </View>
+            ) : null}
+
+            {response ? (
+              <View style={styles.assistantMessage}>
+                <Text style={styles.messageLabel}>Assistente</Text>
+                <Text style={styles.messageText}>{response.answer}</Text>
+              </View>
+            ) : null}
+
+            {error ? (
+              <View style={styles.errorCard}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+          </View>
+        )}
+      </ScrollView>
 
       <View style={styles.composer}>
         <TextInput
           accessibilityLabel="Pergunta"
           multiline
+          onChangeText={setDraft}
           placeholder="Digite sua pergunta..."
           style={styles.input}
+          value={draft}
         />
         <Pressable
           accessibilityLabel="Enviar"
           accessibilityRole="button"
-          style={styles.sendButton}
+          accessibilityState={{ disabled: !canSend }}
+          disabled={!canSend}
+          onPress={handleSend}
+          style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
         >
-          <Text style={styles.sendButtonText}>Enviar</Text>
+          <Text style={styles.sendButtonText}>
+            {isLoading ? "Enviando..." : "Enviar"}
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -66,9 +169,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   content: {
-    flex: 1,
-    justifyContent: "center",
+    flexGrow: 1,
     paddingVertical: 28,
+  },
+  contentWelcome: {
+    justifyContent: "center",
+  },
+  contentConversation: {
+    justifyContent: "flex-end",
   },
   welcomeCard: {
     borderRadius: 20,
@@ -83,6 +191,45 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 15,
     lineHeight: 22,
+  },
+  conversation: {
+    gap: 14,
+  },
+  userMessage: {
+    alignSelf: "flex-end",
+    maxWidth: "88%",
+    borderRadius: 18,
+    backgroundColor: "#E8EBEF",
+    padding: 16,
+    gap: 4,
+  },
+  assistantMessage: {
+    alignSelf: "flex-start",
+    maxWidth: "92%",
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    gap: 8,
+  },
+  messageLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  loadingText: {
+    fontSize: 14,
+  },
+  errorCard: {
+    borderRadius: 16,
+    backgroundColor: "#FFF1F1",
+    padding: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   composer: {
     gap: 12,
@@ -104,6 +251,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 14,
     backgroundColor: "#17191C",
+  },
+  sendButtonDisabled: {
+    opacity: 0.45,
   },
   sendButtonText: {
     color: "#FFFFFF",

@@ -1588,18 +1588,18 @@ Após cada avanço relevante, informar explicitamente ao usuário:
 
 ### Estado atual
 
-Versão integrada em main: 0.5.20.
-Versão em desenvolvimento: 0.5.21.
-Branch atual de trabalho: `feature/chatbot-demo-frontend-0.5.21`.
-PR atual: #16 draft.
+Versão integrada em main: 0.5.21.
+Versão em desenvolvimento: 0.5.22.
+Branch atual de trabalho: `feature/frontend-fastapi-0.5.22`.
+PR atual: #17 draft.
 
 A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O scaffold Next.js criado inicialmente no PR #16 foi substituído por React Native + Expo + TypeScript. O frontend demonstrativo agora segue a linha multiplataforma sugerida no TCC e continua desacoplado do backend.
 
 ### Roadmap
 
-    0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat
+    0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat [CONCLUÍDA]
        ->
-    0.5.22  Chat funcional consumindo FastAPI por REST
+    0.5.22  Chat funcional consumindo FastAPI por REST [ATUAL]
        ->
     0.5.23  Rich-text, citações, fontes e links
        ->
@@ -1778,3 +1778,274 @@ Status final da 0.5.21:
     backend ........................... inalterado
     corpus/Qdrant ..................... inalterados
     integração tela -> FastAPI ........ próxima versão (0.5.22)
+
+
+### Início e checkpoint da 0.5.22 — integração Expo -> FastAPI
+
+Base da versão:
+
+    main validada/mesclada: 0.5.21
+    merge 0.5.21: f369db053761b31175588d22ac586c56d4670746
+    branch: feature/frontend-fastapi-0.5.22
+    PR: #17 draft
+
+Objetivo da 0.5.22:
+
+Conectar a interface Expo ao backend real por REST, sem mover regras de RAG para o frontend e sem alterar corpus, embeddings ou Qdrant.
+
+Implementado até este checkpoint:
+
+- CORS configurável no FastAPI;
+- origens padrão restritas a localhost:8081 e 127.0.0.1:8081;
+- teste confirma preflight permitido e origem desconhecida não liberada;
+- URL do backend configurável por EXPO_PUBLIC_RAG_API_BASE_URL;
+- padrão de desenvolvimento web: http://localhost:8000;
+- botão Enviar conectado a sendChatMessage;
+- pergunta da usuária renderizada na tela;
+- loading "Buscando resposta...";
+- resposta textual da API renderizada;
+- botão desabilitado para pergunta com menos de 2 caracteres;
+- envio desabilitado durante chamada em andamento;
+- erro de rede mostrado de forma amigável;
+- ChatApiError criado para HTTP não-2xx com status e detail;
+- exemplos de URL para web, Android emulator e dispositivo físico;
+- backend/frontend/versionamento alinhados para 0.5.22;
+- Dificuldade #28 registrada;
+- D027 registrada.
+
+TDD/CI observado:
+
+1. RED CORS:
+       OPTIONS /v1/chat -> 405
+       1 failed, 114 passed, 6 warnings
+
+2. GREEN CORS:
+       115 passed, 6 warnings
+       frontend 3/3
+       Ruff verde
+
+3. RED integração da tela:
+       pergunta não aparecia após Enviar
+
+4. implementação da tela:
+       testes funcionais passaram, mas o teste usava eventos síncronos incompatíveis com RNTL 14;
+       correção do teste para await fireEvent.changeText / await fireEvent.press.
+
+5. typecheck:
+       lógica funcional 4/4 passou;
+       TS2591 em process.env;
+       corrigido com @types/node + types node.
+
+6. RED erro HTTP:
+       Promise resolveu em HTTP 503 quando deveria rejeitar.
+
+7. GREEN erro HTTP:
+       ChatApiError implementado.
+
+Decisão de compatibilidade:
+
+- Expo Web no mesmo PC usa http://localhost:8000 por padrão;
+- Android Emulator usa normalmente http://10.0.2.2:8000;
+- dispositivo físico precisa apontar para o IP LAN da máquina;
+- CORS só afeta clientes web em navegador; origens adicionais precisam ser explicitamente autorizadas;
+- não usar allow_origins=["*"] como atalho.
+
+Estado da 0.5.22: 100% concluída e verificada.
+
+Aguardando:
+
+- CI final do head consolidado;
+- validação local ponta a ponta com Docker/FastAPI + Expo Web;
+- confirmação visual de pergunta, loading e resposta RAG real.
+
+Próximo passo exato:
+
+1. confirmar CI final;
+2. usuário atualizar branch feature/frontend-fastapi-0.5.22;
+3. rebuildar/subir backend Docker sem recriar Qdrant;
+4. iniciar Expo Web;
+5. fazer uma pergunta oficial pela tela;
+6. confirmar que a resposta real do /v1/chat aparece na interface;
+7. registrar runtime e, se estiver tudo correto, fechar/mesclar 0.5.22.
+
+Roadmap após este checkpoint:
+
+    0.5.21  Expo + contrato REST ............ concluída/merged
+    0.5.22  tela -> FastAPI real ............ atual (~85%)
+    0.5.23  rich-text + fontes + citações ... próxima
+    0.5.24  UX + erros + grounding .......... futura
+    0.6.x   sessões .......................... futura
+    0.7.x   auditoria/LGPD/segurança ........ futura
+    0.8.x   agendamento/lembretes ........... futura
+    0.9.x   avaliação/usabilidade ........... futura
+    1.0     artefato final do TCC ........... futura
+
+
+### Validação local 0.5.22 — tentativa não válida por branch local desatualizada
+
+Data: 2026-09-21.
+
+A primeira tentativa de runtime ponta a ponta não valida a 0.5.22.
+
+Evidências do terminal:
+
+    git switch feature/frontend-fastapi-0.5.22
+    -> abortado por alteração local em frontend/tsconfig.json
+
+    git pull --ff-only origin feature/frontend-fastapi-0.5.22
+    -> abortado pelo mesmo arquivo
+
+    npm test
+    -> ragtest-frontend@0.5.21
+
+    npm run web
+    -> ragtest-frontend@0.5.21
+
+A interface abriu, mas o botão Enviar não executou a chamada. Esse comportamento é esperado na 0.5.21 e não constitui falha do código 0.5.22.
+
+Também foi observado:
+
+    curl http://localhost:8000/health -> Empty reply from server
+    curl http://localhost:8000/ready  -> Empty reply from server
+
+Esses resultados foram obtidos antes de corrigir a branch local e, portanto, não devem ser usados para concluir falha do backend 0.5.22. Se persistirem após a atualização correta da branch, investigar com docker compose ps e logs da API.
+
+Hipótese confirmada para o bloqueio de checkout: o Expo havia alterado localmente frontend/tsconfig.json em execução anterior. A próxima ação é inspecionar/descartar apenas essa alteração local, trocar para a branch 0.5.22 e confirmar a versão antes de qualquer novo teste.
+
+Status da 0.5.22 permanece:
+
+    implementação remota ............ verificada em CI
+    runtime local ponta a ponta ..... aguardando validação válida
+    PR #17 .......................... draft
+
+
+### 0.5.22 — backend verificado em runtime local
+
+Data: 2026-09-21.
+
+Após corrigir a branch local, o backend 0.5.22 foi rebuildado e iniciado sem recriar volumes ou Qdrant.
+
+Resultados observados:
+
+    docker compose ps
+    api: Up (healthy)
+    qdrant: Up
+
+    GET /health
+    {"status":"ok","service":"RagTest API","version":"0.5.22","environment":"development"}
+
+    GET /ready
+    {"status":"ready","dependencies":{"qdrant":"ok"}}
+
+Logs da API confirmaram:
+
+    Application startup complete
+    Uvicorn running on http://0.0.0.0:8000
+    GET /health -> 200
+    GET /ready -> 200
+
+Status atualizado da 0.5.22:
+
+    implementação remota ............ verificada em CI
+    backend runtime 0.5.22 .......... verificado
+    Qdrant/ready .................... verificado
+    Expo -> FastAPI -> RAG .......... aguardando validação final
+
+Estado aproximado da 0.5.22: 95%.
+
+Próximo passo exato:
+
+1. validar preflight CORS local para Origin http://localhost:8081;
+2. iniciar frontend Expo 0.5.22;
+3. confirmar npm test = 6 testes e typecheck verde;
+4. enviar uma pergunta pela tela;
+5. confirmar POST /v1/chat nos logs da API;
+6. confirmar resposta RAG real renderizada;
+7. registrar runtime final e fechar a 0.5.22 para merge.
+
+
+### 0.5.22 — fluxo ponta a ponta verificado em runtime
+
+Data: 2026-09-21.
+
+Validação executada com a branch correta `feature/frontend-fastapi-0.5.22`.
+
+Evidências locais:
+
+    frontend/package.json
+    version: 0.5.22
+
+    CORS preflight:
+    OPTIONS /v1/chat -> HTTP 200
+    access-control-allow-origin: http://localhost:8081
+
+    npm test:
+    Test Suites: 2 passed, 2 total
+    Tests: 6 passed, 6 total
+
+    npm run typecheck:
+    concluído sem erros
+
+    Expo Web:
+    http://localhost:8081
+    bundle concluído
+
+Fluxo funcional observado visualmente:
+
+    pergunta digitada na interface
+        ->
+    botão Enviar
+        ->
+    FastAPI /v1/chat
+        ->
+    retrieval/Qdrant/LLM/grounding
+        ->
+    resposta real renderizada no cliente Expo
+
+Pergunta usada:
+
+    Quais vacinas são recomendadas para pessoas idosas?
+
+A interface mostrou a pergunta da usuária e uma resposta real do assistente com citações numéricas no texto.
+
+Limitações visuais observadas e deliberadamente deixadas para a próxima versão:
+
+- Markdown ainda aparece como texto cru, por exemplo `**negrito**`;
+- fontes/citações ainda não possuem cartões visuais;
+- metadados de grounding/modelo ainda não são mostrados na interface;
+- refinamentos de UX pertencem à 0.5.23/0.5.24.
+
+Status final da 0.5.22:
+
+    CORS Expo Web ...................... verificado
+    backend 0.5.22 .................... verificado
+    Qdrant/ready ...................... verificado
+    cliente REST ...................... verificado
+    tela -> FastAPI -> RAG ............ verificado
+    resposta renderizada .............. verificada
+    testes frontend ................... 6/6
+    typecheck ......................... verificado
+    backend tests ..................... 115 passed
+    Ruff .............................. verificado
+    corpus/embeddings/Qdrant .......... inalterados
+
+Roadmap após validação:
+
+    0.5.21  Expo + contrato REST ............ concluída/merged
+    0.5.22  tela -> FastAPI real ............ concluída/aguardando merge
+    0.5.23  rich-text + fontes + citações ... próxima
+    0.5.24  UX + grounding/refinamentos ..... futura
+    0.6.x   sessões .......................... futura
+    0.7.x   auditoria/LGPD/segurança ........ futura
+    0.8.x   agendamento/lembretes ........... futura
+    0.9.x   avaliação/usabilidade ........... futura
+    1.0     artefato final do TCC ........... futura
+
+Próximo passo exato:
+
+1. manter PR #17 aberto até autorização explícita de merge;
+2. após merge, abrir a 0.5.23 em branch limpa;
+3. implementar renderização rich-text/Markdown;
+4. transformar `sources` em cartões de fontes com documento/página;
+5. expor citações de forma navegável/legível na interface;
+6. manter grounding e metadados técnicos disponíveis sem poluir a experiência principal.

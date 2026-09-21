@@ -29,7 +29,7 @@ def test_groq_headers_use_explicit_user_agent() -> None:
     assert headers["Content-Type"] == "application/json"
     assert headers["Accept"] == "application/json"
     assert headers["User-Agent"].startswith("Mozilla/5.0")
-    assert "RagTest/0.5.21" in headers["User-Agent"]
+    assert "RagTest/0.5.22" in headers["User-Agent"]
 
 
 def test_groq_payload_keeps_rag_messages_and_hides_reasoning() -> None:

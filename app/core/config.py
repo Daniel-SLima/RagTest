@@ -8,10 +8,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.21"
+    app_version: str = "0.5.22"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
+    cors_allowed_origins: str = "http://localhost:8081,http://127.0.0.1:8081"
 
     qdrant_url: str = "http://qdrant:6333"
     qdrant_api_key: str | None = None
