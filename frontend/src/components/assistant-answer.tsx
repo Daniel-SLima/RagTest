@@ -32,15 +32,20 @@ function SourceCard({ source }: { source: ChatSource }) {
 }
 
 export function AssistantAnswer({ response }: AssistantAnswerProps) {
+  const citedIds = new Set(response.citation_ids)
+  const citedSources = response.sources.filter((source) =>
+    citedIds.has(source.citation_id),
+  )
+
   return (
     <View style={styles.wrapper}>
       <Markdown style={markdownStyles}>{response.answer}</Markdown>
 
-      {response.sources.length > 0 ? (
+      {citedSources.length > 0 ? (
         <View style={styles.sourcesSection}>
           <Text style={styles.sourcesTitle}>Fontes consultadas</Text>
           <View style={styles.sourcesList}>
-            {response.sources.map((source) => (
+            {citedSources.map((source) => (
               <SourceCard
                 key={`${source.citation_id}-${source.source}-${source.page ?? "na"}`}
                 source={source}
