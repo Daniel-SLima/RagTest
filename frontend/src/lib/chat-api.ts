@@ -3,6 +3,7 @@ export type ChatRequestInput = {
   category?: string | null
   audience?: string | null
   limit?: number
+  minScore?: number
   autoDecompose?: boolean
 }
 
@@ -11,6 +12,7 @@ export type ChatApiRequest = {
   limit: number
   category: string | null
   audience: string | null
+  min_score?: number
   auto_decompose: boolean
 }
 
@@ -43,6 +45,45 @@ export function buildChatRequest(input: ChatRequestInput): ChatApiRequest {
     limit: input.limit ?? 5,
     category: input.category ?? null,
     audience: input.audience ?? null,
+    ...(input.minScore === undefined ? {} : { min_score: input.minScore }),
     auto_decompose: input.autoDecompose ?? true,
   }
+}
+
+type ChatFetchResponse = {
+  ok: boolean
+  status: number
+  json(): Promise<unknown>
+}
+
+export type ChatFetcher = (
+  url: string,
+  init: {
+    method: "POST"
+    headers: { "Content-Type": "application/json" }
+    body: string
+  },
+) => Promise<ChatFetchResponse>
+
+type SendChatOptions = {
+  baseUrl: string
+  fetcher?: ChatFetcher
+}
+
+export async function sendChatMessage(
+  input: ChatRequestInput,
+  options: SendChatOptions,
+): Promise<ChatApiResponse> {
+  const baseUrl = options.baseUrl.replace(/\/$/, "")
+  const fetcher: ChatFetcher =
+    options.fetcher ??
+    ((url, init) => fetch(url, init) as Promise<ChatFetchResponse>)
+
+  const response = await fetcher(`${baseUrl}/v1/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(buildChatRequest(input)),
+  })
+
+  return (await response.json()) as ChatApiResponse
 }
