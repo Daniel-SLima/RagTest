@@ -104,6 +104,63 @@ describe("RagTest demo app", () => {
     })
   })
 
+  it("retries the last question manually after a request failure", async () => {
+    const successfulResponse = {
+      answer: "A vacinação deve seguir o calendário oficial [1].",
+      model: "openai/gpt-oss-120b",
+      grounded: true,
+      citation_ids: [1],
+      citation_retry_count: 0,
+      multi_query_used: false,
+      retrieval_queries: ["Quais vacinas?"],
+      decomposition_status: "not-needed",
+      sources: [
+        {
+          citation_id: 1,
+          score: 0.91,
+          source: "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+          category: "vacinacao",
+          audience: "idoso",
+          page: 1,
+          chunk_count: 1,
+          excerpt: "Vacinação da pessoa idosa.",
+        },
+      ],
+    }
+    const sendChat = jest
+      .fn()
+      .mockRejectedValueOnce(new ChatApiError(503, "Provider unavailable."))
+      .mockResolvedValueOnce(successfulResponse)
+
+    await render(
+      <App apiBaseUrl="http://localhost:8000" sendChat={sendChat} />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais vacinas?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    const retryButton = await screen.findByRole("button", {
+      name: "Tentar novamente",
+    })
+    await fireEvent.press(retryButton)
+
+    await waitFor(() => {
+      expect(sendChat).toHaveBeenCalledTimes(2)
+      expect(sendChat).toHaveBeenLastCalledWith(
+        { message: "Quais vacinas?" },
+        { baseUrl: "http://localhost:8000" },
+      )
+      expect(
+        screen.getByText("A vacinação deve seguir o calendário oficial [1]."),
+      ).toBeTruthy()
+      expect(
+        screen.queryByRole("button", { name: "Tentar novamente" }),
+      ).toBeNull()
+    })
+  })
 
   it("renders markdown formatting and source cards for a grounded answer", async () => {
     const sendChat = jest.fn().mockResolvedValue({

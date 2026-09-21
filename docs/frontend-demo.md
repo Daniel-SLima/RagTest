@@ -234,3 +234,15 @@ O cliente agora distingue uma indisponibilidade temporária da API de uma falha 
 - o `detail` técnico retornado pelo backend continua disponível no objeto de erro, mas não é exibido diretamente à usuária.
 
 Essa apresentação evita expor mensagens internas de provider ou cota e orienta corretamente que a falha pode ser transitória. O contrato `POST /v1/chat` e o backend não foram alterados.
+
+## Retry manual da última pergunta — 0.5.24
+
+Quando uma requisição falha, o cartão de erro apresenta o botão `Tentar novamente`. A ação:
+
+- reutiliza a última pergunta exibida na conversa;
+- limpa o erro antes do novo envio;
+- mostra o mesmo estado de loading do envio inicial;
+- remove o cartão de erro quando a nova resposta é concluída;
+- não executa retry automático nem altera mensagens internas do provider.
+
+O comportamento foi validado deterministicamente com uma primeira chamada simulando HTTP 503 e uma segunda chamada bem-sucedida. Nenhuma falha externa foi provocada e nenhuma alteração foi feita no backend, corpus ou Qdrant.

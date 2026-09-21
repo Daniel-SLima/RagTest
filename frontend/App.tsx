@@ -38,14 +38,12 @@ export default function App({
 
   const canSend = draft.trim().length >= 2 && !isLoading
 
-  async function handleSend() {
-    const message = draft.trim()
-    if (message.length < 2 || isLoading) {
+  async function requestAnswer(message: string) {
+    if (isLoading) {
       return
     }
 
     setQuestion(message)
-    setDraft("")
     setResponse(null)
     setError(null)
     setIsLoading(true)
@@ -65,6 +63,24 @@ export default function App({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  async function handleSend() {
+    const message = draft.trim()
+    if (message.length < 2 || isLoading) {
+      return
+    }
+
+    setDraft("")
+    await requestAnswer(message)
+  }
+
+  async function handleRetry() {
+    if (!question || isLoading) {
+      return
+    }
+
+    await requestAnswer(question)
   }
 
   return (
@@ -115,6 +131,16 @@ export default function App({
             {error ? (
               <View style={styles.errorCard}>
                 <Text style={styles.errorText}>{error}</Text>
+                <Pressable
+                  accessibilityLabel="Tentar novamente"
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: isLoading }}
+                  disabled={isLoading}
+                  onPress={handleRetry}
+                  style={styles.retryButton}
+                >
+                  <Text style={styles.retryButtonText}>Tentar novamente</Text>
+                </Pressable>
               </View>
             ) : null}
           </View>
@@ -230,10 +256,23 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: "#FFF1F1",
     padding: 16,
+    gap: 12,
   },
   errorText: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  retryButton: {
+    alignSelf: "flex-start",
+    borderRadius: 12,
+    backgroundColor: "#7A2020",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
   },
   composer: {
     gap: 12,

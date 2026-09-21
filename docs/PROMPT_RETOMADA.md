@@ -42,6 +42,7 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - PR #19: aberto, draft e sem autorização de merge.
 - Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
 - Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
+- Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
 - Antes de continuar, confirme o head atual da feature, o estado da CI e o checkout local.
 
 ## 0.5.24 — estado atual
@@ -52,7 +53,8 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - HTTP 503: mostra indisponibilidade temporária em linguagem amigável;
 - falha de rede/outro erro: preserva a mensagem genérica;
 - detalhes técnicos de provider não são exibidos à usuária;
-- suíte frontend local após o segundo recorte: 12/12 e typecheck verde;
+- erros apresentam `Tentar novamente`, que reenvia manualmente a última pergunta;
+- suíte frontend local após o terceiro recorte: 13/13 e typecheck verde;
 - CI do commit funcional `d207b89`: run `35641533624`, com lint, backend test e frontend-test/typecheck em success;
 - avisos não bloqueantes da CI: actions Node.js 20 forçadas para Node.js 24 e migração futura de `ubuntu-latest` para Ubuntu 26;
 - corpus, embeddings e Qdrant permanecem inalterados em 767 pontos.

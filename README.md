@@ -763,4 +763,6 @@ O cliente Expo apresenta três estados de grounding sem confundir fonte recupera
 
 Quando o backend responde HTTP 503, o cliente mostra uma mensagem específica de indisponibilidade temporária. Erros de rede ou inesperados mantêm a mensagem genérica. O detalhe técnico do provider não é renderizado para a usuária.
 
+Após qualquer falha, a usuária pode acionar `Tentar novamente` para reenviar explicitamente a última pergunta. Não existe retry automático: novas chamadas ao backend e ao provider dependem de ação da usuária.
+
 Essas mudanças são de apresentação e não alteram o contrato `POST /v1/chat`, o backend RAG ou a collection Qdrant.

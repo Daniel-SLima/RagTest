@@ -49,7 +49,7 @@
 
 1. preservar o primeiro recorte da 0.5.24 já validado em CI e runtime;
 2. manter os cenários `grounded=false` cobertos por testes determinísticos, sem provocar falha externa artificial;
-3. concluir a validação automatizada do segundo recorte da 0.5.24;
+3. concluir a validação automatizada do terceiro recorte da 0.5.24;
 4. seguir TDD RED -> GREEN para qualquer novo comportamento;
 5. manter o PR #19 draft e não mesclar sem autorização explícita.
 
@@ -2415,3 +2415,36 @@ Avisos não bloqueantes observados na CI:
 - o GitHub passou a forçar actions baseadas em Node.js 20 a executar em Node.js 24;
 - o rótulo `ubuntu-latest` tem migração para Ubuntu 26 anunciada para 2026-10-19;
 - esses avisos não causaram falha e não alteram o escopo funcional deste recorte, mas ficam registrados para manutenção futura do workflow.
+
+
+### Terceiro recorte da 0.5.24 — retry manual da última pergunta
+
+Problema concreto:
+
+Depois de uma falha, inclusive HTTP 503, a interface orientava a tentar novamente, mas limpava o campo de entrada e não oferecia uma ação para repetir a pergunta anterior. A usuária precisava digitar novamente o mesmo conteúdo.
+
+Comportamento implementado:
+
+- o cartão de erro apresenta o botão acessível `Tentar novamente`;
+- o acionamento reenvia explicitamente a última pergunta usando o mesmo contrato `POST /v1/chat`;
+- erro e resposta anterior são limpos antes da nova tentativa, e o loading normal é reutilizado;
+- não existe retry automático nem chamada silenciosa ao provider;
+- backend, contrato REST, providers, corpus, retrieval, embeddings e Qdrant permanecem inalterados.
+
+TDD local observado:
+
+    RED: teste direcionado com 1 falha esperada e 9 testes aprovados
+    causa observada: botão acessível Tentar novamente ainda não existia
+
+    GREEN: teste direcionado 10/10
+    suíte frontend completa 13/13
+    TypeScript typecheck: success
+
+Status:
+
+    retry manual da última pergunta ........ implementado e verificado localmente
+    documentação ........................... atualizada
+    CI do novo head ........................ aguardando execução
+    PR #19 ................................. draft
+
+Não foi registrada nova dificuldade em `docs/dificuldades-tcc.md`: o RED foi intencional e a implementação não revelou falha real de ferramenta, ambiente ou arquitetura.

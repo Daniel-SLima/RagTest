@@ -272,3 +272,11 @@ Impacto:
 **Mudança:** o cliente Expo passa a tratar `ChatApiError` com HTTP 503 como indisponibilidade temporária do serviço de geração, mantendo a mensagem genérica para falhas de rede e demais erros não classificados.
 **Motivo:** o contrato do cliente já preservava o status HTTP, mas a interface descartava essa informação e apresentava todo erro como problema de conexão. Exibir o `detail` bruto também poderia revelar mensagens internas de provider, cota ou infraestrutura.
 **Impacto:** a usuária recebe orientação mais precisa e segura sem mudança no backend ou no contrato REST. Detalhes técnicos continuam disponíveis para diagnóstico, mas não são renderizados na experiência principal.
+
+
+## D031 — Exigir ação explícita para repetir uma pergunta após erro
+
+**Data:** 2026-09-21
+**Mudança:** o cartão de erro do cliente Expo passa a oferecer `Tentar novamente`, reutilizando a última pergunta e o mesmo fluxo de envio. A repetição ocorre somente após ação explícita da usuária.
+**Motivo:** a mensagem de indisponibilidade recomendava uma nova tentativa, mas o campo já havia sido limpo e não existia uma forma direta de repetir a pergunta. Um retry automático poderia gerar chamadas externas inesperadas, aumentar consumo de cota e esconder indisponibilidades persistentes.
+**Impacto:** falhas transitórias ficam recuperáveis sem redigitação e sem alterar o contrato REST ou o backend. O loading e a proteção contra envios concorrentes permanecem compartilhados entre o envio inicial e a repetição manual.
