@@ -7,335 +7,56 @@
 >
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.22
+
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS VALIDAÇÃO DA 0.5.23
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
-> O restante do arquivo contém o histórico completo do projeto e, por isso, ainda menciona branches, PRs e versões antigas.
+> O restante do arquivo preserva o histórico do projeto e pode mencionar estados anteriores.
 
 ### Estado exato do repositório
 
 - Repositório: `Daniel-SLima/RagTest`
 - Branch padrão: `main`
-- Versão atualmente integrada e validada: **0.5.22**
-- Head da `main` após merge da 0.5.22: `f012ebbfe4ebf6f27c26cf7d7e85e79ab1809606`
-- PR #17: **merged**
-- Merge commit PR #17: `f012ebbfe4ebf6f27c26cf7d7e85e79ab1809606`
-- Não existe, neste checkpoint, branch 0.5.23 criada.
-- Próxima branch sugerida: `feature/richtext-sources-0.5.23`
-- Próximo PR sugerido: draft, base `main`, somente após o primeiro commit da 0.5.23.
-
-### Objetivo arquitetural que não deve ser perdido
-
-O artefato central do TCC é **o módulo conversacional RAG/backend reutilizável**, não uma interface específica.
-
-O projeto deve continuar assim:
-
-    Cliente de demonstração Expo / futuro Se Cuida Mulher / outro cliente
-        -> REST / JSON
-        -> FastAPI
-        -> RAG
-        -> retrieval / grounding / auditoria
-        -> Qdrant
-        -> provider de LLM configurável
-
-O backend não deve depender de React Native, Expo, Se Cuida Mulher ou qualquer outro frontend. A interface apenas consome o contrato público da API.
-
-### Título e escopo oficial do TCC
-
-**Desenvolvimento de Módulo Conversacional Baseado em RAG para Apoio ao Letramento em Saúde e Acesso a Serviços no Aplicativo "Se Cuida Mulher"**
-
-Objetivo do usuário: desenvolver o módulo RAG/backend de forma independente, possuir um cliente demonstrativo funcional para a banca e, posteriormente, integrar o mesmo módulo ao projeto oficial Se Cuida Mulher.
-
-### Stack consolidada
-
-Backend:
-- Python 3.12
-- FastAPI
-- Docker / Docker Compose
-
-Banco vetorial:
-- Qdrant 1.19.1
-
-Embeddings:
-- FastEmbed 0.8.0
-- dense: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, dimensão 384
-- sparse: `Qdrant/bm25`, português
-- retrieval padrão: `dense-rerank`
-
-LLMs suportados explicitamente:
-- Groq
-- Gemini
-- Ollama
-- não existe fallback automático entre providers
-
-Baseline externa atual de desenvolvimento:
-- `LLM_PROVIDER=groq`
-- `GROQ_MODEL=openai/gpt-oss-120b`
-- `GROQ_REASONING_EFFORT=low`
-- `LLM_MAX_OUTPUT_TOKENS=1024`
-
-Frontend:
-- Expo SDK 57 estável
-- React Native 0.86
-- React 19.2
-- TypeScript
-- Jest + jest-expo
-- React Native Testing Library 14
-
-Comunicação frontend/backend:
-- REST/JSON
-- endpoint principal: `POST /v1/chat`
-- WebSocket/streaming somente se surgir necessidade real
-
-### Estado funcional validado até a 0.5.22
-
-A 0.5.22 foi validada em CI e em runtime real ponta a ponta.
-
-Fluxo comprovado:
-
-    Expo Web
-        -> CORS
-        -> POST /v1/chat
-        -> FastAPI
-        -> retrieval / Qdrant
-        -> LLM
-        -> grounding
-        -> resposta JSON
-        -> resposta renderizada na interface
-
-Pergunta real usada na validação:
-
-    Quais vacinas são recomendadas para pessoas idosas?
-
-Resultado:
-- pergunta exibida na interface;
-- resposta real do RAG exibida;
-- citações numéricas apareceram no texto;
-- backend e Qdrant permaneceram saudáveis.
-
-Validações finais da 0.5.22:
-- frontend: 2 suites / 6 testes aprovados;
-- TypeScript typecheck: aprovado;
-- backend: 115 testes aprovados;
-- Ruff: All checks passed;
-- `GET /health`: versão 0.5.22;
-- `GET /ready`: Qdrant ok;
-- CORS preflight de `http://localhost:8081`: HTTP 200;
-- corpus, embeddings e Qdrant não foram recriados nem alterados.
-
-### Limitações visuais atuais que definem a 0.5.23
-
-Na tela da 0.5.22, a resposta funciona, mas ainda é texto simples.
-
-Observado:
-- Markdown aparece cru, por exemplo `**negrito**`;
-- fontes retornadas pela API ainda não são exibidas em cartões;
-- citações `[1]`, `[2]` ainda não têm apresentação visual/navegável;
-- grounding/modelo/metadados técnicos ainda não aparecem na interface;
-- refinamentos gerais de UX ficam para 0.5.24.
-
-### Próxima versão — 0.5.23
-
-Objetivo principal:
-
-**rich-text + fontes + citações.**
-
-Passos recomendados:
-1. criar `feature/richtext-sources-0.5.23` a partir da `main`;
-2. abrir PR draft após o primeiro commit;
-3. seguir TDD RED -> GREEN;
-4. implementar renderização segura de Markdown/rich-text no React Native/Expo;
-5. transformar `response.sources` em cartões visuais;
-6. mostrar número da citação, documento, página e metadados úteis sem poluir a interface;
-7. manter o backend inalterado se o contrato atual já fornecer tudo necessário;
-8. validar Web e, quando conveniente, Android/Expo Go;
-9. atualizar este arquivo e o roadmap a cada avanço relevante.
-
-### Roadmap atual
-
-    0.5.20  observabilidade Groq ................ concluída/merged
-    0.5.21  Expo + contrato REST ............... concluída/merged
-    0.5.22  Expo -> FastAPI -> RAG ............. concluída/merged
-    0.5.23  rich-text + fontes + citações ...... PRÓXIMA
-    0.5.24  UX + grounding + refinamentos ...... futura
-    0.6.x   sessões conversacionais ............ futura
-    0.7.x   auditoria + LGPD + segurança ....... futura
-    0.8.x   serviços/agendamento + lembretes ... futura
-    0.9.x   avaliação + usabilidade ............ futura
-    1.0     artefato final para banca .......... futura
-    depois  integração no Se Cuida Mulher ...... posterior
-
-### Corpus e ingestão — regra crítica
-
-Corpus atual validado:
-- 18 arquivos;
-- 767 chunks/pontos;
-- collection `ragtest_documents`.
-
-Nunca:
-- usar `ragtest-ingest --recreate`;
-- usar `docker compose down -v`;
-- recriar corpus/embeddings/Qdrant sem autorização explícita.
-
-Quando um novo PDF/DOCX é colocado em `data/source`, ele é descoberto pelo loader, mas **não fica consultável imediatamente**.
-
-Fluxo seguro:
-
-    novo/alterado/removido em data/source
-        -> ragtest-plan-ingestion-sync ou ragtest-sync-ingestion sem --apply
-        -> revisar plano
-        -> ragtest-sync-ingestion --apply
-        -> revalidação automática
-        -> somente então conteúdo disponível no chat
-
-O loader atual suporta recursivamente:
-- PDF
-- DOCX
-
-A primeira pasta abaixo de `data/source` vira `category`.
-
-### Privacidade
-
-Os arquivos `chatscm/*.docx` continuam sem revisão manual completa de privacidade para envio a LLMs externos.
-
-Regra:
-- não enviar CHATSCM a Groq/Gemini ou outro provider externo antes da revisão manual;
-- testes externos devem usar fontes oficiais;
-- nunca expor API keys;
-- nunca registrar chaves neste arquivo;
-- segredos ficam apenas no `.env` local.
-
-### Grounding — interpretação correta
-
-`grounded=true` significa cobertura estrutural de citações válida sob o gate implementado.
-
-Não significa automaticamente entailment semântico entre cada afirmação e a fonte citada.
-
-Fluxo atual:
-- normalização de citações;
-- validação estrutural por bloco informativo;
-- postprocess conservador quando elegível;
-- uma tentativa de repair;
-- fallback seguro se continuar inválido.
-
-D023 foi verificada em runtime no caminho `initial -> postprocess` sem segunda geração externa.
-
-### Rate limits Groq
-
-A 0.5.20 captura:
-- requests RPD;
-- tokens TPM;
-- respectivos resets.
-
-Runtime já observado:
-
-    requests_rpd: 999/1000
-    tokens_tpm: 6069/8000
-
-Esses headers não representam o saldo diário TPD.
-
-### Regras de trabalho com o usuário
-
-Fluxo preferido:
-
-    alteração
-        -> comandos de teste
-        -> usuário executa quando runtime local for necessário
-        -> usuário envia logs
-        -> analisar evidência
-        -> próxima alteração
-
-Status usados:
-- **implementado**: código/documentação alterados;
-- **aguardando validação**: alteração feita, falta CI/runtime;
-- **verificado**: existe evidência de CI/teste/runtime;
-- **hipótese**: ainda não confirmada.
-
-Sempre informar após avanços relevantes:
-- versão atual;
-- etapa do roadmap;
-- o que foi concluído;
-- o que falta;
-- se há ação pendente do usuário.
-
-Não declarar sucesso sem evidência.
-
-### Git / merge / comandos locais
-
-Preferir branch + Pull Request.
-
-Não fazer merge sem autorização explícita do usuário.
-
-Usuário trabalha no Windows e prefere CMD.
-
-Ao trocar de branch depois de rodar Expo:
-- primeiro usar `git status --short`;
-- Expo pode modificar automaticamente `frontend/tsconfig.json`;
-- `npm install` pode gerar `frontend/package-lock.json`, que atualmente não é versionado;
-- nunca descartar mudanças desconhecidas automaticamente;
-- se o diff confirmar apenas alteração automática do Expo, pode restaurar somente `frontend/tsconfig.json` e remover apenas o lockfile não rastreado antes de trocar de branch.
-
-### Documentos obrigatórios para um novo chat
-
-Leia nesta ordem antes de alterar código:
-
-1. `docs/CONTEXTO_CONTINUIDADE.md`
-   - fonte principal de estado/roadmap;
-   - esta seção HANDOFF AUTORITATIVO prevalece sobre histórico conflitante.
-
-2. `docs/decisoes-tecnicas.md`
-   - decisões arquiteturais D001 em diante;
-   - especialmente D018-D027 para grounding, providers, rate limits, frontend, REST e CORS.
-
-3. `docs/dificuldades-tcc.md`
-   - falhas reais e aprendizados;
-   - atualmente inclui dificuldades até #29.
-
-4. `docs/frontend-demo.md`
-   - arquitetura, stack e escopo do cliente Expo;
-   - estado visual/funcional da 0.5.21/0.5.22.
-
-5. `README.md`
-   - comandos de execução;
-   - variáveis de ambiente;
-   - providers;
-   - ingestão;
-   - frontend.
-
-6. `docs/runtime-baseline-0.5.15.md`
-   - baseline de versões e collection validada.
-
-7. `docs/docx-structure-audit-0.5.17.md`
-   - resultado da auditoria estrutural dos DOCX atuais.
-
-Arquivos de código/configuração que devem ser inspecionados antes de editar a 0.5.23:
-- `frontend/App.tsx`
-- `frontend/src/lib/chat-api.ts`
-- `frontend/src/__tests__/app.test.tsx`
-- `frontend/src/lib/chat-api.test.ts`
-- `frontend/package.json`
-- `frontend/app.json`
-- `app/schemas/chat.py`
-- `app/api/routes/chat.py`
-- `app/main.py`
-- `app/core/config.py`
-- `.env.example`
-- `frontend/.env.example`
-- `docker-compose.yml`
-- `.github/workflows/ci.yml`
-- `pyproject.toml`
-
-### Primeiras ações de um novo chat
-
-1. Ler os documentos obrigatórios acima.
-2. Conferir no GitHub a `main` e o merge do PR #17.
-3. Confirmar que `main` está em/descende de `f012ebbfe4ebf6f27c26cf7d7e85e79ab1809606`.
-4. Não assumir que a branch local do usuário já está em `main`; ela estava em `feature/frontend-fastapi-0.5.22` no último runtime.
-5. Antes de mandar trocar branch, pedir/usar `git status --short` se houver risco de resíduos do Expo.
-6. Criar a 0.5.23 somente a partir da `main` limpa.
-7. Não alterar corpus/Qdrant para trabalhar na interface.
-8. Começar a 0.5.23 por um teste RED de rich-text/fontes.
-9. Atualizar este arquivo ao fim de cada etapa relevante.
+- Versão integrada em `main`: **0.5.22**
+- Head de `main` antes desta reconciliação: `c7d9a47c2a7b46eb648bedc3c7f859b7e3e12f4e`
+- Branch de trabalho: `feature/richtext-sources-0.5.23`
+- PR #18: **draft**
+- Versão em validação: **0.5.23**
+- Implementação, CI pós-reconciliação e runtime local da 0.5.23: **verificados**
+- Esta branch foi reconciliada com os commits documentais mais recentes de `main` por merge de sincronização autorizado pelo usuário.
+- O merge do PR #18 para `main` **não foi realizado** e continua dependente de autorização explícita.
+
+### Estado funcional da 0.5.23
+
+Verificado no Expo Web com resposta RAG real:
+
+- Markdown/rich-text renderizado sem marcadores crus;
+- negrito e listas renderizados;
+- seção `Fontes consultadas`;
+- cartões com `citation_id`, documento, página e excerpt;
+- somente fontes presentes em `citation_ids` aparecem na seção principal;
+- `POST /v1/chat` respondeu `200 OK`;
+- `GET /health` respondeu versão `0.5.23`;
+- `GET /ready` confirmou Qdrant `ok`;
+- retrieval sem filtros da pergunta de vacinação para idosos retornou fonte oficial e não retornou `chatscm/`;
+- `git status --short` permaneceu limpo após o runtime local.
+
+### Próximo passo imediato
+
+1. PR #18 está sem divergência em relação a `main` e `mergeable=true`;
+2. CI do head reconciliado foi verificada com sucesso;
+3. solicitar autorização explícita antes do merge do PR #18 para `main`;
+4. após a 0.5.23 ser integrada, iniciar a 0.5.24 com foco em UX + grounding/refinamentos.
+
+### Regras críticas preservadas
+
+- não usar `ragtest-ingest --recreate`;
+- não usar `docker compose down -v`;
+- não recriar corpus, embeddings, collection Qdrant ou os 767 pontos atuais sem autorização;
+- não enviar conteúdo `chatscm/*.docx` para provider externo antes de revisão manual de privacidade;
+- providers continuam explícitos, sem fallback automático;
+- `grounded=true` continua significando cobertura estrutural de citações, não entailment semântico automático;
+- backend RAG permanece desacoplado do frontend Expo.
 
 ---
 
@@ -343,7 +64,7 @@ Arquivos de código/configuração que devem ser inspecionados antes de editar a
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.22`  
-**Trabalho em andamento:** próxima versão planejada `0.5.23` (rich-text + fontes + citações); branch ainda não criada neste checkpoint.
+**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; implementação, runtime e CI pós-reconciliação validados; PR #18 mergeable e aguardando decisão/autorização de merge.
 
 ---
 
@@ -1920,10 +1641,10 @@ Após cada avanço relevante, informar explicitamente ao usuário:
 
 ### Estado atual
 
-Versão integrada em main: 0.5.21.
-Versão em desenvolvimento: 0.5.22.
-Branch atual de trabalho: `feature/frontend-fastapi-0.5.22`.
-PR atual: #17 draft.
+Versão integrada em main: 0.5.22.
+Versão em desenvolvimento: 0.5.23.
+Branch atual de trabalho: `feature/richtext-sources-0.5.23`.
+PR atual: #18 draft.
 
 A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O scaffold Next.js criado inicialmente no PR #16 foi substituído por React Native + Expo + TypeScript. O frontend demonstrativo agora segue a linha multiplataforma sugerida no TCC e continua desacoplado do backend.
 
@@ -1931,9 +1652,9 @@ A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do
 
     0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat [CONCLUÍDA]
        ->
-    0.5.22  Chat funcional consumindo FastAPI por REST [ATUAL]
+    0.5.22  Chat funcional consumindo FastAPI por REST [CONCLUÍDA]
        ->
-    0.5.23  Rich-text, citações, fontes e links
+    0.5.23  Rich-text, citações, fontes e links [ATUAL]
        ->
     0.5.24  UX mobile, loading, erros, estados de grounding/fallback
        ->
@@ -1951,7 +1672,7 @@ A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do
 
 ### Posição atual no roadmap
 
-O núcleo RAG/backend está em estágio avançado e funcional. A camada cliente multiplataforma da 0.5.21 já foi iniciada com React Native + Expo, primeira superfície visual, contrato TypeScript e cliente REST para `/v1/chat`. A próxima validação é abrir o app no ambiente local do usuário; depois disso, a 0.5.22 conecta a tela ao cliente REST e passa a renderizar respostas reais.
+O núcleo RAG/backend está em estágio avançado e funcional. A 0.5.22 já conectou e validou o cliente Expo ponta a ponta com o `/v1/chat`. A prioridade atual da 0.5.23 é melhorar a apresentação: renderizar Markdown, mostrar cartões de fontes citadas e preservar a distinção entre fontes recuperadas e fontes realmente citadas.
 
 ## Comportamento atual para novos documentos no corpus
 
@@ -2381,3 +2102,186 @@ Próximo passo exato:
 4. transformar `sources` em cartões de fontes com documento/página;
 5. expor citações de forma navegável/legível na interface;
 6. manter grounding e metadados técnicos disponíveis sem poluir a experiência principal.
+
+
+### Início e checkpoint da 0.5.23 — rich-text e fontes citadas
+
+Base da versão:
+
+    main validada/mesclada: 0.5.22
+    merge 0.5.22: f012ebbfe4ebf6f27c26cf7d7e85e79ab1809606
+    branch: feature/richtext-sources-0.5.23
+    PR: #18 draft
+
+Objetivo da 0.5.23:
+
+Melhorar a apresentação da resposta sem alterar backend, retrieval ou contrato REST: Markdown deve ser renderizado corretamente e a interface principal deve mostrar somente as fontes efetivamente citadas pela resposta.
+
+Implementado:
+
+- renderer Markdown JS-only `@ronradtke/react-native-markdown-display` 9.0.3;
+- resposta do assistente renderizada como rich-text;
+- cartões de fontes com `[citation_id]`, nome do documento, página e excerpt;
+- normalização visual do nome do arquivo a partir do path da fonte;
+- filtro por `citation_ids`: fontes recuperadas mas não citadas não aparecem na seção principal;
+- Jest configurado para transpilar explicitamente o renderer Markdown;
+- versões backend/frontend alinhadas em 0.5.23;
+- D028 registrada;
+- Dificuldade #30 registrada;
+- backend/corpus/embeddings/Qdrant inalterados.
+
+TDD/CI observado:
+
+1. RED rich-text/fontes:
+       resposta ainda mostrava `**Vacina contra Influenza**` cru;
+       seção Fontes consultadas inexistente;
+       1 failed, 6 passed.
+
+2. primeira implementação:
+       renderer Markdown + cartões de fontes.
+
+3. falha de infraestrutura de teste:
+       Jest encontrou `SyntaxError: Unexpected token '<'` dentro do renderer;
+       corrigido com `transformIgnorePatterns` conforme mecanismo do jest-expo.
+
+4. GREEN rich-text/fontes:
+       frontend 7/7;
+       typecheck verde;
+       backend 115 passed;
+       Ruff verde.
+
+5. RED semântico de fontes:
+       fonte recuperada mas não citada apareceu na interface;
+       1 failed, 7 passed.
+
+6. GREEN semântico:
+       cartões filtrados por `citation_ids`;
+       frontend 8/8;
+       typecheck verde;
+       backend/Ruff verdes.
+
+Estado aproximado da 0.5.23: 95%.
+
+Aguardando validação:
+
+- CI final do head consolidado: verificada (frontend 8/8, typecheck, backend 115 passed, Ruff verde);
+- runtime visual local no Expo Web usando resposta RAG real;
+- confirmação de que Markdown não aparece cru;
+- confirmação de que os cartões de fontes citadas mostram documento/página/trecho.
+
+Próximo passo exato:
+
+1. confirmar CI final;
+2. usuário atualizar para `feature/richtext-sources-0.5.23`;
+3. executar `npm install`, testes e typecheck;
+4. iniciar Expo Web com backend já ativo;
+5. fazer uma pergunta oficial;
+6. confirmar visualmente rich-text + fontes citadas;
+7. registrar runtime final e fechar a 0.5.23 para merge.
+
+Roadmap após este checkpoint:
+
+    0.5.21  Expo + contrato REST ............ concluída/merged
+    0.5.22  tela -> FastAPI real ............ concluída/merged
+    0.5.23  rich-text + fontes + citações ... atual (~90%)
+    0.5.24  UX + grounding/refinamentos ..... próxima
+    0.6.x   sessões .......................... futura
+    0.7.x   auditoria/LGPD/segurança ........ futura
+    0.8.x   agendamento/lembretes ........... futura
+    0.9.x   avaliação/usabilidade ........... futura
+    1.0     artefato final do TCC ........... futura
+
+
+### 0.5.23 — CI final do código consolidado
+
+Head validado:
+
+    bb5dc40784a2a69c11d436acee38e2cc43c51a64
+
+Resultados:
+
+    frontend: 2 suites / 8 testes aprovados
+    TypeScript typecheck: success
+    backend: 115 passed, 6 warnings
+    Ruff: All checks passed!
+
+O `frontend/tsconfig.json` também foi alinhado ao formato que o Expo SDK 57 estava gerando automaticamente, preservando os tipos `jest` e `node` e evitando que apenas iniciar `expo start` deixe o repositório local modificado.
+
+Status:
+
+    implementação 0.5.23 .............. verificada em CI
+    runtime visual rich-text/fontes ... aguardando validação local
+    PR #18 ............................ draft / mergeable
+
+
+### Validação runtime final da 0.5.23 — 2026-09-21
+
+Status: verificado localmente.
+
+Evidências observadas no ambiente Windows do projeto:
+
+- `GET /health` respondeu `200` com versão `0.5.23`;
+- `GET /ready` respondeu `200` com Qdrant `ok`;
+- retrieval sem filtros para `Quais vacinas são recomendadas para pessoas idosas?` retornou somente `pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf`, página 34, sem fonte `chatscm/`;
+- Expo Web enviou `POST /v1/chat` e recebeu `200 OK`;
+- Markdown foi renderizado visualmente: negrito e lista não apareceram como marcadores crus;
+- a seção `Fontes consultadas` foi exibida;
+- o cartão de fonte mostrou `[1]`, nome do documento, página 34 e excerpt;
+- as citações `[1]` da resposta ficaram coerentes com o `citation_id` exibido;
+- `git status --short` permaneceu limpo após a execução local.
+
+Observação:
+
+O warning do FastEmbed sobre mudança de pooling em versões posteriores permanece apenas como aviso de runtime e não interrompeu retrieval nem a chamada do chat. A baseline do projeto continua preservando FastEmbed 0.8.0 conforme documentação existente.
+
+Fechamento da versão:
+
+    implementação 0.5.23 .............. verificada
+    CI ................................ verificada
+    runtime FastAPI/Qdrant ............ verificado
+    runtime Expo Web .................. verificado
+    rich-text/fontes/citações ......... verificados
+    corpus/embeddings/Qdrant .......... inalterados
+    PR #18 ............................ draft
+    merge em main ..................... não realizado
+
+Pendência antes do merge do PR #18 para `main`:
+
+A reconciliação da branch com `main` foi realizada por merge de sincronização autorizado e a CI do head reconciliado foi verificada com sucesso. Resta apenas a autorização explícita do usuário para o merge do PR #18.
+
+Roadmap:
+
+    0.5.23  rich-text + fontes + citações ... implementação/runtime concluídos
+    0.5.24  UX + grounding/refinamentos ..... próxima
+
+
+### CI pós-reconciliação da 0.5.23
+
+Head reconciliado verificado:
+
+    fc391ca5b88753953b5ca4e6bc7042cb4f8d2f7d
+
+GitHub Actions:
+
+    workflow: CI
+    run: #290
+    lint: success
+    backend test: success
+    frontend tests: success
+    frontend typecheck: success
+
+Estado do PR #18 após a reconciliação:
+
+    base: main
+    behind_by: 0
+    mergeable: true
+    draft: true
+    merge em main: não realizado
+
+Status da 0.5.23:
+
+    implementação ...................... verificada
+    runtime local ...................... verificado
+    CI pós-reconciliação ............... verificada
+    compatibilidade com main ........... verificada
+    decisão de merge ................... aguardando autorização explícita

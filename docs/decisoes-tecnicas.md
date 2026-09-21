@@ -248,3 +248,11 @@ Impacto:
 **Mudança:** a integração Expo Web -> FastAPI usa CORS explícito com origens configuráveis e o cliente lê a URL da API por `EXPO_PUBLIC_RAG_API_BASE_URL`, usando `http://localhost:8000` apenas como padrão de desenvolvimento.  
 **Motivo:** o navegador aplica same-origin policy entre Expo Web em `localhost:8081` e FastAPI em `localhost:8000`. Liberar `*` resolveria o protótipo, mas criaria um padrão inadequado para evolução do projeto. Além disso, Android emulator e dispositivo físico exigem endereços diferentes do localhost do navegador.  
 **Impacto:** as origens padrão de desenvolvimento são `http://localhost:8081` e `http://127.0.0.1:8081`; outras origens devem ser configuradas explicitamente em `CORS_ALLOWED_ORIGINS`. O frontend pode apontar para outro host sem alterar código por meio de `EXPO_PUBLIC_RAG_API_BASE_URL`. React Native nativo continua consumindo o mesmo contrato REST.
+
+
+## D028 — Renderizar Markdown no cliente e separar fontes citadas de fontes apenas recuperadas
+
+**Data:** 2026-09-21  
+**Mudança:** a 0.5.23 passa a renderizar respostas do assistente como Markdown nativo no cliente Expo usando `@ronradtke/react-native-markdown-display` e mostra na interface principal apenas as fontes cujo `citation_id` aparece em `citation_ids`.  
+**Motivo:** a 0.5.22 exibia marcadores como `**negrito**` literalmente e misturar todas as fontes recuperadas com as efetivamente citadas poderia sugerir uma atribuição que a resposta não realizou.  
+**Impacto:** listas, negrito e demais elementos Markdown passam a ser apresentados como rich-text; cada fonte citada recebe cartão com identificador, documento, página e trecho. Fontes recuperadas mas não citadas não aparecem na seção principal e poderão ser expostas futuramente apenas em painel técnico/auditoria. O backend e o contrato REST permanecem inalterados.

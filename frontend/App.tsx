@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native"
 
+import { AssistantAnswer } from "./src/components/assistant-answer"
 import {
   type ChatApiResponse,
   sendChatMessage,
@@ -104,7 +105,7 @@ export default function App({
             {response ? (
               <View style={styles.assistantMessage}>
                 <Text style={styles.messageLabel}>Assistente</Text>
-                <Text style={styles.messageText}>{response.answer}</Text>
+                <AssistantAnswer response={response} />
               </View>
             ) : null}
 

@@ -76,4 +76,109 @@ describe("RagTest demo app", () => {
     })
   })
 
+
+  it("renders markdown formatting and source cards for a grounded answer", async () => {
+    const sendChat = jest.fn().mockResolvedValue({
+      answer:
+        "1. **Vacina contra Influenza** — deve ser tomada anualmente [1].",
+      model: "openai/gpt-oss-120b",
+      grounded: true,
+      citation_ids: [1],
+      citation_retry_count: 0,
+      multi_query_used: false,
+      retrieval_queries: ["Quais vacinas são recomendadas?"],
+      decomposition_status: "disabled",
+      sources: [
+        {
+          citation_id: 1,
+          score: 0.91,
+          source: "vacinacao/calendario_nacional_vacinacao_idoso.pdf",
+          category: "vacinacao",
+          audience: "idoso",
+          page: 1,
+          chunk_count: 1,
+          excerpt: "Vacinação da pessoa idosa.",
+        },
+      ],
+    })
+
+    await render(
+      <App
+        apiBaseUrl="http://localhost:8000"
+        sendChat={sendChat}
+      />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais vacinas são recomendadas?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Vacina contra Influenza")).toBeTruthy()
+      expect(screen.queryByText(/\*\*Vacina contra Influenza\*\*/)).toBeNull()
+      expect(screen.getByText("Fontes consultadas")).toBeTruthy()
+      expect(
+        screen.getByText("calendario_nacional_vacinacao_idoso.pdf"),
+      ).toBeTruthy()
+      expect(screen.getByText("Página 1")).toBeTruthy()
+      expect(screen.getByText("[1]")).toBeTruthy()
+    })
+  })
+
+
+  it("shows only sources actually cited by the answer", async () => {
+    const sendChat = jest.fn().mockResolvedValue({
+      answer: "**Direito citado** [1].",
+      model: "openai/gpt-oss-120b",
+      grounded: true,
+      citation_ids: [1],
+      citation_retry_count: 0,
+      multi_query_used: false,
+      retrieval_queries: ["Quais são meus direitos?"],
+      decomposition_status: "disabled",
+      sources: [
+        {
+          citation_id: 1,
+          score: 0.9,
+          source: "direitos_saude/fonte_citada.pdf",
+          category: "direitos_saude",
+          audience: null,
+          page: 4,
+          chunk_count: 1,
+          excerpt: "Fonte usada na resposta.",
+        },
+        {
+          citation_id: 2,
+          score: 0.8,
+          source: "direitos_saude/fonte_nao_citada.pdf",
+          category: "direitos_saude",
+          audience: null,
+          page: 10,
+          chunk_count: 1,
+          excerpt: "Fonte recuperada, mas não citada.",
+        },
+      ],
+    })
+
+    await render(
+      <App
+        apiBaseUrl="http://localhost:8000"
+        sendChat={sendChat}
+      />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais são meus direitos?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(screen.getByText("fonte_citada.pdf")).toBeTruthy()
+      expect(screen.queryByText("fonte_nao_citada.pdf")).toBeNull()
+    })
+  })
+
 })
