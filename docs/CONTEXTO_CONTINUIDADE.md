@@ -1593,7 +1593,7 @@ Versão em desenvolvimento: 0.5.21.
 Branch atual de trabalho: `feature/chatbot-demo-frontend-0.5.21`.
 PR atual: #16 draft.
 
-A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O frontend demonstrativo deve seguir a linha multiplataforma sugerida no TCC. O scaffold Next.js criado inicialmente no PR #16 é descartável e deve ser substituído por React Native + Expo + TypeScript antes de avançar na interface.
+A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O scaffold Next.js criado inicialmente no PR #16 foi substituído por React Native + Expo + TypeScript. O frontend demonstrativo agora segue a linha multiplataforma sugerida no TCC e continua desacoplado do backend.
 
 ### Roadmap
 
@@ -1619,7 +1619,7 @@ A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do
 
 ### Posição atual no roadmap
 
-O núcleo RAG/backend está em estágio avançado e funcional. A prioridade prática atual é o início da camada cliente multiplataforma da 0.5.21. Antes de escrever a interface final, substituir o scaffold Next.js experimental por React Native + Expo e manter o frontend desacoplado do backend através do contrato REST `/v1/chat`.
+O núcleo RAG/backend está em estágio avançado e funcional. A camada cliente multiplataforma da 0.5.21 já foi iniciada com React Native + Expo, primeira superfície visual, contrato TypeScript e cliente REST para `/v1/chat`. A próxima validação é abrir o app no ambiente local do usuário; depois disso, a 0.5.22 conecta a tela ao cliente REST e passa a renderizar respostas reais.
 
 ## Comportamento atual para novos documentos no corpus
 
@@ -1642,3 +1642,70 @@ Proteções atuais: recusa corpus vazio; recusa escrita se houver erro de carreg
 Metadados: a primeira pasta relativa abaixo de `data/source` vira `category`; alguns públicos são inferidos pelo caminho/nome do arquivo (por exemplo gestante, idoso, adulto). Arquivos soltos diretamente na raiz recebem category `uncategorized`.
 
 Não existe atualmente watcher/daemon que monitore automaticamente a pasta e faça ingestão ao detectar novos arquivos. Automatizar isso pode ser uma evolução futura, mas deve preservar o mesmo fluxo de planejamento, validação e auditoria antes de mutar Qdrant.
+
+
+### Checkpoint da 0.5.21 — scaffold Expo e contrato REST
+
+Estado aproximado da versão: 80% concluída.
+
+Implementado:
+
+- Expo SDK 57 estável;
+- React Native 0.86 / React 19.2;
+- TypeScript;
+- app multiplataforma Android/iOS/web;
+- primeira tela do Assistente de Saúde;
+- campo de pergunta e botão Enviar;
+- contrato TypeScript equivalente ao schema FastAPI;
+- suporte opcional a min_score;
+- sendChatMessage para POST /v1/chat;
+- Jest + jest-expo + React Native Testing Library;
+- typecheck TypeScript integrado à CI;
+- versão do repositório/backend/frontend alinhada em 0.5.21;
+- documentação do frontend atualizada;
+- decisões D025 e D026 registradas.
+
+TDD observado:
+
+1. RED da tela: App inexistente; teste de contrato existente passou;
+2. GREEN da tela: 2 suites / 2 testes passaram;
+3. RED do cliente REST: sendChatMessage inexistente; App permaneceu verde;
+4. GREEN do cliente REST: 2 suites / 3 testes passaram.
+
+Última CI funcional antes do bump final de versão:
+
+    frontend: 2 suites, 3 testes aprovados
+    frontend typecheck: success
+    backend: 113 passed, 4 warnings
+    Ruff: All checks passed!
+
+Aguardando validação:
+
+- CI após alinhamento final da versão 0.5.21;
+- abertura real do app Expo no ambiente local do usuário.
+
+Próximo passo exato:
+
+1. confirmar CI final;
+2. usuário atualizar a branch local;
+3. instalar dependências do frontend;
+4. iniciar Expo;
+5. confirmar que a tela inicial abre no navegador/emulador/dispositivo;
+6. após essa evidência, fechar 0.5.21 e iniciar 0.5.22 com integração real da tela ao FastAPI.
+
+Observação de dependências:
+
+O npm install da CI reportou vulnerabilidades transitivas moderadas no ecossistema do frontend. Não executar npm audit fix --force automaticamente. A análise de segurança das dependências será feita de forma deliberada antes da versão de apresentação/produção; nenhuma vulnerabilidade de severidade alta foi usada como evidência de bloqueio nesta etapa.
+
+Posição no roadmap:
+
+    0.5.20  observabilidade Groq ............ concluída/merged
+    0.5.21  scaffold Expo + contrato REST ... em validação final
+    0.5.22  chat real -> FastAPI ............ próximo
+    0.5.23  rich-text/fontes/citações ....... futuro
+    0.5.24  UX/erros/grounding .............. futuro
+    0.6.x   sessões .......................... futuro
+    0.7.x   auditoria/LGPD/segurança ........ futuro
+    0.8.x   agendamento/lembretes ........... futuro
+    0.9.x   avaliação/usabilidade ........... futuro
+    1.0     artefato de apresentação ........ futuro
