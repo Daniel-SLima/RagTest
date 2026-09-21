@@ -220,6 +220,19 @@ Correção: nenhuma mudança funcional ainda. Atualizar/rebuildar a imagem com a
 
 Aprendizado técnico: disponibilidade do provider e groundedness são dimensões independentes. Um retry pode recuperar uma falha 503 e ainda assim a resposta subsequente ser rejeitada pelo gate; além disso, quando o mesmo comportamento aparece em providers diferentes, a investigação deve priorizar o contrato compartilhado de prompt/validação antes de atribuir o problema ao modelo.
 
+
+## 19. Gate estrutural tratava heading Markdown como afirmação e retry regenerava do zero
+
+Planejado: usar o gate de cobertura da 0.5.19 para exigir citação em cada parágrafo ou item informativo e, em caso de falha, reparar a resposta uma única vez.
+
+Observado: no teste real com Gemini, a primeira resposta teve sintaxe de citações válida, mas cobertura de 0,786 (22/28 blocos); o retry caiu para 0,767 (23/30 blocos). A inspeção do classificador mostrou que um heading Markdown como `## Direitos da pessoa usuária` era normalizado para texto comum e contado como claim por ter três ou mais palavras. O self-check existente cobria apenas heading curto terminado em dois-pontos. Também foi verificado que o prompt de reparo não recebia a resposta anterior: ele apenas informava que a tentativa falhou e solicitava uma nova geração.
+
+Diagnóstico: há um falso positivo estrutural confirmado para headings Markdown sem dois-pontos. Separadamente, o retry não era um reparo direcionado; ele regenerava a resposta a partir do contexto, o que permite mudar quantidade e estrutura dos blocos e explica por que a cobertura pode piorar. Ainda é necessário retestar em runtime para medir quanto desses dois pontos explica os seis ou sete blocos não citados observados no Gemini.
+
+Correção: headings Markdown iniciados por `#` deixam de ser considerados claim blocks. O prompt de reparo passa a receber a resposta anterior e o motivo da validação, pedindo revisão do texto existente sem acrescentar novas afirmações. A exigência de citação continua inalterada para parágrafos e itens informativos. Foram adicionados testes específicos para heading Markdown e para reaproveitamento da resposta anterior. A correção permanece aguardando CI e validação real.
+
+Aprendizado técnico: guardrails estruturais precisam distinguir conteúdo semântico de elementos de apresentação; caso contrário, podem produzir falsos negativos de groundedness. Um retry de reparo também precisa receber o artefato que falhou e o motivo da falha, em vez de simplesmente repetir a geração.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

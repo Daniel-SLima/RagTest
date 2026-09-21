@@ -52,6 +52,7 @@ class RepairingFakeLLM:
         if self.calls == 1:
             return "Resposta com citação inexistente [9]."
         assert "VALIDAÇÃO AUTOMÁTICA DE CITAÇÕES" in user_prompt
+        assert "Resposta com citação inexistente [9]." in user_prompt
         return "Resposta reparada e verificável [1]."
 
 
@@ -107,6 +108,7 @@ class CoverageRepairingFakeLLM:
                 "Outra afirmação informativa ficou sem referência."
             )
         assert "VALIDAÇÃO AUTOMÁTICA DE CITAÇÕES" in user_prompt
+        assert "Outra afirmação informativa ficou sem referência." in user_prompt
         assert "Cada parágrafo ou item informativo" in user_prompt
         return (
             "A fonte informa vacinação anual contra influenza [1].\n"

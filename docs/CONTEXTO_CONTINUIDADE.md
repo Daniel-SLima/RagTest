@@ -1100,3 +1100,29 @@ Conclusão atual:
 - Gemini pode voltar a ser o provider principal de desenvolvimento, com Ollama como contingência manual; fallback automático continua fora do escopo desta etapa para preservar rastreabilidade.
 
 Próxima ação: atualizar/rebuildar a imagem com a instrumentação já implementada e repetir o mesmo teste com Gemini para capturar `Citation validation attempts`. Não reindexar Qdrant e não fazer merge do PR #13.
+
+
+### Diagnóstico do gate após instrumentação — heading Markdown e repair direcionado
+
+O reteste real com Gemini usando a instrumentação mostrou:
+
+    tentativa 1: syntax=yes, coverage=0.786, blocks=22/28
+    tentativa 2: syntax=yes, coverage=0.767, blocks=23/30
+    resultado: grounded=false, citation_retry_count=1
+
+A investigação encontrou dois pontos no contrato compartilhado do gate:
+
+1. headings Markdown como `## Direitos da pessoa usuária` eram tratados como claim blocks quando não terminavam em dois-pontos;
+2. o chamado "repair" não recebia a resposta anterior nem o motivo específico da falha e, portanto, regenerava do zero.
+
+Registrado como Dificuldade TCC #19.
+
+Correção implementada, aguardando validação:
+
+- headings Markdown iniciados por `#` não contam como afirmação informativa;
+- parágrafos e itens continuam exigindo citações válidas;
+- o retry recebe a resposta anterior e o motivo da validação;
+- o modelo é instruído a revisar a resposta existente sem acrescentar novas afirmações;
+- testes adicionados para os dois comportamentos.
+
+Próxima ação: aguardar CI, rebuildar e repetir exatamente o chat oficial com Gemini. Não reindexar Qdrant e não fazer merge do PR #13.

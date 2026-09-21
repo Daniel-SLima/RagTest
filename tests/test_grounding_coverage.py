@@ -43,6 +43,18 @@ def test_citation_coverage_ignores_short_heading_blocks() -> None:
     assert result.cited_claim_blocks == 1
 
 
+def test_citation_coverage_ignores_markdown_heading_without_colon() -> None:
+    result = validate_citation_coverage(
+        "## Direitos da pessoa usuária\n"
+        "- O direito descrito está sustentado pela fonte [1].",
+        1,
+    )
+
+    assert result.valid is True
+    assert result.total_claim_blocks == 1
+    assert result.cited_claim_blocks == 1
+
+
 def test_citation_coverage_rejects_out_of_range_citation() -> None:
     result = validate_citation_coverage(
         "Informação sustentada por uma fonte inexistente [2].",

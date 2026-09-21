@@ -76,7 +76,12 @@ async def _generate_with_validated_citations(
 
     repaired_answer = await llm.generate(
         system_prompt=SYSTEM_PROMPT,
-        user_prompt=build_citation_repair_prompt(question, hits),
+        user_prompt=build_citation_repair_prompt(
+            question,
+            hits,
+            previous_answer=answer,
+            validation_reason=validation.reason,
+        ),
     )
     repaired_validation = validate_citation_coverage(repaired_answer, len(hits))
 

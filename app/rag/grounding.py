@@ -7,6 +7,7 @@ _WORD_PATTERN = re.compile(r"[0-9A-Za-zÀ-ÿ]+", flags=re.UNICODE)
 _LEADING_MARKUP_PATTERN = re.compile(
     r"^\s*(?:[-*+]\s+|\d+[.)]\s+|#{1,6}\s+)"
 )
+_MARKDOWN_HEADING_PATTERN = re.compile(r"^\s*#{1,6}\s+\S")
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,6 +26,9 @@ def _normalized_block(line: str) -> str:
 
 
 def _is_claim_block(line: str) -> bool:
+    if _MARKDOWN_HEADING_PATTERN.match(line):
+        return False
+
     normalized = _normalized_block(line)
     if not normalized:
         return False
