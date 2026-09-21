@@ -29,7 +29,7 @@
 - PR #19: **draft**
 - Head de implementação validado antes deste checkpoint documental: `182219d8a272b92785c83f4fa99b1ee4c978ae95`
 - Primeiro recorte da 0.5.24: UX de grounding e separação explícita entre fontes citadas e fontes apenas recuperadas.
-- Runtime visual local da 0.5.24: **aguardando validação**.
+- Runtime visual local da 0.5.24: **verificado para o cenário `grounded=true`**.
 
 ### O que a 0.5.23 entregou
 
@@ -47,13 +47,11 @@
 
 ### Próximo passo exato
 
-1. sincronizar o checkout local com `feature/ux-grounding-0.5.24`;
-2. confirmar versão 0.5.24 e `git status --short` limpo;
-3. executar testes/typecheck locais se necessário;
-4. validar visualmente no Expo Web uma resposta `grounded=true`;
-5. confirmar a presença do estado `Citações verificadas` e preservação dos cartões de fontes citadas;
-6. manter os cenários `grounded=false` cobertos por testes determinísticos;
-7. somente depois decidir os próximos refinamentos da 0.5.24.
+1. preservar o primeiro recorte da 0.5.24 já validado em CI e runtime;
+2. manter os cenários `grounded=false` cobertos por testes determinísticos, sem provocar falha externa artificial;
+3. escolher o próximo refinamento pequeno da 0.5.24;
+4. seguir TDD RED -> GREEN para qualquer novo comportamento;
+5. manter o PR #19 draft e não mesclar sem autorização explícita.
 
 ### Regras críticas preservadas
 
@@ -2349,5 +2347,32 @@ Arquitetura:
 Status:
 
     implementação primeiro recorte .......... verificada em CI
-    runtime visual Expo Web ................. aguardando validação
+    runtime visual Expo Web grounded=true ... verificado
     PR #19 .................................. draft
+
+
+### Validação visual local da 0.5.24 — 2026-09-21
+
+Status: verificado para o cenário `grounded=true`.
+
+Evidências observadas:
+
+- checkout em `feature/ux-grounding-0.5.24`, head `756d149aa5d971c72236569a73041432633cbe4c`;
+- frontend local: 2 suites / 11 testes aprovados;
+- `npm run typecheck`: concluído sem erros;
+- `GET /health`: versão `0.5.24`;
+- `GET /ready`: Qdrant `ok`;
+- retrieval local para `Quais vacinas são recomendadas para pessoas idosas?` retornou apenas `pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf`, página 34, sem `chatscm/`;
+- `POST /v1/chat` executado pela interface Expo Web retornou uma resposta `grounded=true`;
+- a interface exibiu `Citações verificadas` e o texto sobre referências do corpus;
+- a seção `Fontes consultadas` exibiu `[1]`, o documento da Caderneta da Pessoa Idosa e a página 34;
+- Markdown/lista foram renderizados sem marcadores crus;
+- os cenários `grounded=false` não foram provocados artificialmente e permanecem cobertos pelos testes determinísticos.
+
+Ambiente e dados:
+
+- API foi reconstruída para a 0.5.24 sem recriar volumes;
+- a collection `ragtest_documents`, o corpus, embeddings e os 767 pontos não foram alterados;
+- nenhum conteúdo `chatscm/` foi enviado ao provider externo.
+
+Próximo passo: definir e aprovar um refinamento pequeno e isolado para continuar a 0.5.24, mantendo TDD e o PR #19 em draft.

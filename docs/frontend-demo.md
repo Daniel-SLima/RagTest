@@ -204,3 +204,23 @@ Quando `grounded=false` e `sources=[]`, a interface mostra:
 e não cria seção de fontes vazia.
 
 Nenhuma mudança de backend ou de contrato foi necessária.
+
+### Validação visual local
+
+O cenário `grounded=true` foi verificado no Expo Web com a pergunta:
+
+    Quais vacinas são recomendadas para pessoas idosas?
+
+Antes da chamada externa, o retrieval local retornou somente a Caderneta da Pessoa Idosa, página 34, sem conteúdo `chatscm/`.
+
+A interface real exibiu:
+
+- resposta em Markdown/lista;
+- cartão `Citações verificadas`;
+- texto `As afirmações informativas estão acompanhadas de referências do corpus.`;
+- seção `Fontes consultadas`;
+- badge `[1]`;
+- documento `caderneta_saude_pessoa_idosa_5ed_1re.pdf`;
+- `Página 34` e excerpt da fonte.
+
+Os estados `grounded=false` continuam validados por testes determinísticos; não foi provocada uma falha externa da LLM apenas para observá-los visualmente.
