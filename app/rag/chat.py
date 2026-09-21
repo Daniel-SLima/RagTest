@@ -69,6 +69,29 @@ _GROUNDING_FALLBACK = (
 )
 
 
+def _can_postprocess_before_repair(validation: CitationCoverage) -> bool:
+    return (
+        validation.syntax_valid
+        and validation.uncited_claim_blocks == 1
+        and validation.cited_claim_blocks > 0
+        and validation.coverage >= 0.8
+    )
+
+
+def _postprocess_if_fully_grounded(
+    answer: str,
+    source_count: int,
+) -> tuple[str, CitationCoverage] | None:
+    postprocessed_answer = prune_uncited_claim_blocks(answer, source_count)
+    postprocessed_validation = validate_citation_coverage(
+        postprocessed_answer,
+        source_count,
+    )
+    if not postprocessed_validation.valid:
+        return None
+    return postprocessed_answer, postprocessed_validation
+
+
 async def _generate_with_validated_citations(
     question: str,
     hits: list[SearchHit],
@@ -88,6 +111,22 @@ async def _generate_with_validated_citations(
 
     if validation.valid:
         return answer, True, list(extract_citation_ids(answer)), 0, (first_attempt,)
+
+    if _can_postprocess_before_repair(validation):
+        postprocessed = _postprocess_if_fully_grounded(answer, len(hits))
+        if postprocessed is not None:
+            postprocessed_answer, postprocessed_validation = postprocessed
+            postprocess_attempt = CitationValidationAttempt.from_coverage(
+                postprocessed_validation,
+                stage="postprocess",
+            )
+            return (
+                postprocessed_answer,
+                True,
+                list(extract_citation_ids(postprocessed_answer)),
+                0,
+                (first_attempt, postprocess_attempt),
+            )
 
     repaired_answer = await llm.generate(
         system_prompt=SYSTEM_PROMPT,
@@ -116,14 +155,14 @@ async def _generate_with_validated_citations(
         and repaired_validation.cited_claim_blocks > 0
         and repaired_validation.uncited_claim_blocks > 0
     ):
-        postprocessed_answer = prune_uncited_claim_blocks(
+        postprocessed = _postprocess_if_fully_grounded(
             repaired_answer,
             len(hits),
         )
-        postprocessed_validation = validate_citation_coverage(
-            postprocessed_answer,
-            len(hits),
-        )
+        if postprocessed is None:
+            return _GROUNDING_FALLBACK, False, [], 1, attempts
+
+        postprocessed_answer, postprocessed_validation = postprocessed
         postprocess_attempt = CitationValidationAttempt.from_coverage(
             postprocessed_validation,
             stage="postprocess",
