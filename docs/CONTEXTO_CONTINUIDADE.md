@@ -2159,3 +2159,44 @@ Status:
     implementação 0.5.23 .............. verificada em CI
     runtime visual rich-text/fontes ... aguardando validação local
     PR #18 ............................ draft / mergeable
+
+
+### Validação runtime final da 0.5.23 — 2026-09-21
+
+Status: verificado localmente.
+
+Evidências observadas no ambiente Windows do projeto:
+
+- `GET /health` respondeu `200` com versão `0.5.23`;
+- `GET /ready` respondeu `200` com Qdrant `ok`;
+- retrieval sem filtros para `Quais vacinas são recomendadas para pessoas idosas?` retornou somente `pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf`, página 34, sem fonte `chatscm/`;
+- Expo Web enviou `POST /v1/chat` e recebeu `200 OK`;
+- Markdown foi renderizado visualmente: negrito e lista não apareceram como marcadores crus;
+- a seção `Fontes consultadas` foi exibida;
+- o cartão de fonte mostrou `[1]`, nome do documento, página 34 e excerpt;
+- as citações `[1]` da resposta ficaram coerentes com o `citation_id` exibido;
+- `git status --short` permaneceu limpo após a execução local.
+
+Observação:
+
+O warning do FastEmbed sobre mudança de pooling em versões posteriores permanece apenas como aviso de runtime e não interrompeu retrieval nem a chamada do chat. A baseline do projeto continua preservando FastEmbed 0.8.0 conforme documentação existente.
+
+Fechamento da versão:
+
+    implementação 0.5.23 .............. verificada
+    CI ................................ verificada
+    runtime FastAPI/Qdrant ............ verificado
+    runtime Expo Web .................. verificado
+    rich-text/fontes/citações ......... verificados
+    corpus/embeddings/Qdrant .......... inalterados
+    PR #18 ............................ draft
+    merge em main ..................... não realizado
+
+Pendência antes do merge:
+
+A branch `feature/richtext-sources-0.5.23` está divergente de `main` porque `main` recebeu commits de documentação após a base original do PR. Reconciliar a branch com `main`, revalidar CI e somente então solicitar autorização explícita para o merge do PR #18.
+
+Roadmap:
+
+    0.5.23  rich-text + fontes + citações ... implementação/runtime concluídos
+    0.5.24  UX + grounding/refinamentos ..... próxima
