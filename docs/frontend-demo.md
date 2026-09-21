@@ -134,3 +134,33 @@ Configuração de ambiente:
 Para Expo Web, a origem usada pelo navegador também precisa constar em `CORS_ALLOWED_ORIGINS` no backend.
 
 A 0.5.22 ainda mostra a resposta como texto simples. Rich-text, cartões de fontes/citações e apresentação de grounding pertencem às versões seguintes.
+
+
+## Rich-text e fontes — 0.5.23
+
+A 0.5.23 melhora a apresentação das respostas sem alterar o contrato do FastAPI.
+
+Implementado:
+
+- renderização Markdown nativa no cliente com `@ronradtke/react-native-markdown-display`;
+- negrito, listas e demais elementos suportados deixam de aparecer como marcadores crus;
+- seção `Fontes consultadas` abaixo da resposta;
+- cartões contendo:
+  - identificador da citação, por exemplo `[1]`;
+  - nome do documento;
+  - página;
+  - trecho da fonte quando disponível;
+- a interface principal mostra apenas fontes cujo `citation_id` realmente aparece em `citation_ids`;
+- fontes recuperadas mas não citadas permanecem fora da experiência principal.
+
+Essa distinção evita confundir retrieval com atribuição: uma fonte pode ter sido recuperada para contexto e ainda assim não ter sido usada na resposta final.
+
+A biblioteca escolhida é JS-only e não depende de WebView nem de módulo nativo específico, preservando Android, iOS e Web dentro do mesmo cliente Expo. No Jest, o pacote precisa ser explicitamente transpilado em `transformIgnorePatterns`.
+
+Ainda não faz parte da 0.5.23:
+
+- painel técnico com todas as fontes recuperadas;
+- visualização de score de retrieval para a usuária final;
+- deep-link para PDFs locais;
+- histórico persistente;
+- sessões multi-turn.
