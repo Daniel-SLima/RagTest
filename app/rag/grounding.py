@@ -20,6 +20,7 @@ class CitationCoverage:
     uncited_claim_blocks: int
     coverage: float
     reason: str | None = None
+    uncited_blocks: tuple[str, ...] = ()
 
 
 def _normalized_block(line: str) -> str:
@@ -81,13 +82,17 @@ def validate_citation_coverage(
             uncited_claim_blocks=0,
             coverage=0.0,
             reason="answer does not contain informative claim blocks",
+            uncited_blocks=(),
         )
 
     cited = 0
+    uncited_block_texts: list[str] = []
     for block in claim_blocks:
         ids = extract_citation_ids(block)
         if ids and all(1 <= citation_id <= source_count for citation_id in ids):
             cited += 1
+        else:
+            uncited_block_texts.append(block)
 
     total = len(claim_blocks)
     coverage = cited / total
@@ -108,4 +113,5 @@ def validate_citation_coverage(
         uncited_claim_blocks=uncited,
         coverage=coverage,
         reason=reason,
+        uncited_blocks=tuple(uncited_block_texts),
     )
