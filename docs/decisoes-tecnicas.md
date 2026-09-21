@@ -201,3 +201,11 @@ Impacto:
 **Mudança:** adicionar `GroqProvider` à interface de LLM, inicialmente com `openai/gpt-oss-120b`, seleção explícita por `LLM_PROVIDER=groq` e sem fallback automático entre providers.  
 **Motivo:** o Gemini apresentou indisponibilidade transitória por 503 e, posteriormente, 429 mesmo após retries; o Qwen3 8B local é funcional, mas a geração medida no notebook ficou em aproximadamente 8,94 tokens/s. A Groq oferece endpoint OpenAI-compatible e permite testar o GPT-OSS 120B sem alterar retrieval, corpus ou Qdrant.  
 **Impacto:** o mesmo RAG pode ser executado explicitamente com Gemini, Groq/GPT-OSS 120B ou Ollama/Qwen3 8B. O provider Groq desativa reasoning na resposta, mantém reasoning effort baixo, registra tokens/latência e trata 429/498/5xx como falhas transitórias limitadas. Testes externos continuam restritos a fontes oficiais enquanto CHATSCM não tiver revisão manual de privacidade.
+
+
+## D022 — Pós-processamento determinístico remove claims sem citação após o repair
+
+**Data:** 2026-09-20  
+**Mudança:** após a geração inicial e um único repair, se a resposta ainda tiver sintaxe de citação válida, pelo menos um claim citado e apenas cobertura incompleta, o RagTest remove deterministicamente somente os claim blocks sem citação válida, revalida a resposta e só a aceita se a cobertura resultante for 100%.  
+**Motivo:** no teste real com Groq/GPT-OSS 120B, o modelo manteve repetidamente uma conclusão final sem citação mesmo quando o repair recebeu o bloco exato que precisava ser corrigido. Continuar adicionando retries ou relaxar o gate tornaria o comportamento menos previsível.  
+**Impacto:** o sistema deixa de depender exclusivamente da obediência do LLM no último estágio. Citações fora do intervalo, respostas sem nenhuma citação válida ou respostas que continuem inválidas após a poda ainda caem no fallback seguro. O CLI passa a distinguir `stage=initial`, `stage=repair` e `stage=postprocess`, enquanto `citation_retry_count` permanece representando apenas chamadas adicionais ao LLM.
