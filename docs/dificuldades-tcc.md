@@ -311,6 +311,19 @@ Correção: introduzir uma condição conservadora de pós-processamento antes d
 
 Aprendizado técnico: otimização de custo em RAG deve preservar o guardrail e ser acionada por evidência estrutural mensurável, não apenas por heurísticas de prompt. Evitar uma chamada externa é seguro apenas quando a transformação local é estritamente limitada e seguida de revalidação completa.
 
+
+## 26. Auditoria final encontrou poda pós-repair permissiva demais
+
+Planejado: usar o pós-processamento determinístico apenas para remover um pequeno resíduo sem citação, preservando uma resposta substancialmente grounded.
+
+Observado: a auditoria do PR #13 mostrou que, após o repair, bastava existir uma citação válida e sintaxe correta para a poda ser tentada. Um teste de regressão com 4 claims, dos quais apenas 1 estava citado, reproduziu o problema: o sistema removeu os outros 3 e retornou grounded=true com apenas 25% do conteúdo original sustentado antes da poda.
+
+Diagnóstico: a regra conservadora da D023 (cobertura >= 80% e exatamente 1 claim uncited) existia antes do repair, mas o caminho pós-repair ainda usava a condição antiga e ampla da D022. Isso podia transformar uma resposta muito incompleta em uma resposta curta estruturalmente válida, prejudicando completude.
+
+Correção: aplicar a mesma condição conservadora nos dois estágios. Pós-processamento, antes ou depois do repair, só é elegível com sintaxe válida, exatamente 1 claim uncited, pelo menos 1 claim citado e cobertura >= 0,80; a resposta podada ainda precisa revalidar em 100%. TDD confirmado: o teste falhou primeiro porque o caso de 25% era aceito; após a correção, CI verde com 110 testes aprovados e 4 warnings.
+
+Aprendizado técnico: groundedness estrutural não deve ser obtido à custa de apagar grande parte da resposta. Guardrails de poda precisam limitar também a perda de completude, não apenas validar a saída restante.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
