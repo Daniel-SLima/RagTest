@@ -92,7 +92,8 @@ async def run(args: argparse.Namespace) -> None:
             print("Citation validation attempts:")
             for index, attempt in enumerate(result.citation_validation_attempts, start=1):
                 print(
-                    f"  [{index}] valid={'yes' if attempt.valid else 'no'} "
+                    f"  [{index}] stage={attempt.stage} "
+                    f"valid={'yes' if attempt.valid else 'no'} "
                     f"syntax={'yes' if attempt.syntax_valid else 'no'} "
                     f"coverage={attempt.coverage:.3f} "
                     f"blocks={attempt.cited_claim_blocks}/{attempt.total_claim_blocks} "
