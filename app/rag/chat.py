@@ -82,6 +82,7 @@ async def _generate_with_validated_citations(
             hits,
             previous_answer=answer,
             validation_reason=validation.reason,
+            uncited_blocks=validation.uncited_blocks,
         ),
     )
     repaired_answer = normalize_citation_markup(repaired_answer)
