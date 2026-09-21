@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 
 _CITATION_PATTERN = re.compile(r"\[(\d+)\]")
+_UNICODE_CITATION_PATTERN = re.compile(r"【(\d+)】")
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,8 +13,13 @@ class CitationValidation:
     reason: str | None = None
 
 
+def normalize_citation_markup(answer: str) -> str:
+    return _UNICODE_CITATION_PATTERN.sub(r"[\1]", answer)
+
+
 def extract_citation_ids(answer: str) -> tuple[int, ...]:
-    ids = {int(match) for match in _CITATION_PATTERN.findall(answer)}
+    normalized = normalize_citation_markup(answer)
+    ids = {int(match) for match in _CITATION_PATTERN.findall(normalized)}
     return tuple(sorted(ids))
 
 
