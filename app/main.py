@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.chat import router as chat_router
 from app.api.routes.health import router as health_router
@@ -30,6 +31,18 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         description="API REST portável para o módulo RAG do RagTest.",
         lifespan=lifespan,
+    )
+    allowed_origins = [
+        origin.strip()
+        for origin in settings.cors_allowed_origins.split(",")
+        if origin.strip()
+    ]
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type"],
     )
     application.include_router(health_router)
     application.include_router(search_router)
