@@ -1065,4 +1065,15 @@ Registrado como Dificuldade TCC #17.
 
 Diagnóstico atual: retrieval e validadores determinísticos estão funcionando no cenário observado, mas o provider não expõe ainda os metadados de timing/tokenização retornados pelo Ollama nem preserva para diagnóstico as respostas rejeitadas pelo gate. A causa exata da latência e da reprovação estrutural ainda é hipótese e não deve ser tratada como corrigida.
 
-Próxima ação: medir/instrumentar a geração local antes de alterar prompt, contexto, limite de saída ou modelo. Não reindexar Qdrant e não fazer merge do PR #13.
+O teste controlado seguinte alterou somente `LLM_MAX_OUTPUT_TOKENS` de 4096 para 512. O resultado manteve `citation_retry_count=1`, `grounded=false` e as mesmas cinco fontes recuperadas, mas reduziu o tempo total para 158,5 s. Isso verifica que o orçamento de saída influencia fortemente a latência, mas não explica nem corrige a reprovação do gate.
+
+Um teste direto do `qwen3:8b` fora do RAG mediu 254 tokens em 28,68 s, com 8,94 tokens/s; o tempo de avaliação do prompt curto foi de aproximadamente 0,21 s e o de geração de saída, 28,42 s.
+
+Instrumentação implementada na mesma branch, sem alterar o comportamento funcional:
+
+- `OllamaProvider` passa a preservar métricas por geração: duração total/carga, tokens e duração do prompt, tokens e duração de saída, tokens/s e `done_reason`;
+- o CLI passa a mostrar o diagnóstico estrutural de cada tentativa do gate: validade, sintaxe, cobertura, blocos citados/total e motivo da reprovação;
+- respostas brutas rejeitadas não são persistidas nem impressas;
+- CI verificada: Ruff `All checks passed!`; pytest `92 passed, 4 warnings`.
+
+Próxima ação: atualizar/rebuildar o ambiente local e repetir a mesma pergunta com override temporário de 512 tokens para observar as novas métricas. Não reindexar Qdrant e não fazer merge do PR #13.
