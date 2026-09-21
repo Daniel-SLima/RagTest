@@ -1246,3 +1246,24 @@ Correção implementada:
 CI verificada: Ruff `All checks passed!`; pytest `105 passed, 4 warnings`.
 
 Próxima ação: rebuildar e repetir o chat oficial curto com Groq usando 1024 tokens. A correção ainda precisa de validação real antes de marcar a Dificuldade #21 como resolvida em runtime. Não reindexar Qdrant.
+
+
+### Dificuldade #22 — introdução estrutural de lista no gate
+
+Após a normalização `【n】 -> [n]`, o reteste real com Groq avançou para:
+
+    syntax=yes
+    coverage=0.889
+    blocks=8/9
+    done_reason=stop nas duas gerações
+
+A regressão reproduziu a causa: uma introdução longa terminada em dois-pontos antes de uma lista citada era contada como claim independente.
+
+Correção implementada:
+
+- uma linha terminada em `:` só é tratada como introdução estrutural quando o próximo bloco não vazio é um item real de lista;
+- os itens continuam obrigados a conter citações válidas;
+- demais frases informativas continuam sujeitas ao gate;
+- CI verificada: Ruff `All checks passed!`; pytest `106 passed, 4 warnings`.
+
+Próxima ação: rebuildar e repetir exatamente o mesmo chat curto com Groq e 1024 tokens. Não reindexar Qdrant.
