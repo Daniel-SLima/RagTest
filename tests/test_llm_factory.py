@@ -3,6 +3,7 @@ import pytest
 from app.core.config import Settings
 from app.llm.factory import create_llm_provider
 from app.llm.gemini_provider import GeminiProvider
+from app.llm.groq_provider import GroqProvider
 from app.llm.ollama_provider import OllamaProvider
 
 
@@ -31,11 +32,35 @@ def test_factory_keeps_gemini_provider() -> None:
     assert isinstance(provider, GeminiProvider)
 
 
+def test_factory_creates_groq_provider() -> None:
+    settings = Settings(
+        llm_provider="groq",
+        gemini_api_key=None,
+        groq_api_key="test-groq-key",
+        groq_model="openai/gpt-oss-120b",
+    )
+
+    provider = create_llm_provider(settings)
+
+    assert isinstance(provider, GroqProvider)
+    assert provider.model_name == "openai/gpt-oss-120b"
+
+
+def test_factory_rejects_groq_without_key() -> None:
+    settings = Settings(
+        llm_provider="groq",
+        groq_api_key=None,
+    )
+
+    with pytest.raises(RuntimeError, match="GROQ_API_KEY"):
+        create_llm_provider(settings)
+
+
 def test_factory_rejects_unknown_provider() -> None:
     settings = Settings(
         llm_provider="unknown",
         gemini_api_key="test-key",
     )
 
-    with pytest.raises(RuntimeError, match="Supported providers: gemini, ollama"):
+    with pytest.raises(RuntimeError, match="Supported providers: gemini, groq, ollama"):
         create_llm_provider(settings)
