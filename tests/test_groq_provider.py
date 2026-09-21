@@ -18,6 +18,18 @@ def _provider(*, retries: int = 2) -> GroqProvider:
     )
 
 
+def test_groq_headers_use_explicit_user_agent() -> None:
+    provider = _provider()
+
+    headers = provider._headers()
+
+    assert headers["Authorization"] == "Bearer test-key"
+    assert headers["Content-Type"] == "application/json"
+    assert headers["Accept"] == "application/json"
+    assert headers["User-Agent"].startswith("Mozilla/5.0")
+    assert "RagTest/0.5.19" in headers["User-Agent"]
+
+
 def test_groq_payload_keeps_rag_messages_and_hides_reasoning() -> None:
     provider = _provider()
 
