@@ -1385,12 +1385,12 @@ Próxima ação: rebuildar e repetir um único teste real com Groq. Esperado no 
 
 ### D023 — validação real concluída
 
-O reteste real de direitos_saude após a otimização confirmou:
+O reteste real de direitos_saude após a otimização observou:
 
     grounded=true
     citation_ids=[1,2]
     citation_retry_count=0
 
-A resposta final manteve os oito direitos citados e não precisou de uma segunda geração Groq. Portanto, o postprocess-before-repair está verificado em runtime para o padrão de alta cobertura com um único claim sem citação. Casos fora da condição conservadora continuam usando o repair/fallback normal.
+A resposta final manteve os oito direitos citados e não precisou de uma segunda geração Groq. Isso confirma a execução sem repair externo, mas o JSON da API não expõe citation_validation_attempts; portanto, não distingue se a geração inicial já estava totalmente válida ou se o postprocess-before-repair foi acionado. A lógica da D023 permanece verificada por TDD/CI; o caminho interno específico ainda não foi observado diretamente em runtime.
 
 Status da 0.5.19: grounding estrutural, normalização de citações, repair localizado, postprocess determinístico e otimização de cota estão implementados e verificados em CI; os fluxos principais foram validados em runtime com fontes oficiais de direitos_saude, vacinacao/idoso e gestacao/saude bucal. Grounding semântico/entailment automático continua fora do escopo validado desta versão.
