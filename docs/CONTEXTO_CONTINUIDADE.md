@@ -1394,3 +1394,22 @@ O reteste real de direitos_saude após a otimização observou:
 A resposta final manteve os oito direitos citados e não precisou de uma segunda geração Groq. Isso confirma a execução sem repair externo, mas o JSON da API não expõe citation_validation_attempts; portanto, não distingue se a geração inicial já estava totalmente válida ou se o postprocess-before-repair foi acionado. A lógica da D023 permanece verificada por TDD/CI; o caminho interno específico ainda não foi observado diretamente em runtime.
 
 Status da 0.5.19: grounding estrutural, normalização de citações, repair localizado, postprocess determinístico e otimização de cota estão implementados e verificados em CI; os fluxos principais foram validados em runtime com fontes oficiais de direitos_saude, vacinacao/idoso e gestacao/saude bucal. Grounding semântico/entailment automático continua fora do escopo validado desta versão.
+
+
+### Auditoria final do PR #13 — proteção contra poda excessiva
+
+A auditoria identificou que o caminho pós-repair ainda aceitava poda com qualquer cobertura, desde que existisse ao menos um claim citado. Um teste novo reproduziu um caso de 25% de cobertura que era reduzido a um único claim e aceito como grounded=true.
+
+Correção final:
+
+- a regra conservadora passa a valer antes e depois do repair;
+- sintaxe de citação válida;
+- exatamente 1 claim uncited;
+- pelo menos 1 claim citado;
+- cobertura >= 0,80;
+- revalidação obrigatória em 100%;
+- fora dessas condições, o fluxo segue para repair ou fallback.
+
+TDD: RED com 1 falha e 109 testes passando; GREEN após correção com Ruff verde e 110 testes aprovados, 4 warnings.
+
+A auditoria também confirmou que o PR #13 não altera data/source, corpus, OCR, chunks, embeddings ou a collection Qdrant. README e metadados do pacote foram atualizados para refletir Groq, múltiplos providers e o fluxo final da 0.5.19.
