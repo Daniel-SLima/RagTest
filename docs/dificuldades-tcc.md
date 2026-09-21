@@ -285,6 +285,19 @@ Correção: `CitationCoverage` passa a preservar os textos dos blocos sem citaç
 
 Aprendizado técnico: um repair baseado em validação programática é mais eficaz quando recebe feedback localizado sobre o artefato que falhou. Um motivo agregado identifica a classe do problema, mas não necessariamente fornece informação suficiente para uma correção determinística.
 
+
+## 24. Repair direcionado continuou repetindo conclusão sem citação no GPT-OSS
+
+Planejado: depois de informar explicitamente ao repair qual bloco estava sem citação, o GPT-OSS deveria adicionar uma fonte válida ao bloco ou removê-lo.
+
+Observado: no reteste real, a primeira tentativa continuou em cobertura 0,889 (8/9) e o repair também terminou em 0,889 (8/9), ambos com `syntax=yes` e `done_reason=stop`. O segundo prompt ficou maior, confirmando que o feedback adicional chegou ao modelo, mas a resposta continuou contendo um claim sem fonte.
+
+Diagnóstico: o problema deixou de ser falta de informação no prompt de repair. O provider, o formato de citação e o bloco exato já estavam corretamente identificados; mesmo assim, o modelo não garantiu a remoção ou citação do claim final. Portanto, depender apenas de mais prompting não oferece um guardrail determinístico.
+
+Correção: adicionar um último estágio determinístico após o único repair. Ele só é elegível quando a sintaxe das citações é válida, existe ao menos um claim corretamente citado e restam claim blocks sem citação. Esses blocos sem suporte são removidos, a resposta é revalidada e somente é aceita se a cobertura final chegar a 100%. Citações inválidas ou ausência completa de citações continuam indo para fallback. O desenvolvimento seguiu TDD: o teste falhou primeiro por ausência da função de poda; após a implementação, a CI passou com Ruff verde e `108 passed, 3 warnings`.
+
+Aprendizado técnico: guardrails de groundedness não devem depender exclusivamente de instruction-following do LLM. Quando a regra de segurança é estrutural e determinística, um pós-processamento limitado e auditável pode ser mais confiável do que retries adicionais de geração.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
