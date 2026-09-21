@@ -728,3 +728,26 @@ Dispositivo físico:
     EXPO_PUBLIC_RAG_API_BASE_URL=http://IP_LAN_DO_COMPUTADOR:8000
 
 O módulo RAG continua independente do cliente; futuramente o Se Cuida Mulher poderá consumir o mesmo contrato da API.
+
+
+### Respostas rich-text e fontes citadas — 0.5.23
+
+Na 0.5.23, o cliente Expo renderiza o campo `answer` como Markdown em vez de texto cru.
+
+Exemplo:
+
+    **Vacina contra Influenza**
+
+passa a ser exibido com negrito real na interface.
+
+Quando a resposta possui `citation_ids`, o cliente cruza esses IDs com `sources` e mostra somente as fontes efetivamente citadas:
+
+    Fontes consultadas
+
+    [1] calendario_nacional_vacinacao_idoso.pdf
+        Página 1
+        <trecho recuperado>
+
+Uma fonte retornada em `sources` mas ausente de `citation_ids` não aparece nessa seção. Ela foi recuperada pelo RAG, mas não deve ser apresentada à usuária como se tivesse sido citada na resposta.
+
+O backend e o contrato de `POST /v1/chat` permanecem inalterados. A mudança é exclusivamente de apresentação no cliente.
