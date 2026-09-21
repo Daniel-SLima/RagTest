@@ -1,5 +1,3 @@
-import { describe, expect, it } from "vitest"
-
 import { buildChatRequest } from "./chat-api"
 
 describe("buildChatRequest", () => {
