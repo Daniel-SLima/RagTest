@@ -148,3 +148,42 @@ async def test_groq_does_not_retry_invalid_api_key(monkeypatch) -> None:
         )
 
     assert request.await_count == 1
+
+
+def test_groq_records_rate_limit_headers_from_successful_response(monkeypatch) -> None:
+    provider = _provider()
+
+    class FakeResponse:
+        headers = {
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "987",
+            "x-ratelimit-remaining-tokens": "6543",
+            "x-ratelimit-reset-requests": "23h59m",
+            "x-ratelimit-reset-tokens": "7.66s",
+        }
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback):
+            return False
+
+        def read(self) -> bytes:
+            return b'{"choices": []}'
+
+    monkeypatch.setattr(
+        "app.llm.groq_provider.urlopen",
+        lambda request, timeout: FakeResponse(),
+    )
+
+    provider._post_json_sync({"model": "openai/gpt-oss-120b"})
+
+    rate_limits = provider.rate_limits
+    assert rate_limits is not None
+    assert rate_limits.limit_requests == 1000
+    assert rate_limits.limit_tokens == 8000
+    assert rate_limits.remaining_requests == 987
+    assert rate_limits.remaining_tokens == 6543
+    assert rate_limits.reset_requests == "23h59m"
+    assert rate_limits.reset_tokens == "7.66s"
