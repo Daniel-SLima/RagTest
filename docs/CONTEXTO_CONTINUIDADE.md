@@ -1217,3 +1217,32 @@ O modelo retornou exatamente essa frase, incluindo `[1]`.
 Conclusão: o GPT-OSS 120B e o `GroqProvider` conseguem obedecer ao formato literal de citação. A Dificuldade #21 fica restrita ao caminho RAG completo; não há evidência para trocar o provider nem para afrouxar o gate.
 
 Próxima ação: capturar uma geração RAG bruta antes da validação, usando somente a categoria oficial `direitos_saude`, para observar o efeito do prompt/contexto. Não reindexar Qdrant.
+
+
+### Causa da falha de citações do GPT-OSS isolada — variante Unicode
+
+A geração RAG bruta do GPT-OSS 120B revelou que o modelo estava citando as fontes, mas emitia:
+
+    【1】
+    【2】
+
+em vez do formato canônico:
+
+    [1]
+    [2]
+
+Isso explica por que o gate reportava `syntax=no`, `coverage=0.000` e 0 blocos citados apesar de a resposta visualmente conter referências válidas.
+
+Correção implementada:
+
+- normalização estrita `【n】 -> [n]`;
+- aplicada imediatamente após a geração inicial e após o repair;
+- `extract_citation_ids` também reconhece a variante por normalização;
+- IDs continuam obrigados a estar dentro do intervalo de fontes;
+- blocos informativos continuam exigindo citação;
+- resposta final usa o formato canônico ASCII;
+- testes reproduzem o caso do GPT-OSS.
+
+CI verificada: Ruff `All checks passed!`; pytest `105 passed, 4 warnings`.
+
+Próxima ação: rebuildar e repetir o chat oficial curto com Groq usando 1024 tokens. A correção ainda precisa de validação real antes de marcar a Dificuldade #21 como resolvida em runtime. Não reindexar Qdrant.
