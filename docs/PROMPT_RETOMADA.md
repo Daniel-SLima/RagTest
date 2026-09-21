@@ -53,6 +53,8 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - falha de rede/outro erro: preserva a mensagem genérica;
 - detalhes técnicos de provider não são exibidos à usuária;
 - suíte frontend local após o segundo recorte: 12/12 e typecheck verde;
+- CI do commit funcional `d207b89`: run `35641533624`, com lint, backend test e frontend-test/typecheck em success;
+- avisos não bloqueantes da CI: actions Node.js 20 forçadas para Node.js 24 e migração futura de `ubuntu-latest` para Ubuntu 26;
 - corpus, embeddings e Qdrant permanecem inalterados em 767 pontos.
 
 ## 0.5.23 — estado verificado

@@ -2404,5 +2404,14 @@ Status:
 
     tratamento específico de HTTP 503 .... implementado e verificado localmente
     documentação .......................... atualizada
-    CI do novo head ....................... aguardando execução
+    CI do commit d207b89 .................. success (run 35641533624)
+    lint .................................. success (38 s)
+    backend test .......................... success (39 s)
+    frontend-test + typecheck ............. success (1 min 35 s)
     PR #19 ................................ draft
+
+Avisos não bloqueantes observados na CI:
+
+- o GitHub passou a forçar actions baseadas em Node.js 20 a executar em Node.js 24;
+- o rótulo `ubuntu-latest` tem migração para Ubuntu 26 anunciada para 2026-10-19;
+- esses avisos não causaram falha e não alteram o escopo funcional deste recorte, mas ficam registrados para manutenção futura do workflow.
