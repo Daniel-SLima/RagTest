@@ -164,3 +164,43 @@ Ainda não faz parte da 0.5.23:
 - deep-link para PDFs locais;
 - histórico persistente;
 - sessões multi-turn.
+
+
+## Grounding e fontes recuperadas — 0.5.24
+
+O primeiro refinamento da 0.5.24 usa o campo `grounded` já existente no contrato para tornar o estado da resposta mais claro.
+
+### Resposta com grounding estrutural válido
+
+A interface exibe:
+
+    Citações verificadas
+    As afirmações informativas estão acompanhadas de referências do corpus.
+
+A seção `Fontes consultadas` continua mostrando somente fontes presentes em `citation_ids`.
+
+Esse texto não deve ser interpretado como garantia clínica nem como prova de entailment semântico; ele representa o gate estrutural de citações implementado no backend.
+
+### Grounding inválido com fontes recuperadas
+
+Quando o backend recuperou trechos, mas a resposta final não passou na validação de citações:
+
+    Citações não verificadas
+    Não foi possível validar as citações desta resposta.
+    Consulte as fontes recuperadas abaixo.
+
+A interface então mostra:
+
+    Fontes recuperadas para consulta
+
+Esses cartões não exibem badge `[citation_id]`, porque não devem ser apresentados como citações efetivamente usadas na resposta.
+
+### Nenhuma fonte relevante
+
+Quando `grounded=false` e `sources=[]`, a interface mostra:
+
+    Sem base documental suficiente
+
+e não cria seção de fontes vazia.
+
+Nenhuma mudança de backend ou de contrato foi necessária.

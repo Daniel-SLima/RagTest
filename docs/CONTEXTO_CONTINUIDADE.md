@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.23
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 COM 0.5.24 EM DESENVOLVIMENTO
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -24,8 +24,12 @@
 - CI final da feature: workflow `CI` run #291, com `lint`, backend `test`, frontend tests e frontend typecheck em `success`
 - Runtime local Expo Web da 0.5.23: **verificado**
 - Corpus, embeddings e Qdrant: **inalterados**
-- Próxima versão planejada: **0.5.24 — UX + grounding/refinamentos**
-- Neste checkpoint, a branch 0.5.24 ainda não foi criada.
+- Versão em desenvolvimento: **0.5.24 — UX + grounding/refinamentos**
+- Branch: `feature/ux-grounding-0.5.24`
+- PR #19: **draft**
+- Head de implementação validado antes deste checkpoint documental: `182219d8a272b92785c83f4fa99b1ee4c978ae95`
+- Primeiro recorte da 0.5.24: UX de grounding e separação explícita entre fontes citadas e fontes apenas recuperadas.
+- Runtime visual local da 0.5.24: **aguardando validação**.
 
 ### O que a 0.5.23 entregou
 
@@ -43,11 +47,13 @@
 
 ### Próximo passo exato
 
-1. sincronizar o checkout local com `main` após confirmar `git status --short` limpo;
-2. manter a 0.5.23 como baseline integrada;
-3. definir o escopo concreto da 0.5.24 antes de alterar código;
-4. criar a branch 0.5.24 somente a partir da `main` atualizada;
-5. seguir TDD e manter corpus/Qdrant inalterados salvo necessidade autorizada.
+1. sincronizar o checkout local com `feature/ux-grounding-0.5.24`;
+2. confirmar versão 0.5.24 e `git status --short` limpo;
+3. executar testes/typecheck locais se necessário;
+4. validar visualmente no Expo Web uma resposta `grounded=true`;
+5. confirmar a presença do estado `Citações verificadas` e preservação dos cartões de fontes citadas;
+6. manter os cenários `grounded=false` cobertos por testes determinísticos;
+7. somente depois decidir os próximos refinamentos da 0.5.24.
 
 ### Regras críticas preservadas
 
@@ -66,7 +72,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.23`  
-**Trabalho em andamento:** próxima versão planejada `0.5.24` (UX + grounding/refinamentos); branch ainda não criada neste checkpoint.
+**Trabalho em andamento:** `0.5.24` em `feature/ux-grounding-0.5.24`; primeiro recorte de UX/grounding implementado e verificado em CI, aguardando validação visual local.
 
 ---
 
@@ -2287,3 +2293,61 @@ Status da 0.5.23:
     CI pós-reconciliação ............... verificada
     compatibilidade com main ........... verificada
     decisão de merge ................... aguardando autorização explícita
+
+
+### Checkpoint 0.5.24 — UX de grounding
+
+Objetivo do primeiro recorte:
+
+Corrigir a diferença entre **fonte citada** e **fonte apenas recuperada** quando o backend retorna `grounded=false`, além de tornar o estado do grounding compreensível na interface sem prometer correção clínica ou entailment semântico.
+
+Comportamentos implementados:
+
+- `grounded=true`:
+  - exibe `Citações verificadas`;
+  - explica que as afirmações informativas estão acompanhadas de referências do corpus;
+  - mantém `Fontes consultadas` apenas com IDs presentes em `citation_ids`.
+
+- `grounded=false` com `sources`:
+  - exibe `Citações não verificadas`;
+  - orienta a consultar as fontes recuperadas;
+  - mostra `Fontes recuperadas para consulta`;
+  - não exibe `[citation_id]` nesses cartões, evitando representá-los como citações efetivamente usadas.
+
+- `grounded=false` sem `sources`:
+  - exibe `Sem base documental suficiente`;
+  - não cria uma seção de fontes vazia.
+
+Motivação concreta observada na 0.5.23:
+
+O fallback de grounding do backend diz `Consulte as fontes retornadas antes de usar a informação`, mas a UI 0.5.23 filtrava todas as fontes por `citation_ids`. Como o fallback usa `citation_ids=[]`, as fontes recuperadas ficavam invisíveis. A 0.5.24 separa semanticamente essas fontes sem tratá-las como citações.
+
+TDD observado:
+
+    RED — commit d4f9a7e2feca6f57ec16afc9b9765249cbf7bf5b
+    CI run #293
+    backend test: success
+    lint: success
+    frontend tests: failure esperado
+    frontend typecheck: skipped após falha dos testes
+
+    GREEN — head 182219d8a272b92785c83f4fa99b1ee4c978ae95
+    CI run #297
+    backend test: success
+    lint: success
+    frontend tests: success
+    frontend typecheck: success
+
+Arquitetura:
+
+- contrato `POST /v1/chat`: inalterado;
+- backend de grounding: inalterado;
+- corpus/embeddings/Qdrant: inalterados;
+- mudança concentrada na interpretação/apresentação do contrato no cliente Expo;
+- versões backend/frontend alinhadas em 0.5.24.
+
+Status:
+
+    implementação primeiro recorte .......... verificada em CI
+    runtime visual Expo Web ................. aguardando validação
+    PR #19 .................................. draft
