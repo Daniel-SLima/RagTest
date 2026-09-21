@@ -38,8 +38,11 @@ def test_citation_repair_prompt_reuses_previous_answer_and_failure_reason() -> N
         [hit],
         previous_answer="## Direitos\nAtendimento adequado.",
         validation_reason="one or more informative answer blocks have no valid citation",
+        uncited_blocks=("Atendimento adequado.",),
     )
 
     assert "## Direitos\nAtendimento adequado." in prompt
     assert "one or more informative answer blocks have no valid citation" in prompt
+    assert "BLOCOS SEM CITAÇÃO VÁLIDA" in prompt
+    assert "Atendimento adequado." in prompt
     assert "Revise a resposta anterior" in prompt
