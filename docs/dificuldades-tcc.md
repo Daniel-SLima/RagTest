@@ -359,7 +359,7 @@ Observado: `git switch feature/frontend-fastapi-0.5.22` e `git pull --ff-only or
 
 Diagnóstico: a validação executou a versão 0.5.21, não a 0.5.22. Na execução anterior do Expo, o próprio CLI havia informado que atualizou a propriedade `include` do `tsconfig.json`, deixando uma modificação local que bloqueou a troca de branch. O comportamento do botão é, portanto, compatível com a 0.5.21, em que a integração da tela com o backend ainda não existia.
 
-Correção: antes de repetir o runtime, inspecionar e descartar apenas a alteração automática de `frontend/tsconfig.json`, confirmar a branch e a versão 0.5.22 e só então rebuildar o backend e iniciar o Expo.
+Correção: antes de repetir o runtime, a alteração automática de `frontend/tsconfig.json` foi descartada, a branch/versão corretas foram confirmadas e a validação 0.5.22 passou. Na 0.5.23, o `tsconfig.json` versionado também foi alinhado ao formato canônico que o Expo SDK 57 vinha gerando automaticamente, mantendo os tipos `jest` e `node`, para evitar nova sujeira local ao iniciar o app.
 
 Aprendizado técnico: uma validação ponta a ponta precisa confirmar branch e versão efetivamente executadas antes de interpretar o comportamento da aplicação. Ferramentas como Expo podem ajustar arquivos de configuração localmente e impedir uma troca de branch sem que o código remoto tenha qualquer defeito.
 
