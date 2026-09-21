@@ -1117,7 +1117,7 @@ A investigação encontrou dois pontos no contrato compartilhado do gate:
 
 Registrado como Dificuldade TCC #19.
 
-Correção implementada, aguardando validação:
+Correção implementada e verificada em CI (`All checks passed!`; `94 passed, 4 warnings`), aguardando validação real:
 
 - headings Markdown iniciados por `#` não contam como afirmação informativa;
 - parágrafos e itens continuam exigindo citações válidas;
