@@ -1184,4 +1184,4 @@ Correção implementada:
 - teste de regressão exige `User-Agent` explícito;
 - nenhuma alteração em corpus, retrieval, Qdrant, prompt ou modelo.
 
-Próxima ação: aguardar CI da correção, rebuildar a imagem e repetir apenas o teste curto Groq com 512 tokens. Se ele chegar ao modelo, então executar a pergunta completa. Não reindexar Qdrant.
+CI da correção verificada: Ruff verde; pytest `102 passed, 4 warnings`. Próxima ação: rebuildar a imagem e repetir apenas o teste curto Groq com 512 tokens. Se ele chegar ao modelo, então executar a pergunta completa. Não reindexar Qdrant.
