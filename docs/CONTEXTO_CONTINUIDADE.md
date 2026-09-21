@@ -1077,3 +1077,26 @@ Instrumentação implementada na mesma branch, sem alterar o comportamento funci
 - CI verificada: Ruff `All checks passed!`; pytest `92 passed, 4 warnings`.
 
 Próxima ação: atualizar/rebuildar o ambiente local e repetir a mesma pergunta com override temporário de 512 tokens para observar as novas métricas. Não reindexar Qdrant e não fazer merge do PR #13.
+
+
+### Reteste do Gemini após período de 503
+
+O mesmo chat oficial foi executado com override temporário `LLM_PROVIDER=gemini`, sem alterar o `.env`.
+
+Resultado observado:
+
+- o Gemini recebeu um erro transitório 503 na primeira tentativa;
+- o retry de aplicação entrou em ação após 1 segundo;
+- a chamada subsequente conseguiu prosseguir;
+- o retrieval retornou as mesmas cinco páginas da Carta oficial;
+- o chat terminou com `grounded=false`, `citation_retry_count=1` e sem `citation_ids`.
+
+Conclusão atual:
+
+- o Gemini está novamente acessível, mas ainda apresenta oscilação transitória;
+- o retry da Dificuldade #15 funcionou no cenário real;
+- como Gemini e Qwen3 8B chegaram ao mesmo fallback estrutural, a investigação do grounding passa a priorizar o contrato compartilhado de prompt/gate, não um provider específico;
+- registrado como Dificuldade TCC #18;
+- Gemini pode voltar a ser o provider principal de desenvolvimento, com Ollama como contingência manual; fallback automático continua fora do escopo desta etapa para preservar rastreabilidade.
+
+Próxima ação: atualizar/rebuildar a imagem com a instrumentação já implementada e repetir o mesmo teste com Gemini para capturar `Citation validation attempts`. Não reindexar Qdrant e não fazer merge do PR #13.
