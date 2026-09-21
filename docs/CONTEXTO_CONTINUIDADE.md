@@ -1472,3 +1472,22 @@ Rate limits observados:
     tokens_tpm: 6069/8000 reset=14.482s
 
 A captura de headers da D024 está, portanto, verificada em runtime. Os resets são preservados exatamente como retornados pela Groq; não são reinterpretados localmente. TPD diário continua não disponível nesses headers.
+
+
+### Planejamento da 0.5.21 — contingência explícita entre providers
+
+Branch: `feature/provider-contingency-0.5.21`
+
+Objetivo da versão: projetar uma política de contingência entre Gemini, Groq e Ollama sem fallback silencioso e sem misturar modelos nas avaliações do TCC.
+
+Princípios definidos antes da implementação:
+
+- o provider primário continua explicitamente configurado;
+- fallback, se habilitado, será opt-in;
+- a resposta precisa registrar provider e modelo realmente usados;
+- indisponibilidade/cota deve permanecer distinguível de falha de grounding;
+- avaliações experimentais devem poder desabilitar completamente fallback;
+- nenhuma alteração em corpus, retrieval, embeddings ou Qdrant nesta fase;
+- toda mudança funcional seguirá TDD RED -> GREEN -> refactor.
+
+Esta versão começa apenas com planejamento e desenho do contrato; nenhum fallback foi ativado neste commit.
