@@ -157,9 +157,38 @@ class PersistentlyUncitedConclusionFakeLLM:
 
     async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
         self.calls += 1
+        if self.calls == 1:
+            return (
+                "Primeira resposta com citação inexistente [9]."
+            )
         return (
-            "Direito informado pela fonte [1].\n"
+            "Item um sustentado pela fonte [1].\n"
+            "Item dois sustentado pela fonte [1].\n"
+            "Item três sustentado pela fonte [1].\n"
+            "Item quatro sustentado pela fonte [1].\n"
+            "Item cinco sustentado pela fonte [1].\n"
+            "Item seis sustentado pela fonte [1].\n"
+            "Item sete sustentado pela fonte [1].\n"
+            "Item oito sustentado pela fonte [1].\n"
             "Esta conclusão adicional continua sem referência."
+        )
+
+
+class LowCoverageAfterRepairFakeLLM:
+    model_name = "low-coverage-after-repair-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        if self.calls == 1:
+            return "Resposta inicial com citação inexistente [9]."
+        return (
+            "Único item sustentado pela fonte [1].\n"
+            "Afirmação dois continua sem referência.\n"
+            "Afirmação três continua sem referência.\n"
+            "Afirmação quatro continua sem referência."
         )
 
 
@@ -292,3 +321,26 @@ async def test_answer_with_rag_prunes_high_coverage_single_uncited_before_repair
     assert result.citation_validation_attempts[1].stage == "postprocess"
     assert result.citation_validation_attempts[1].valid is True
     assert result.citation_validation_attempts[1].coverage == 1.0
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_does_not_prune_low_coverage_after_repair() -> None:
+    llm = LowCoverageAfterRepairFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 2
+    assert result.grounded is False
+    assert result.citation_ids == []
+    assert result.citation_retry_count == 1
+    assert len(result.citation_validation_attempts) == 2
+    assert result.citation_validation_attempts[0].stage == "initial"
+    assert result.citation_validation_attempts[1].stage == "repair"
+    assert result.citation_validation_attempts[1].coverage == pytest.approx(0.25)
+    assert "Não foi possível gerar uma resposta" in result.answer
