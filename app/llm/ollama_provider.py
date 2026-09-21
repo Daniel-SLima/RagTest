@@ -13,6 +13,23 @@ _TRANSIENT_HTTP_STATUS_CODES = {429, 500, 502, 503, 504}
 
 
 @dataclass(frozen=True, slots=True)
+class OllamaGenerationMetrics:
+    total_seconds: float | None
+    load_seconds: float | None
+    prompt_tokens: int | None
+    prompt_seconds: float | None
+    output_tokens: int | None
+    output_seconds: float | None
+    done_reason: str | None
+
+    @property
+    def output_tokens_per_second(self) -> float | None:
+        if not self.output_tokens or not self.output_seconds or self.output_seconds <= 0:
+            return None
+        return self.output_tokens / self.output_seconds
+
+
+@dataclass(frozen=True, slots=True)
 class _OllamaRequestError(Exception):
     message: str
     status_code: int | None = None
@@ -44,10 +61,15 @@ class OllamaProvider:
         self._request_timeout_seconds = request_timeout_seconds
         self._service_retry_attempts = service_retry_attempts
         self._service_retry_base_delay_seconds = service_retry_base_delay_seconds
+        self._generation_metrics: list[OllamaGenerationMetrics] = []
 
     @property
     def model_name(self) -> str:
         return self._model_name
+
+    @property
+    def generation_metrics(self) -> tuple[OllamaGenerationMetrics, ...]:
+        return tuple(self._generation_metrics)
 
     def _payload(self, *, system_prompt: str, user_prompt: str) -> dict[str, object]:
         return {
@@ -137,6 +159,30 @@ class OllamaProvider:
 
         raise AssertionError("unreachable Ollama retry state")
 
+    @staticmethod
+    def _duration_seconds(body: dict[str, object], key: str) -> float | None:
+        value = body.get(key)
+        if not isinstance(value, (int, float)):
+            return None
+        return value / 1_000_000_000
+
+    def _record_generation_metrics(self, body: dict[str, object]) -> None:
+        prompt_tokens = body.get("prompt_eval_count")
+        output_tokens = body.get("eval_count")
+        done_reason = body.get("done_reason")
+
+        self._generation_metrics.append(
+            OllamaGenerationMetrics(
+                total_seconds=self._duration_seconds(body, "total_duration"),
+                load_seconds=self._duration_seconds(body, "load_duration"),
+                prompt_tokens=prompt_tokens if isinstance(prompt_tokens, int) else None,
+                prompt_seconds=self._duration_seconds(body, "prompt_eval_duration"),
+                output_tokens=output_tokens if isinstance(output_tokens, int) else None,
+                output_seconds=self._duration_seconds(body, "eval_duration"),
+                done_reason=done_reason if isinstance(done_reason, str) else None,
+            )
+        )
+
     async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
         body = await self._generate_with_service_retry(
             self._payload(
@@ -148,6 +194,8 @@ class OllamaProvider:
         provider_error = body.get("error")
         if provider_error:
             raise RuntimeError(f"Ollama retornou erro: {provider_error}")
+
+        self._record_generation_metrics(body)
 
         message = body.get("message")
         if not isinstance(message, dict):
