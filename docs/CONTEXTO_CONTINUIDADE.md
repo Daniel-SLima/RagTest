@@ -1381,3 +1381,16 @@ Foi implementado postprocess antes do repair apenas quando a resposta inicial te
 TDD confirmado: o novo teste falhou primeiro com duas chamadas ao LLM. Após a implementação, CI verde com 109 testes aprovados e 4 warnings.
 
 Próxima ação: rebuildar e repetir um único teste real com Groq. Esperado no padrão conhecido: grounded=true e citation_retry_count=0. Não reindexar Qdrant.
+
+
+### D023 — validação real concluída
+
+O reteste real de direitos_saude após a otimização confirmou:
+
+    grounded=true
+    citation_ids=[1,2]
+    citation_retry_count=0
+
+A resposta final manteve os oito direitos citados e não precisou de uma segunda geração Groq. Portanto, o postprocess-before-repair está verificado em runtime para o padrão de alta cobertura com um único claim sem citação. Casos fora da condição conservadora continuam usando o repair/fallback normal.
+
+Status da 0.5.19: grounding estrutural, normalização de citações, repair localizado, postprocess determinístico e otimização de cota estão implementados e verificados em CI; os fluxos principais foram validados em runtime com fontes oficiais de direitos_saude, vacinacao/idoso e gestacao/saude bucal. Grounding semântico/entailment automático continua fora do escopo validado desta versão.
