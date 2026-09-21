@@ -24,7 +24,7 @@ Use o GitHub conectado e leia, nesta ordem:
 
 No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
-**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.23**
+**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 COM 0.5.24 EM DESENVOLVIMENTO**
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
@@ -37,9 +37,23 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - CI final da feature: run #291, com lint, backend test, frontend tests e frontend typecheck em success.
 - Runtime local Expo Web da 0.5.23 foi validado.
 - Corpus, embeddings e Qdrant permaneceram inalterados.
-- Próxima versão planejada: **0.5.24 — UX + grounding/refinamentos**.
-- Neste checkpoint ainda não existe branch 0.5.24 criada.
-- Antes de começar a 0.5.24, confirme o head atual da `main` e o estado local do usuário.
+- Versão em desenvolvimento: **0.5.24 — UX + grounding/refinamentos**.
+- Branch: `feature/ux-grounding-0.5.24`.
+- PR #19: aberto, draft e sem autorização de merge.
+- Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
+- Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
+- Antes de continuar, confirme o head atual da feature, o estado da CI e o checkout local.
+
+## 0.5.24 — estado atual
+
+- `grounded=true`: mostra `Citações verificadas` e somente fontes citadas;
+- `grounded=false` com fontes: mostra `Citações não verificadas` e fontes recuperadas sem badge de citação;
+- `grounded=false` sem fontes: mostra `Sem base documental suficiente` e nenhuma seção vazia;
+- HTTP 503: mostra indisponibilidade temporária em linguagem amigável;
+- falha de rede/outro erro: preserva a mensagem genérica;
+- detalhes técnicos de provider não são exibidos à usuária;
+- suíte frontend local após o segundo recorte: 12/12 e typecheck verde;
+- corpus, embeddings e Qdrant permanecem inalterados em 767 pontos.
 
 ## 0.5.23 — estado verificado
 
@@ -184,7 +198,7 @@ Antes de trocar branch após executar Expo:
 0.5.21  Expo + contrato REST ............... merged
 0.5.22  Expo -> FastAPI -> RAG ............. merged
 0.5.23  rich-text + fontes + citações ...... merged
-0.5.24  UX + grounding/refinamentos ........ PRÓXIMA
+0.5.24  UX + grounding/refinamentos ........ EM DESENVOLVIMENTO
 0.6.x   sessões ............................. futura
 0.7.x   auditoria/LGPD/segurança ........... futura
 0.8.x   agendamento/lembretes .............. futura

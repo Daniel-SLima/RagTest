@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native"
 
 import App from "../../App"
+import { ChatApiError } from "../lib/chat-api"
 
 describe("RagTest demo app", () => {
   it("renders the initial chat surface", async () => {
@@ -73,6 +74,33 @@ describe("RagTest demo app", () => {
           "Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.",
         ),
       ).toBeTruthy()
+    })
+  })
+
+  it("explains temporary provider unavailability when the API returns 503", async () => {
+    const sendChat = jest.fn().mockRejectedValue(
+      new ChatApiError(503, "Provider quota detail that must not reach the user."),
+    )
+
+    await render(
+      <App apiBaseUrl="http://localhost:8000" sendChat={sendChat} />,
+    )
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText("Digite sua pergunta..."),
+      "Quais vacinas?",
+    )
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar" }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "O serviço de geração está temporariamente indisponível. Tente novamente em alguns instantes.",
+        ),
+      ).toBeTruthy()
+      expect(
+        screen.queryByText("Provider quota detail that must not reach the user."),
+      ).toBeNull()
     })
   })
 

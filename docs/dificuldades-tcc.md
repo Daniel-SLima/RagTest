@@ -346,9 +346,9 @@ Observado: no primeiro GREEN da interface, o teste ainda mostrava o campo vazio 
 
 Diagnóstico: a React Native Testing Library 14 usa eventos assíncronos com React 19, portanto `fireEvent.changeText` e `fireEvent.press` precisam ser aguardados. Separadamente, o projeto Expo não incluía os tipos Node necessários para tipar `process.env` durante `tsc --noEmit`.
 
-Correção: aguardar os eventos do RNTL 14 nos testes; manter a configuração oficial `EXPO_PUBLIC_*`; adicionar `@types/node` e incluir `node` nos tipos do TypeScript. A lógica funcional da interface não precisou ser removida nem contornada.
+Correção: aguardar os eventos do RNTL 14 nos testes; manter a configuração oficial `EXPO_PUBLIC_*`; adicionar `@types/node` e incluir `node` nos tipos do TypeScript. A lógica funcional da interface não precisou ser removida nem contornada. Na 0.5.24, o mesmo gate de interação foi ampliado para verificar que `ChatApiError(503)` produz uma mensagem específica de indisponibilidade temporária, sem renderizar o `detail` técnico do provider; erros genéricos continuam cobertos separadamente.
 
-Aprendizado técnico: em stacks modernas, testes de interação e validação estática exercitam contratos diferentes. A CI do frontend deve manter os dois gates separados: Jest/RNTL para comportamento e TypeScript para integração/configuração de ambiente.
+Aprendizado técnico: em stacks modernas, testes de interação e validação estática exercitam contratos diferentes. A CI do frontend deve manter os dois gates separados: Jest/RNTL para comportamento e TypeScript para integração/configuração de ambiente. Preservar um erro tipado na camada REST permite que a interface diferencie falhas transitórias sem acoplar a experiência a mensagens internas do backend.
 
 
 ## 29. Alteração local automática do Expo impediu a troca para a branch 0.5.22

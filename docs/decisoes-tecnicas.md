@@ -264,3 +264,11 @@ Impacto:
 **Mudança:** a 0.5.24 passa a traduzir o campo `grounded` em três estados de interface: citações verificadas; citações não verificadas com fontes recuperadas disponíveis; e base documental insuficiente quando nenhuma fonte foi recuperada. Quando `grounded=false` mas existem `sources`, essas fontes aparecem em uma seção separada chamada `Fontes recuperadas para consulta`, sem badge de `citation_id`.  
 **Motivo:** `grounded=true` no RagTest representa cobertura estrutural válida das citações, e não prova automática de entailment semântico ou correção clínica. Além disso, o fallback do backend orienta a consultar fontes recuperadas, mas a UI 0.5.23 escondia todas quando `citation_ids=[]`.  
 **Impacto:** a experiência deixa de sugerir que uma fonte recuperada foi necessariamente citada, preserva a distinção estabelecida na D028 e torna o fallback de grounding acionável para a usuária. O contrato REST, o pipeline de grounding e o corpus permanecem inalterados.
+
+
+## D030 — Distinguir indisponibilidade temporária sem expor detalhes do provider
+
+**Data:** 2026-09-21
+**Mudança:** o cliente Expo passa a tratar `ChatApiError` com HTTP 503 como indisponibilidade temporária do serviço de geração, mantendo a mensagem genérica para falhas de rede e demais erros não classificados.
+**Motivo:** o contrato do cliente já preservava o status HTTP, mas a interface descartava essa informação e apresentava todo erro como problema de conexão. Exibir o `detail` bruto também poderia revelar mensagens internas de provider, cota ou infraestrutura.
+**Impacto:** a usuária recebe orientação mais precisa e segura sem mudança no backend ou no contrato REST. Detalhes técnicos continuam disponíveis para diagnóstico, mas não são renderizados na experiência principal.

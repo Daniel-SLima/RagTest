@@ -224,3 +224,13 @@ A interface real exibiu:
 - `Página 34` e excerpt da fonte.
 
 Os estados `grounded=false` continuam validados por testes determinísticos; não foi provocada uma falha externa da LLM apenas para observá-los visualmente.
+
+## Mensagem específica para indisponibilidade temporária — 0.5.24
+
+O cliente agora distingue uma indisponibilidade temporária da API de uma falha genérica de rede:
+
+- HTTP 503 representado por `ChatApiError` mostra `O serviço de geração está temporariamente indisponível. Tente novamente em alguns instantes.`;
+- erros de rede e erros inesperados preservam `Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.`;
+- o `detail` técnico retornado pelo backend continua disponível no objeto de erro, mas não é exibido diretamente à usuária.
+
+Essa apresentação evita expor mensagens internas de provider ou cota e orienta corretamente que a falha pode ser transitória. O contrato `POST /v1/chat` e o backend não foram alterados.

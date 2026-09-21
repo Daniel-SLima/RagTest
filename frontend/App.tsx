@@ -11,6 +11,7 @@ import {
 
 import { AssistantAnswer } from "./src/components/assistant-answer"
 import {
+  ChatApiError,
   type ChatApiResponse,
   sendChatMessage,
 } from "./src/lib/chat-api"
@@ -55,9 +56,11 @@ export default function App({
         { baseUrl: apiBaseUrl },
       )
       setResponse(result)
-    } catch {
+    } catch (requestError) {
       setError(
-        "Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.",
+        requestError instanceof ChatApiError && requestError.status === 503
+          ? "O serviço de geração está temporariamente indisponível. Tente novamente em alguns instantes."
+          : "Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.",
       )
     } finally {
       setIsLoading(false)

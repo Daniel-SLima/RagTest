@@ -49,7 +49,7 @@
 
 1. preservar o primeiro recorte da 0.5.24 já validado em CI e runtime;
 2. manter os cenários `grounded=false` cobertos por testes determinísticos, sem provocar falha externa artificial;
-3. escolher o próximo refinamento pequeno da 0.5.24;
+3. concluir a validação automatizada do segundo recorte da 0.5.24;
 4. seguir TDD RED -> GREEN para qualquer novo comportamento;
 5. manter o PR #19 draft e não mesclar sem autorização explícita.
 
@@ -2376,3 +2376,33 @@ Ambiente e dados:
 - nenhum conteúdo `chatscm/` foi enviado ao provider externo.
 
 Próximo passo: definir e aprovar um refinamento pequeno e isolado para continuar a 0.5.24, mantendo TDD e o PR #19 em draft.
+
+
+### Segundo recorte da 0.5.24 — indisponibilidade temporária na interface
+
+Problema concreto:
+
+O cliente REST já preservava o status HTTP em `ChatApiError`, mas `App.tsx` tratava HTTP 503, falhas de rede e demais erros com a mesma mensagem genérica. Assim, uma indisponibilidade temporária do provider não era distinguida de um problema de conexão local.
+
+Comportamento implementado:
+
+- `ChatApiError` com `status=503` mostra `O serviço de geração está temporariamente indisponível. Tente novamente em alguns instantes.`;
+- detalhes técnicos retornados pelo provider não são exibidos à usuária;
+- falhas de rede e erros não classificados continuam usando a mensagem genérica anterior;
+- backend, contrato REST, corpus, retrieval, embeddings e Qdrant permanecem inalterados.
+
+TDD local observado:
+
+    RED: teste direcionado com 1 falha esperada e 8 testes aprovados
+    causa observada: App.tsx ainda exibia a mensagem genérica para ChatApiError(503)
+
+    GREEN: teste direcionado 9/9
+    suíte frontend completa 12/12
+    TypeScript typecheck: success
+
+Status:
+
+    tratamento específico de HTTP 503 .... implementado e verificado localmente
+    documentação .......................... atualizada
+    CI do novo head ....................... aguardando execução
+    PR #19 ................................ draft
