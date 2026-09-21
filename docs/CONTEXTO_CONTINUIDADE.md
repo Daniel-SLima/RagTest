@@ -1185,3 +1185,22 @@ Correção implementada:
 - nenhuma alteração em corpus, retrieval, Qdrant, prompt ou modelo.
 
 CI da correção verificada: Ruff verde; pytest `102 passed, 4 warnings`. Próxima ação: rebuildar a imagem e repetir apenas o teste curto Groq com 512 tokens. Se ele chegar ao modelo, então executar a pergunta completa. Não reindexar Qdrant.
+
+
+### Groq chegou ao GPT-OSS 120B — transporte validado, citações pendentes
+
+Após a correção do User-Agent, o teste curto com `LLM_PROVIDER=groq`, `openai/gpt-oss-120b`, duas fontes oficiais e 512 tokens chegou ao modelo com sucesso.
+
+Resultado:
+
+    geração 1: 1,12 s | 512 tokens | ~478,05 tok/s | done_reason=length
+    geração 2: 0,94 s | 409 tokens | ~478,22 tok/s | done_reason=stop
+    citation validation 1: syntax=no | coverage=0.000 | 0/9
+    citation validation 2: syntax=no | coverage=0.000 | 0/9
+    grounded=false
+
+A Dificuldade #20 fica validada como corrigida em runtime: o 403/1010 desapareceu.
+
+Nova Dificuldade #21: o GPT-OSS 120B não produziu nenhuma citação literal `[n]` em nenhuma das duas tentativas. Como o repair terminou por `stop`, a falha não pode ser atribuída somente ao teto de 512 tokens.
+
+Próxima ação: executar uma chamada direta mínima ao `GroqProvider`, sem retrieval, solicitando explicitamente uma frase com `[1]`. Não alterar prompt/gate antes desse isolamento. Não reindexar Qdrant.
