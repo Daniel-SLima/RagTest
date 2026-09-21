@@ -80,4 +80,26 @@ describe("sendChatMessage", () => {
     )
     expect(result).toEqual(responseBody)
   })
+
+  it("raises a typed error when FastAPI returns a non-success status", async () => {
+    const fetcher = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: jest.fn().mockResolvedValue({
+        detail: "Groq permaneceu indisponível.",
+      }),
+    })
+
+    await expect(
+      sendChatMessage(
+        { message: "Quais vacinas?" },
+        { baseUrl: "http://localhost:8000", fetcher },
+      ),
+    ).rejects.toMatchObject({
+      name: "ChatApiError",
+      status: 503,
+      message: "Groq permaneceu indisponível.",
+    })
+  })
+
 })
