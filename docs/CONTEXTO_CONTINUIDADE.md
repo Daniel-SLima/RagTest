@@ -1646,7 +1646,7 @@ Não existe atualmente watcher/daemon que monitore automaticamente a pasta e fa�
 
 ### Checkpoint da 0.5.21 — scaffold Expo e contrato REST
 
-Estado aproximado da versão: 80% concluída.
+Estado aproximado da versão: 90% concluída.
 
 Implementado:
 
@@ -1679,19 +1679,25 @@ TDD observado:
     backend: 113 passed, 4 warnings
     Ruff: All checks passed!
 
+Verificado:
+
+- CI final após alinhamento da versão 0.5.21;
+- frontend: 2 suites / 3 testes aprovados;
+- TypeScript typecheck: success;
+- backend: 113 passed, 4 warnings;
+- Ruff: All checks passed!.
+
 Aguardando validação:
 
-- CI após alinhamento final da versão 0.5.21;
 - abertura real do app Expo no ambiente local do usuário.
 
 Próximo passo exato:
 
-1. confirmar CI final;
-2. usuário atualizar a branch local;
-3. instalar dependências do frontend;
-4. iniciar Expo;
-5. confirmar que a tela inicial abre no navegador/emulador/dispositivo;
-6. após essa evidência, fechar 0.5.21 e iniciar 0.5.22 com integração real da tela ao FastAPI.
+1. usuário atualizar a branch local;
+2. instalar dependências do frontend;
+3. iniciar Expo;
+4. confirmar que a tela inicial abre no navegador/emulador/dispositivo;
+5. após essa evidência, fechar 0.5.21 e iniciar 0.5.22 com integração real da tela ao FastAPI.
 
 Observação de dependências:
 
