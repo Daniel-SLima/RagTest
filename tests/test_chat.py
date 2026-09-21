@@ -144,6 +144,12 @@ async def test_answer_with_rag_retries_incomplete_citation_coverage_once() -> No
     assert result.grounded is True
     assert result.citation_ids == [1]
     assert result.citation_retry_count == 1
+    assert len(result.citation_validation_attempts) == 2
+    first_attempt, second_attempt = result.citation_validation_attempts
+    assert first_attempt.valid is False
+    assert first_attempt.coverage == 0.5
+    assert second_attempt.valid is True
+    assert second_attempt.coverage == 1.0
     assert "segunda afirmação" in result.answer.lower()
 
 
@@ -163,4 +169,10 @@ async def test_answer_with_rag_falls_back_when_coverage_still_fails() -> None:
     assert result.grounded is False
     assert result.citation_ids == []
     assert result.citation_retry_count == 1
+    assert len(result.citation_validation_attempts) == 2
+    for attempt in result.citation_validation_attempts:
+        assert attempt.valid is False
+        assert attempt.syntax_valid is True
+        assert attempt.coverage == 0.5
+        assert attempt.reason == "one or more informative answer blocks have no valid citation"
     assert "Não foi possível gerar uma resposta" in result.answer
