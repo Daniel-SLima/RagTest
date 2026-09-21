@@ -1162,3 +1162,26 @@ Características implementadas:
 D021 registra a decisão. A validação real deve usar somente a categoria oficial `direitos_saude`; CHATSCM continua proibido em providers externos antes de revisão manual de privacidade.
 
 CI da integração Groq verificada: Ruff `All checks passed!`; pytest `101 passed, 4 warnings`. Próximo passo: adicionar a chave Groq somente no `.env` local, rebuildar e testar primeiro o `runtime-info` e depois o chat RAG oficial. Não reindexar Qdrant.
+
+
+### Primeira validação real da Groq — Cloudflare 1010
+
+O `runtime-info` confirmou corretamente:
+
+    llm_provider: groq
+    llm_model: openai/gpt-oss-120b
+    groq_base_url: https://api.groq.com/openai/v1
+    groq_reasoning_effort: low
+
+As duas primeiras chamadas reais ao chat falharam antes da geração com `HTTP 403` e `error code: 1010`. O traceback mostrou o bloqueio em `urllib.request.urlopen`.
+
+Diagnóstico: Cloudflare 1010 indica bloqueio por assinatura do cliente HTTP. O provider usava o `User-Agent` padrão do `urllib`, portanto o erro não prova chave inválida e não chegou ao modelo. Registrado como Dificuldade TCC #20.
+
+Correção implementada:
+
+- `GroqProvider` envia `Accept: application/json`;
+- envia `User-Agent: Mozilla/5.0 (compatible; RagTest/0.5.19)`;
+- teste de regressão exige `User-Agent` explícito;
+- nenhuma alteração em corpus, retrieval, Qdrant, prompt ou modelo.
+
+Próxima ação: aguardar CI da correção, rebuildar a imagem e repetir apenas o teste curto Groq com 512 tokens. Se ele chegar ao modelo, então executar a pergunta completa. Não reindexar Qdrant.
