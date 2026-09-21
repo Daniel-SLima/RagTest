@@ -206,9 +206,9 @@ Impacto:
 ## D022 — Pós-processamento determinístico remove claims sem citação após o repair
 
 **Data:** 2026-09-20  
-**Mudança:** após a geração inicial e um único repair, se a resposta ainda tiver sintaxe de citação válida, pelo menos um claim citado e apenas cobertura incompleta, o RagTest remove deterministicamente somente os claim blocks sem citação válida, revalida a resposta e só a aceita se a cobertura resultante for 100%.  
+**Mudança:** após a geração inicial e um único repair, o RagTest pode remover deterministicamente o claim sem citação apenas quando a resposta reparada mantém sintaxe válida, exatamente um claim uncited, pelo menos um claim citado e cobertura de pelo menos 80%. A resposta é revalidada e só é aceita se a cobertura resultante for 100%.  
 **Motivo:** no teste real com Groq/GPT-OSS 120B, o modelo manteve repetidamente uma conclusão final sem citação mesmo quando o repair recebeu o bloco exato que precisava ser corrigido. Continuar adicionando retries ou relaxar o gate tornaria o comportamento menos previsível.  
-**Impacto:** o sistema deixa de depender exclusivamente da obediência do LLM no último estágio. Citações fora do intervalo, respostas sem nenhuma citação válida ou respostas que continuem inválidas após a poda ainda caem no fallback seguro. O CLI passa a distinguir `stage=initial`, `stage=repair` e `stage=postprocess`, enquanto `citation_retry_count` permanece representando apenas chamadas adicionais ao LLM. Validado em runtime com Groq/GPT-OSS 120B: `initial 8/9`, `repair 8/9`, `postprocess 8/8`, cobertura final 1.000 e `grounded=true`.
+**Impacto:** o sistema deixa de depender exclusivamente da obediência do LLM no último estágio sem permitir poda ampla de respostas pouco sustentadas. Citações fora do intervalo, baixa cobertura, múltiplos claims sem citação, respostas sem nenhuma citação válida ou respostas que continuem inválidas após a poda caem no fallback seguro. O CLI passa a distinguir `stage=initial`, `stage=repair` e `stage=postprocess`, enquanto `citation_retry_count` permanece representando apenas chamadas adicionais ao LLM. Validado em runtime com Groq/GPT-OSS 120B: `initial 8/9`, `repair 8/9`, `postprocess 8/8`, cobertura final 1.000 e `grounded=true`.
 
 
 ## D023 — Pós-processamento antecipado para alta cobertura evita repair externo desnecessário
