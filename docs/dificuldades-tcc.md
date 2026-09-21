@@ -324,6 +324,19 @@ Correção: aplicar a mesma condição conservadora nos dois estágios. Pós-pro
 
 Aprendizado técnico: groundedness estrutural não deve ser obtido à custa de apagar grande parte da resposta. Guardrails de poda precisam limitar também a perda de completude, não apenas validar a saída restante.
 
+
+## 27. Provider Groq descartava informações de cota retornadas pela API
+
+Planejado: usar Groq como provider rápido de desenvolvimento sem perder visibilidade sobre a proximidade dos limites da conta.
+
+Observado: o provider registrava tokens e latência do corpo JSON, mas descartava os headers HTTP de rate limit. Assim, o RagTest não conseguia mostrar localmente quantas requisições RPD ou tokens TPM ainda estavam disponíveis, nem os tempos de reset. Em um 429, essas informações também eram perdidas.
+
+Diagnóstico: a camada HTTP com urllib lia somente o corpo da resposta e o Retry-After usado no backoff. Os demais headers de quota nunca eram persistidos no provider.
+
+Correção: adicionar um snapshot tipado de rate limits ao GroqProvider, atualizado em respostas normais e também em HTTPError quando os headers estiverem presentes. O ragtest-chat passa a mostrar requests_rpd e tokens_tpm com limites, valores restantes e resets. O desenvolvimento seguiu TDD: o primeiro RED falhou pela ausência de rate_limits; o segundo RED comprovou que o snapshot ficava vazio em 429.
+
+Aprendizado técnico: métricas de uso e rate limit fazem parte da observabilidade operacional do provider. Capturá-las antes de implementar fallback automático mantém rastreabilidade e evita esconder a causa real de indisponibilidades ou mudanças de modelo.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
