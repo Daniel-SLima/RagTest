@@ -174,7 +174,7 @@ Aprendizado técnico: testes de contratos que incluem metadados evolutivos devem
 
 Planejado: validar o novo gate de cobertura de citações em uma pergunta real restrita à categoria oficial `direitos_saude`.
 
-Observado: os self-checks determinísticos de grounding e cobertura passaram, mas a chamada real ao Gemini terminou antes da validação do gate com `503 UNAVAILABLE` e mensagem de alta demanda temporária do modelo.
+Observado: os self-checks determinísticos de grounding e cobertura passaram, mas a chamada real ao Gemini inicialmente terminou antes da validação do gate com `503 UNAVAILABLE`. Em retestes posteriores o Gemini voltou a responder após retry, porém novas execuções retornaram `429` em todas as três tentativas (chamada inicial + 2 retries), terminando em `LLMServiceUnavailableError`. Isso confirma que a disponibilidade externa continua oscilando entre indisponibilidade de capacidade e limite/cota.
 
 Diagnóstico: retrieval e validação estrutural não chegaram a falhar; a exceção ocorreu na dependência externa de geração. O SDK já executa sua política interna de retry, mas ainda propagou o 503 após esgotá-la. O provider do RagTest não possuía uma política de resiliência de aplicação nem convertia indisponibilidade transitória em erro de domínio amigável.
 
