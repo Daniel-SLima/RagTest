@@ -1445,3 +1445,30 @@ Semântica dos headers:
 - TPD diário não é fornecido por esses headers.
 
 Próxima validação: rebuild local e uma única chamada real com Groq para confirmar que o CLI mostra os headers recebidos do serviço.
+
+
+### 0.5.20 — rate limits verificados em runtime
+
+Validação real com Groq/GPT-OSS 120B:
+
+    app_version: 0.5.20
+    python_package_ragtest: 0.5.20
+    llm_provider: groq
+    llm_model: openai/gpt-oss-120b
+    llm_max_output_tokens: 1024
+
+Grounding observado:
+
+    initial: coverage=0.875, blocks=7/8
+    postprocess: coverage=1.000, blocks=7/7
+    citation_retry_count=0
+    grounded=yes
+
+Isso fornece evidência direta em runtime de que o caminho initial -> postprocess da D023 foi acionado sem segunda geração externa.
+
+Rate limits observados:
+
+    requests_rpd: 999/1000 reset=1m26.4s
+    tokens_tpm: 6069/8000 reset=14.482s
+
+A captura de headers da D024 está, portanto, verificada em runtime. Os resets são preservados exatamente como retornados pela Groq; não são reinterpretados localmente. TPD diário continua não disponível nesses headers.
