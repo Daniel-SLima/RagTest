@@ -1126,3 +1126,12 @@ Correção implementada e verificada em CI (`All checks passed!`; `94 passed, 4 
 - testes adicionados para os dois comportamentos.
 
 Próxima ação: aguardar CI, rebuildar e repetir exatamente o chat oficial com Gemini. Não reindexar Qdrant e não fazer merge do PR #13.
+
+
+### Nova oscilação do Gemini — 429 após retries
+
+Após o rebuild com a correção do gate, duas execuções do chat oficial com `LLM_PROVIDER=gemini` não chegaram à geração: ambas receberam `429` na chamada inicial e nos dois retries configurados (1 s e 2 s), terminando com `LLMServiceUnavailableError`.
+
+Isso não invalida a correção do gate; o teste real dessa correção continua pendente porque o provider externo não chegou a produzir resposta. A Dificuldade #15 foi atualizada para registrar que a indisponibilidade do Gemini agora também se manifesta como rate limit/cota, além do 503 já observado.
+
+Próxima decisão: avaliar um terceiro provider de desenvolvimento/fallback manual sem alterar corpus, retrieval ou Qdrant. O Ollama continua disponível localmente; nenhum fallback automático foi habilitado.
