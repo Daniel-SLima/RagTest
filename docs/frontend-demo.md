@@ -2,53 +2,101 @@
 
 ## Objetivo
 
-Criar uma aplicação web independente para apresentar o chatbot do TCC funcionando antes de integrá-lo ao aplicativo Se Cuida Mulher.
+Criar um cliente multiplataforma independente para apresentar o módulo conversacional do TCC funcionando antes da integração com o aplicativo oficial Se Cuida Mulher.
 
-## Stack
+O cliente é apenas um consumidor da API. O núcleo RAG, a ingestão, o retrieval, o grounding, o Qdrant e os providers de LLM continuam independentes da interface.
 
-- Next.js 16.3
-- React 19.2
-- TypeScript
-- Tailwind CSS 4
-- shadcn/ui com Base UI para os componentes visuais
-- Vitest + Testing Library para testes de unidade/componente
-- Playwright para testes E2E quando a interface estiver funcional
-- FastAPI/Qdrant continuam como backend e camada RAG
+## Stack da 0.5.21
 
-## Arquitetura proposta
+- Expo SDK 57 estável;
+- React Native 0.86;
+- React 19.2;
+- TypeScript;
+- Jest + jest-expo;
+- React Native Testing Library;
+- FastAPI/Qdrant permanecem como backend e camada RAG.
 
-O navegador não chamará o FastAPI diretamente na primeira versão. O front terá uma rota server-side `/api/chat` que encaminha a requisição para o backend definido por `RAG_API_BASE_URL`.
+O SDK 58 não é adotado nesta etapa porque ainda está em beta.
 
-Isso permite:
+## Arquitetura
 
-- evitar CORS na demonstração inicial;
-- não expor detalhes internos do backend ao navegador;
-- trocar a URL do backend por ambiente;
-- manter o contrato visual desacoplado do futuro Se Cuida Mulher.
+    React Native / Expo
+            |
+            | REST / JSON
+            v
+        FastAPI
+        POST /v1/chat
+            |
+            v
+        Módulo RAG
+        Retrieval
+        Grounding
+        Qdrant
+        LLM provider
 
-## Primeira versão da interface
+O aplicativo não contém regras de negócio do RAG. Ele conhece apenas o contrato público da API.
 
-A demonstração deverá ter:
+REST é o transporte inicial porque o endpoint já existe, é simples de testar e atende a demonstração. WebSocket fica reservado para uma necessidade concreta de streaming ou comunicação bidirecional contínua.
+
+## Estado atual da 0.5.21
+
+Implementado:
+
+- scaffold Expo/React Native;
+- configuração multiplataforma Android/iOS/web;
+- primeira superfície visual do chat;
+- campo de pergunta e botão Enviar;
+- tipos TypeScript equivalentes a ChatRequest, ChatResponse e ChatSource do FastAPI;
+- buildChatRequest para mapear o modelo do cliente para o contrato REST;
+- sendChatMessage para POST em /v1/chat;
+- testes com Jest/React Native Testing Library;
+- typecheck TypeScript na CI.
+
+Ainda não implementado nesta versão:
+
+- conexão da tela com o cliente REST;
+- estado de carregamento;
+- renderização da resposta;
+- fontes/citações na interface;
+- configuração por ambiente da URL do backend.
+
+Esses itens pertencem à próxima etapa de integração funcional.
+
+## Primeira versão demonstrável planejada
+
+A interface deverá evoluir para conter:
 
 - cabeçalho do projeto;
-- área principal de conversa;
+- conversa entre usuária e assistente;
 - mensagem inicial explicando o propósito do chatbot;
-- campo de texto e botão de envio;
+- campo de texto e envio;
 - estado de carregamento;
-- resposta renderizada de forma legível;
+- rich-text;
 - fontes citadas e páginas consultadas;
-- indicador de resposta grounded;
-- mensagem clara quando o backend usar fallback seguro;
-- painel técnico opcional para apresentação, mostrando modelo, citations, retrieval e rate limits quando disponíveis.
+- links quando suportados pelas fontes;
+- indicador de grounding/fallback;
+- painel técnico opcional para a banca mostrando modelo, citações, retrieval e métricas relevantes;
+- posteriormente, gatilhos de lembrete/agendamento conforme os fluxos institucionais forem modelados.
 
-O painel técnico não será o foco para o usuário final; ele existe para facilitar a apresentação e defesa do TCC.
+O painel técnico é recurso de apresentação e diagnóstico, não requisito da experiência final da usuária.
+
+## Integração futura com Se Cuida Mulher
+
+A interface de demonstração não deve criar dependências no backend.
+
+Quando o Se Cuida Mulher for integrado:
+
+- se a stack for compatível, componentes do cliente poderão ser reaproveitados;
+- se a stack for diferente, apenas a camada cliente/adaptadora precisa mudar;
+- o FastAPI e o módulo RAG permanecem consumíveis pelo mesmo contrato.
 
 ## Fora do escopo inicial
 
-- autenticação de usuários;
+- autenticação de usuárias;
 - histórico persistente;
-- integração com banco de dados;
-- integração visual com o Se Cuida Mulher;
+- banco transacional de conversas;
 - streaming de tokens;
 - fallback automático entre providers;
-- alteração de corpus, embeddings ou Qdrant.
+- alteração de corpus, embeddings ou Qdrant;
+- ingestão automática sem aprovação;
+- integração definitiva com o Se Cuida Mulher.
