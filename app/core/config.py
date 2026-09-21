@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.23"
+    app_version: str = "0.5.24"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
