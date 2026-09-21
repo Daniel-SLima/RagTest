@@ -10,8 +10,8 @@
 **Última atualização:** 2026-09-20  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.18`  
-**Trabalho em andamento:** `0.5.19` em `feature/semantic-grounding-0.5.19`; primeira etapa adiciona auditoria determinística de cobertura estrutural das citações por bloco informativo, sem alterar o endpoint e sem enviar conteúdo a juiz externo.
+**Estado validado e mesclado no main:** `0.5.22`  
+**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; foco atual em rich-text/Markdown e apresentação correta das fontes efetivamente citadas no cliente Expo.
 
 ---
 
@@ -1588,10 +1588,10 @@ Após cada avanço relevante, informar explicitamente ao usuário:
 
 ### Estado atual
 
-Versão integrada em main: 0.5.21.
-Versão em desenvolvimento: 0.5.22.
-Branch atual de trabalho: `feature/frontend-fastapi-0.5.22`.
-PR atual: #17 draft.
+Versão integrada em main: 0.5.22.
+Versão em desenvolvimento: 0.5.23.
+Branch atual de trabalho: `feature/richtext-sources-0.5.23`.
+PR atual: #18 draft.
 
 A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O scaffold Next.js criado inicialmente no PR #16 foi substituído por React Native + Expo + TypeScript. O frontend demonstrativo agora segue a linha multiplataforma sugerida no TCC e continua desacoplado do backend.
 
@@ -1599,9 +1599,9 @@ A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do
 
     0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat [CONCLUÍDA]
        ->
-    0.5.22  Chat funcional consumindo FastAPI por REST [ATUAL]
+    0.5.22  Chat funcional consumindo FastAPI por REST [CONCLUÍDA]
        ->
-    0.5.23  Rich-text, citações, fontes e links
+    0.5.23  Rich-text, citações, fontes e links [ATUAL]
        ->
     0.5.24  UX mobile, loading, erros, estados de grounding/fallback
        ->
@@ -1619,7 +1619,7 @@ A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do
 
 ### Posição atual no roadmap
 
-O núcleo RAG/backend está em estágio avançado e funcional. A camada cliente multiplataforma da 0.5.21 já foi iniciada com React Native + Expo, primeira superfície visual, contrato TypeScript e cliente REST para `/v1/chat`. A próxima validação é abrir o app no ambiente local do usuário; depois disso, a 0.5.22 conecta a tela ao cliente REST e passa a renderizar respostas reais.
+O núcleo RAG/backend está em estágio avançado e funcional. A 0.5.22 já conectou e validou o cliente Expo ponta a ponta com o `/v1/chat`. A prioridade atual da 0.5.23 é melhorar a apresentação: renderizar Markdown, mostrar cartões de fontes citadas e preservar a distinção entre fontes recuperadas e fontes realmente citadas.
 
 ## Comportamento atual para novos documentos no corpus
 
@@ -2049,3 +2049,91 @@ Próximo passo exato:
 4. transformar `sources` em cartões de fontes com documento/página;
 5. expor citações de forma navegável/legível na interface;
 6. manter grounding e metadados técnicos disponíveis sem poluir a experiência principal.
+
+
+### Início e checkpoint da 0.5.23 — rich-text e fontes citadas
+
+Base da versão:
+
+    main validada/mesclada: 0.5.22
+    merge 0.5.22: f012ebbfe4ebf6f27c26cf7d7e85e79ab1809606
+    branch: feature/richtext-sources-0.5.23
+    PR: #18 draft
+
+Objetivo da 0.5.23:
+
+Melhorar a apresentação da resposta sem alterar backend, retrieval ou contrato REST: Markdown deve ser renderizado corretamente e a interface principal deve mostrar somente as fontes efetivamente citadas pela resposta.
+
+Implementado:
+
+- renderer Markdown JS-only `@ronradtke/react-native-markdown-display` 9.0.3;
+- resposta do assistente renderizada como rich-text;
+- cartões de fontes com `[citation_id]`, nome do documento, página e excerpt;
+- normalização visual do nome do arquivo a partir do path da fonte;
+- filtro por `citation_ids`: fontes recuperadas mas não citadas não aparecem na seção principal;
+- Jest configurado para transpilar explicitamente o renderer Markdown;
+- versões backend/frontend alinhadas em 0.5.23;
+- D028 registrada;
+- Dificuldade #30 registrada;
+- backend/corpus/embeddings/Qdrant inalterados.
+
+TDD/CI observado:
+
+1. RED rich-text/fontes:
+       resposta ainda mostrava `**Vacina contra Influenza**` cru;
+       seção Fontes consultadas inexistente;
+       1 failed, 6 passed.
+
+2. primeira implementação:
+       renderer Markdown + cartões de fontes.
+
+3. falha de infraestrutura de teste:
+       Jest encontrou `SyntaxError: Unexpected token '<'` dentro do renderer;
+       corrigido com `transformIgnorePatterns` conforme mecanismo do jest-expo.
+
+4. GREEN rich-text/fontes:
+       frontend 7/7;
+       typecheck verde;
+       backend 115 passed;
+       Ruff verde.
+
+5. RED semântico de fontes:
+       fonte recuperada mas não citada apareceu na interface;
+       1 failed, 7 passed.
+
+6. GREEN semântico:
+       cartões filtrados por `citation_ids`;
+       frontend 8/8;
+       typecheck verde;
+       backend/Ruff verdes.
+
+Estado aproximado da 0.5.23: 90%.
+
+Aguardando validação:
+
+- CI final do head consolidado após versionamento/documentação;
+- runtime visual local no Expo Web usando resposta RAG real;
+- confirmação de que Markdown não aparece cru;
+- confirmação de que os cartões de fontes citadas mostram documento/página/trecho.
+
+Próximo passo exato:
+
+1. confirmar CI final;
+2. usuário atualizar para `feature/richtext-sources-0.5.23`;
+3. executar `npm install`, testes e typecheck;
+4. iniciar Expo Web com backend já ativo;
+5. fazer uma pergunta oficial;
+6. confirmar visualmente rich-text + fontes citadas;
+7. registrar runtime final e fechar a 0.5.23 para merge.
+
+Roadmap após este checkpoint:
+
+    0.5.21  Expo + contrato REST ............ concluída/merged
+    0.5.22  tela -> FastAPI real ............ concluída/merged
+    0.5.23  rich-text + fontes + citações ... atual (~90%)
+    0.5.24  UX + grounding/refinamentos ..... próxima
+    0.6.x   sessões .......................... futura
+    0.7.x   auditoria/LGPD/segurança ........ futura
+    0.8.x   agendamento/lembretes ........... futura
+    0.9.x   avaliação/usabilidade ........... futura
+    1.0     artefato final do TCC ........... futura
