@@ -1,4 +1,4 @@
-from app.rag.grounding import validate_citation_coverage
+from app.rag.grounding import prune_uncited_claim_blocks, validate_citation_coverage
 
 
 def test_citation_coverage_accepts_every_informative_block_cited() -> None:
@@ -86,3 +86,23 @@ def test_citation_coverage_rejects_answer_without_claim_blocks() -> None:
     assert result.valid is False
     assert result.total_claim_blocks == 0
     assert result.coverage == 0.0
+
+
+def test_prune_uncited_claim_blocks_removes_only_unsupported_claims() -> None:
+    answer = (
+        "Alguns direitos são:\n\n"
+        "1. Direito ao acolhimento [1].\n\n"
+        "2. Direito a acompanhante [2].\n\n"
+        "Esses direitos refletem garantias previstas para as pessoas usuárias."
+    )
+
+    pruned = prune_uncited_claim_blocks(answer, 2)
+
+    assert "Alguns direitos são:" in pruned
+    assert "1. Direito ao acolhimento [1]." in pruned
+    assert "2. Direito a acompanhante [2]." in pruned
+    assert "Esses direitos refletem" not in pruned
+
+    validation = validate_citation_coverage(pruned, 2)
+    assert validation.valid is True
+    assert validation.coverage == 1.0
