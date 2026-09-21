@@ -1540,3 +1540,105 @@ Fase 4 — interface e testes funcionais: próxima prioridade prática. Construi
 ### Regra de escopo para próximas versões
 
 O RagTest deve continuar funcionando de forma independente de qualquer frontend específico. Interfaces futuras devem consumir contratos públicos da API. Nenhuma regra de negócio do RAG deve depender de componentes visuais, navegação ou estado do Se Cuida Mulher. A integração oficial deve ocorrer como adaptação do cliente/contrato, não como reescrita do backend.
+
+
+## Protocolo de continuidade entre chats
+
+Este arquivo deve ser mantido como fonte principal de retomada do projeto. Ao concluir uma etapa relevante, atualizar sempre:
+
+1. estado atual da versão/branch/PR;
+2. o que foi implementado;
+3. o que foi verificado por CI/runtime;
+4. o que permanece hipótese ou aguardando validação;
+5. próximo passo exato;
+6. posição atual no roadmap geral;
+7. decisões arquiteturais e dificuldades novas;
+8. comandos de validação necessários para o usuário, quando houver.
+
+### Padrão de status usado nas conversas
+
+- implementado: código/documentação já alterados;
+- aguardando validação: alteração feita, mas falta CI ou runtime;
+- verificado: existe evidência de CI, teste automatizado ou runtime real;
+- hipótese: explicação ainda não confirmada por evidência.
+
+### Fluxo de trabalho preferido
+
+    alteração
+        -> comandos/testes
+        -> usuário executa quando runtime local é necessário
+        -> logs retornam ao chat
+        -> análise
+        -> próxima alteração
+
+Não declarar sucesso sem evidência. Mudanças funcionais devem seguir TDD RED -> GREEN sempre que aplicável. Evitar vários comandos/blocos independentes ao mesmo tempo quando o próximo passo depende do resultado anterior.
+
+### Regra de comunicação de progresso
+
+Após cada avanço relevante, informar explicitamente ao usuário:
+
+- versão atual;
+- etapa atual;
+- percentual/posição qualitativa no roadmap quando isso ajudar;
+- o que acabou de ser concluído;
+- o que vem imediatamente depois;
+- se há algo aguardando ação do usuário.
+
+## Roadmap consolidado do TCC
+
+### Estado atual
+
+Versão integrada em main: 0.5.20.
+Versão em desenvolvimento: 0.5.21.
+Branch atual de trabalho: `feature/chatbot-demo-frontend-0.5.21`.
+PR atual: #16 draft.
+
+A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O frontend demonstrativo deve seguir a linha multiplataforma sugerida no TCC. O scaffold Next.js criado inicialmente no PR #16 é descartável e deve ser substituído por React Native + Expo + TypeScript antes de avançar na interface.
+
+### Roadmap
+
+    0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat
+       ->
+    0.5.22  Chat funcional consumindo FastAPI por REST
+       ->
+    0.5.23  Rich-text, citações, fontes e links
+       ->
+    0.5.24  UX mobile, loading, erros, estados de grounding/fallback
+       ->
+    0.6.x   Sessões conversacionais controladas
+       ->
+    0.7.x   Auditoria estruturada, privacidade/LGPD e segurança
+       ->
+    0.8.x   Fluxos institucionais de serviços/agendamento + lembretes
+       ->
+    0.9.x   Avaliação experimental e testes de usabilidade
+       ->
+    1.0     Artefato funcional/documentado pronto para apresentação
+       ->
+    etapa posterior: integração no Se Cuida Mulher oficial
+
+### Posição atual no roadmap
+
+O núcleo RAG/backend está em estágio avançado e funcional. A prioridade prática atual é o início da camada cliente multiplataforma da 0.5.21. Antes de escrever a interface final, substituir o scaffold Next.js experimental por React Native + Expo e manter o frontend desacoplado do backend através do contrato REST `/v1/chat`.
+
+## Comportamento atual para novos documentos no corpus
+
+O diretório configurado por `SOURCE_DIR` (em Docker, `/app/data/source`; no repositório, `data/source`) é a origem do corpus. O loader descobre recursivamente arquivos `.pdf` e `.docx` em qualquer subpasta suportada.
+
+Adicionar um arquivo ao diretório NÃO o torna consultável imediatamente. O chat consulta apenas os chunks já indexados na collection Qdrant. Portanto, após adicionar, alterar ou remover arquivos, é necessário sincronizar o corpus com o índice.
+
+Fluxo seguro atual:
+
+    1. colocar/remover/alterar PDF ou DOCX em data/source/<categoria>/...
+    2. executar `ragtest-plan-ingestion-sync` ou `ragtest-sync-ingestion` sem --apply para dry-run
+    3. revisar missing/stale/orphan sources e erros de carregamento
+    4. executar `ragtest-sync-ingestion --apply`
+    5. o sistema faz upsert dos chunks novos/alterados antes de excluir pontos obsoletos
+    6. o próprio comando revalida a collection e exige estado final em sync
+    7. somente depois disso o novo conteúdo fica disponível para retrieval e chat
+
+Proteções atuais: recusa corpus vazio; recusa escrita se houver erro de carregamento; não usa recreate; IDs são determinísticos; exclusões ocorrem apenas após upsert de substituições; verificação final é obrigatória.
+
+Metadados: a primeira pasta relativa abaixo de `data/source` vira `category`; alguns públicos são inferidos pelo caminho/nome do arquivo (por exemplo gestante, idoso, adulto). Arquivos soltos diretamente na raiz recebem category `uncategorized`.
+
+Não existe atualmente watcher/daemon que monitore automaticamente a pasta e faça ingestão ao detectar novos arquivos. Automatizar isso pode ser uma evolução futura, mas deve preservar o mesmo fluxo de planejamento, validação e auditoria antes de mutar Qdrant.
