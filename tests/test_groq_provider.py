@@ -1,6 +1,6 @@
 from io import BytesIO
-from urllib.error import HTTPError
 from unittest.mock import AsyncMock
+from urllib.error import HTTPError
 
 import pytest
 
