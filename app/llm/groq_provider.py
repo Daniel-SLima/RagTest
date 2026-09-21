@@ -74,6 +74,14 @@ class GroqProvider:
     def generation_metrics(self) -> tuple[GroqGenerationMetrics, ...]:
         return tuple(self._generation_metrics)
 
+    def _headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (compatible; RagTest/0.5.19)",
+        }
+
     def _payload(self, *, system_prompt: str, user_prompt: str) -> dict[str, object]:
         return {
             "model": self._model_name,
@@ -103,10 +111,7 @@ class GroqProvider:
         request = Request(
             f"{self._base_url}/chat/completions",
             data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json",
-            },
+            headers=self._headers(),
             method="POST",
         )
 
