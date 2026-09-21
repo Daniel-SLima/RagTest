@@ -2107,11 +2107,11 @@ TDD/CI observado:
        typecheck verde;
        backend/Ruff verdes.
 
-Estado aproximado da 0.5.23: 90%.
+Estado aproximado da 0.5.23: 95%.
 
 Aguardando validação:
 
-- CI final do head consolidado após versionamento/documentação;
+- CI final do head consolidado: verificada (frontend 8/8, typecheck, backend 115 passed, Ruff verde);
 - runtime visual local no Expo Web usando resposta RAG real;
 - confirmação de que Markdown não aparece cru;
 - confirmação de que os cartões de fontes citadas mostram documento/página/trecho.
@@ -2137,3 +2137,25 @@ Roadmap após este checkpoint:
     0.8.x   agendamento/lembretes ........... futura
     0.9.x   avaliação/usabilidade ........... futura
     1.0     artefato final do TCC ........... futura
+
+
+### 0.5.23 — CI final do código consolidado
+
+Head validado:
+
+    bb5dc40784a2a69c11d436acee38e2cc43c51a64
+
+Resultados:
+
+    frontend: 2 suites / 8 testes aprovados
+    TypeScript typecheck: success
+    backend: 115 passed, 6 warnings
+    Ruff: All checks passed!
+
+O `frontend/tsconfig.json` também foi alinhado ao formato que o Expo SDK 57 estava gerando automaticamente, preservando os tipos `jest` e `node` e evitando que apenas iniciar `expo start` deixe o repositório local modificado.
+
+Status:
+
+    implementação 0.5.23 .............. verificada em CI
+    runtime visual rich-text/fontes ... aguardando validação local
+    PR #18 ............................ draft / mergeable
