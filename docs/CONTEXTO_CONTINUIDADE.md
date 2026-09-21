@@ -8,63 +8,65 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS VALIDAÇÃO DA 0.5.23
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.23
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
-> O restante do arquivo preserva o histórico do projeto e pode mencionar estados anteriores.
+> O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
 
 ### Estado exato do repositório
 
 - Repositório: `Daniel-SLima/RagTest`
 - Branch padrão: `main`
-- Versão integrada em `main`: **0.5.22**
-- Head de `main` antes desta reconciliação: `c7d9a47c2a7b46eb648bedc3c7f859b7e3e12f4e`
-- Branch de trabalho: `feature/richtext-sources-0.5.23`
-- PR #18: **draft**
-- Versão em validação: **0.5.23**
-- Implementação, CI pós-reconciliação e runtime local da 0.5.23: **verificados**
-- Esta branch foi reconciliada com os commits documentais mais recentes de `main` por merge de sincronização autorizado pelo usuário.
-- O merge do PR #18 para `main` **não foi realizado** e continua dependente de autorização explícita.
+- Versão integrada e validada em `main`: **0.5.23**
+- PR #18: **merged**
+- Merge commit da 0.5.23: `402f27b48a8d7c97252782cd653a61a405638870`
+- Head validado da feature antes do merge: `74dd4ca58ef76401e5d9c6b1b05bd8729c17053b`
+- CI final da feature: workflow `CI` run #291, com `lint`, backend `test`, frontend tests e frontend typecheck em `success`
+- Runtime local Expo Web da 0.5.23: **verificado**
+- Corpus, embeddings e Qdrant: **inalterados**
+- Próxima versão planejada: **0.5.24 — UX + grounding/refinamentos**
+- Neste checkpoint, a branch 0.5.24 ainda não foi criada.
 
-### Estado funcional da 0.5.23
+### O que a 0.5.23 entregou
 
-Verificado no Expo Web com resposta RAG real:
-
-- Markdown/rich-text renderizado sem marcadores crus;
-- negrito e listas renderizados;
+- renderização Markdown/rich-text no cliente Expo;
+- negrito e listas sem marcadores crus;
 - seção `Fontes consultadas`;
 - cartões com `citation_id`, documento, página e excerpt;
-- somente fontes presentes em `citation_ids` aparecem na seção principal;
-- `POST /v1/chat` respondeu `200 OK`;
-- `GET /health` respondeu versão `0.5.23`;
-- `GET /ready` confirmou Qdrant `ok`;
-- retrieval sem filtros da pergunta de vacinação para idosos retornou fonte oficial e não retornou `chatscm/`;
-- `git status --short` permaneceu limpo após o runtime local.
+- exibição principal restrita às fontes presentes em `citation_ids`;
+- contrato público `POST /v1/chat` preservado;
+- backend RAG continuou desacoplado do frontend;
+- `GET /health` validado com versão `0.5.23`;
+- `GET /ready` validado com Qdrant `ok`;
+- `POST /v1/chat` validado em runtime real;
+- retrieval sem filtros da pergunta de vacinação para idosos retornou fonte oficial, sem `chatscm/`.
 
-### Próximo passo imediato
+### Próximo passo exato
 
-1. PR #18 está sem divergência em relação a `main` e `mergeable=true`;
-2. CI do head reconciliado foi verificada com sucesso;
-3. solicitar autorização explícita antes do merge do PR #18 para `main`;
-4. após a 0.5.23 ser integrada, iniciar a 0.5.24 com foco em UX + grounding/refinamentos.
+1. sincronizar o checkout local com `main` após confirmar `git status --short` limpo;
+2. manter a 0.5.23 como baseline integrada;
+3. definir o escopo concreto da 0.5.24 antes de alterar código;
+4. criar a branch 0.5.24 somente a partir da `main` atualizada;
+5. seguir TDD e manter corpus/Qdrant inalterados salvo necessidade autorizada.
 
 ### Regras críticas preservadas
 
 - não usar `ragtest-ingest --recreate`;
 - não usar `docker compose down -v`;
 - não recriar corpus, embeddings, collection Qdrant ou os 767 pontos atuais sem autorização;
-- não enviar conteúdo `chatscm/*.docx` para provider externo antes de revisão manual de privacidade;
+- não enviar conteúdo `chatscm/*.docx` para Groq, Gemini ou outro provider externo antes de revisão manual de privacidade;
 - providers continuam explícitos, sem fallback automático;
-- `grounded=true` continua significando cobertura estrutural de citações, não entailment semântico automático;
-- backend RAG permanece desacoplado do frontend Expo.
+- `grounded=true` significa cobertura estrutural de citações sob o gate implementado, não entailment semântico automático;
+- backend RAG permanece independente do cliente Expo e do futuro Se Cuida Mulher;
+- não fazer merge de futuros PRs sem autorização explícita do usuário.
 
 ---
 
 **Última atualização:** 2026-09-21  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.22`  
-**Trabalho em andamento:** `0.5.23` em `feature/richtext-sources-0.5.23`; implementação, runtime e CI pós-reconciliação validados; PR #18 mergeable e aguardando decisão/autorização de merge.
+**Estado validado e mesclado no main:** `0.5.23`  
+**Trabalho em andamento:** próxima versão planejada `0.5.24` (UX + grounding/refinamentos); branch ainda não criada neste checkpoint.
 
 ---
 

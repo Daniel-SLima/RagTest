@@ -24,21 +24,22 @@ Use o GitHub conectado e leia, nesta ordem:
 
 No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
-**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS VALIDAÇÃO DA 0.5.23**
+**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.23**
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
 ## Estado atual que deve ser confirmado no GitHub
 
-- `main` contém a versão **0.5.22** validada e mesclada.
-- PR #17 foi merged.
-- Merge da 0.5.22: `f012ebbfe4ebf6f27c26cf7d7e85e79ab1809606`.
-- `main` recebeu depois os commits documentais `718f946...` e `c7d9a47...`.
-- Branch atual da versão: `feature/richtext-sources-0.5.23`.
-- PR atual: **#18 draft**.
-- A branch 0.5.23 já foi reconciliada com o head documental de `main`.
-- O merge do PR #18 para `main` ainda **não foi realizado**.
-- A CI do head reconciliado foi verificada com sucesso. Antes do merge final, peça autorização explícita ao usuário.
+- `main` contém a versão **0.5.23** validada e mesclada.
+- PR #18 foi **merged**.
+- Merge commit da 0.5.23: `402f27b48a8d7c97252782cd653a61a405638870`.
+- Head validado da feature antes do merge: `74dd4ca58ef76401e5d9c6b1b05bd8729c17053b`.
+- CI final da feature: run #291, com lint, backend test, frontend tests e frontend typecheck em success.
+- Runtime local Expo Web da 0.5.23 foi validado.
+- Corpus, embeddings e Qdrant permaneceram inalterados.
+- Próxima versão planejada: **0.5.24 — UX + grounding/refinamentos**.
+- Neste checkpoint ainda não existe branch 0.5.24 criada.
+- Antes de começar a 0.5.24, confirme o head atual da `main` e o estado local do usuário.
 
 ## 0.5.23 — estado verificado
 
@@ -62,7 +63,7 @@ Verificado:
 - retrieval sem filtros retornou `pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf`, página 34, sem `chatscm/`;
 - corpus, embeddings e Qdrant permaneceram inalterados.
 
-A CI do **head pós-reconciliação** foi verificada: lint, backend test, frontend tests e frontend typecheck concluíram com sucesso. A 0.5.23 está pronta para decisão de merge, ainda dependente de autorização explícita.
+A CI do **head final da feature** foi verificada: lint, backend test, frontend tests e frontend typecheck concluíram com sucesso. A 0.5.23 foi posteriormente mesclada em `main` pelo PR #18.
 
 ## Arquitetura que deve ser preservada
 
@@ -182,8 +183,8 @@ Antes de trocar branch após executar Expo:
 0.5.20  observabilidade Groq ................ merged
 0.5.21  Expo + contrato REST ............... merged
 0.5.22  Expo -> FastAPI -> RAG ............. merged
-0.5.23  rich-text + fontes + citações ...... validada / pronta para decisão de merge
-0.5.24  UX + grounding/refinamentos ........ próxima
+0.5.23  rich-text + fontes + citações ...... merged
+0.5.24  UX + grounding/refinamentos ........ PRÓXIMA
 0.6.x   sessões ............................. futura
 0.7.x   auditoria/LGPD/segurança ........... futura
 0.8.x   agendamento/lembretes .............. futura
