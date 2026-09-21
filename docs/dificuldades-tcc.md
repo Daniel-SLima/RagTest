@@ -259,6 +259,19 @@ Correção: a chamada direta ao mesmo `GroqProvider`, sem retrieval e com limite
 
 Aprendizado técnico: alta velocidade e conclusão normal da geração não garantem aderência ao contrato estrutural exigido pelo RAG. Desempenho do provider e groundedness devem continuar sendo medidos separadamente.
 
+
+## 22. Introdução longa de lista era classificada como claim sem citação
+
+Planejado: após normalizar as citações Unicode do GPT-OSS, o gate deveria aceitar uma resposta em que cada item informativo da lista estivesse citado.
+
+Observado: no reteste real com Groq/GPT-OSS 120B e 1024 tokens, a sintaxe passou, mas a cobertura ficou em 0,889 nas duas tentativas: 8 de 9 blocos foram considerados citados. As duas gerações terminaram por `stop`, descartando truncamento como causa. Um teste de regressão com a frase introdutória longa "Alguns dos direitos da pessoa usuária da saúde, conforme os trechos recuperados, são:" seguida por dois itens citados reproduziu a falha: o gate contou 3 blocos, sendo 2 citados e 1 não citado.
+
+Diagnóstico: a heurística anterior ignorava somente headings curtos terminados em dois-pontos. Uma introdução longa de lista terminada em `:` ultrapassava esse limite e era tratada como afirmação informativa, embora servisse apenas para introduzir os itens que continham as afirmações e suas citações.
+
+Correção: o gate passa a ignorar uma linha terminada em `:` somente quando o próximo bloco não vazio é realmente um item de lista numerada ou com marcador. Isso evita uma exceção ampla para qualquer frase longa com dois-pontos. O teste que reproduziu a falha passou após a correção, e a CI ficou verde com `106 passed, 4 warnings`.
+
+Aprendizado técnico: guardrails de cobertura precisam considerar relações estruturais entre blocos, não apenas o conteúdo isolado de cada linha. Introduções de lista e itens informativos têm papéis diferentes e devem ser classificados de forma contextual.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
