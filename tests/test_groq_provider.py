@@ -1,3 +1,5 @@
+from io import BytesIO
+from urllib.error import HTTPError
 from unittest.mock import AsyncMock
 
 import pytest
@@ -187,3 +189,37 @@ def test_groq_records_rate_limit_headers_from_successful_response(monkeypatch) -
     assert rate_limits.remaining_tokens == 6543
     assert rate_limits.reset_requests == "23h59m"
     assert rate_limits.reset_tokens == "7.66s"
+
+
+def test_groq_records_rate_limit_headers_from_429_response(monkeypatch) -> None:
+    provider = _provider(retries=0)
+    error = HTTPError(
+        url="https://api.groq.com/openai/v1/chat/completions",
+        code=429,
+        msg="Too Many Requests",
+        hdrs={
+            "Retry-After": "2",
+            "x-ratelimit-limit-requests": "1000",
+            "x-ratelimit-limit-tokens": "8000",
+            "x-ratelimit-remaining-requests": "0",
+            "x-ratelimit-remaining-tokens": "120",
+            "x-ratelimit-reset-requests": "12h",
+            "x-ratelimit-reset-tokens": "3.2s",
+        },
+        fp=BytesIO(b'{"error":{"message":"rate limited"}}'),
+    )
+
+    def raise_rate_limit(request, timeout):
+        raise error
+
+    monkeypatch.setattr("app.llm.groq_provider.urlopen", raise_rate_limit)
+
+    with pytest.raises(_GroqRequestError):
+        provider._post_json_sync({"model": "openai/gpt-oss-120b"})
+
+    rate_limits = provider.rate_limits
+    assert rate_limits is not None
+    assert rate_limits.remaining_requests == 0
+    assert rate_limits.remaining_tokens == 120
+    assert rate_limits.reset_requests == "12h"
+    assert rate_limits.reset_tokens == "3.2s"
