@@ -170,6 +170,160 @@ Correção: fazer o teste comparar a versão retornada com `get_settings().app_v
 
 Aprendizado técnico: testes de contratos que incluem metadados evolutivos devem validar a fonte de configuração correspondente, e não duplicar valores que mudam a cada versão.
 
+## 15. Gemini ficou indisponível por alta demanda no teste real do gate de grounding
+
+Planejado: validar o novo gate de cobertura de citações em uma pergunta real restrita à categoria oficial `direitos_saude`.
+
+Observado: os self-checks determinísticos de grounding e cobertura passaram, mas a chamada real ao Gemini inicialmente terminou antes da validação do gate com `503 UNAVAILABLE`. Em retestes posteriores o Gemini voltou a responder após retry, porém novas execuções retornaram `429` em todas as três tentativas (chamada inicial + 2 retries), terminando em `LLMServiceUnavailableError`. Isso confirma que a disponibilidade externa continua oscilando entre indisponibilidade de capacidade e limite/cota.
+
+Diagnóstico: retrieval e validação estrutural não chegaram a falhar; a exceção ocorreu na dependência externa de geração. O SDK já executa sua política interna de retry, mas ainda propagou o 503 após esgotá-la. O provider do RagTest não possuía uma política de resiliência de aplicação nem convertia indisponibilidade transitória em erro de domínio amigável.
+
+Correção: adicionar retries de aplicação limitados para códigos transitórios 429/500/502/503/504, com backoff exponencial curto e configurável. Após esgotar os retries, converter a falha em `LLMServiceUnavailableError`; o endpoint responde HTTP 503 e o CLI encerra com mensagem curta em vez de traceback completo. Erros não transitórios continuam sem retry.
+
+Aprendizado técnico: mesmo quando retrieval e grounding estão corretos, um RAG depende da disponibilidade do provedor de geração. Resiliência de produção exige distinguir erros transitórios de erros permanentes e limitar retries para evitar loops, latência imprevisível e tempestades de requisições.
+
+## 16. Qwen3 4B expôs reasoning mesmo com thinking desativado
+
+Planejado: usar `qwen3:4b` local no Ollama com `think=false` para gerar somente a resposta final do RAG.
+
+Observado: tanto no CLI quanto na API, o modelo incluiu o raciocínio interno no conteúdo textual e terminou o bloco com `</think>`, apesar de `think=false` e do teste adicional com `/no_think`.
+
+Diagnóstico: na combinação local validada de Ollama 0.34.2 + `qwen3:4b`, a desativação de thinking não produziu o contrato de saída necessário ao gate estrutural do RagTest. Esse conteúdo extra poderia ser interpretado como blocos informativos sem citação.
+
+Correção: testar `qwen3:8b` no mesmo ambiente. O 8B respeitou `think=false` tanto no CLI quanto na API. O modelo foi validado com contexto 8192 e acesso a partir do container Docker; o provider local passa a usar `qwen3:8b` como padrão e rejeita explicitamente vazamento de `</think>` quando thinking está desativado.
+
+Aprendizado técnico: modelos da mesma família podem apresentar contratos de saída diferentes no mesmo runtime. Antes de integrar um LLM a guardrails estruturais, é necessário validar o payload real da API e não apenas a capacidade declarada do modelo.
+
+
+## 17. Qwen3 8B local ficou lento e falhou no gate de citações no primeiro chat RAG real
+
+Planejado: validar o `OllamaProvider` com `qwen3:8b` na pergunta oficial "Quais são os direitos da pessoa usuária da saúde?", usando `dense-rerank`, `--category direitos_saude` e `--no-decompose`, preservando corpus, Qdrant e retrieval.
+
+Observado: `/health` retornou 0.5.19; `ragtest-runtime-info --skip-qdrant` confirmou `LLM_PROVIDER=ollama`, `qwen3:8b`, contexto 8192 e `think=false`; os self-checks de grounding e cobertura passaram. No chat real com `LLM_MAX_OUTPUT_TOKENS=4096`, o retrieval retornou cinco páginas da fonte oficial, mas a execução levou aproximadamente seis minutos, realizou um retry de citação (`citation_retry_count=1`) e terminou em fallback seguro com `grounded=false` e sem `citation_ids`. Um segundo teste, alterando somente `LLM_MAX_OUTPUT_TOKENS` para 512, preservou o mesmo retrieval e a mesma falha do gate, mas reduziu o tempo total para 158,5 s.
+
+Diagnóstico: o retrieval não é o ponto de falha observado, porque os cinco resultados foram recuperados normalmente e os validadores determinísticos passaram. Um teste isolado do `qwen3:8b` com `think=false`, contexto 8192 e `num_predict=512` respondeu 254 tokens em 28,68 s de parede, com `prompt_eval_duration` de aproximadamente 0,21 s e `eval_duration` de aproximadamente 28,42 s, equivalente a 8,94 tokens/s. Isso mostra que, no teste curto, a maior parte do tempo ficou na geração de saída e não no carregamento ou avaliação do prompt. O fluxo RAG executou uma geração inicial e, após falha do gate, uma segunda geração completa; com `LLM_MAX_OUTPUT_TOKENS=4096`, duas saídas longas nessa taxa são uma explicação plausível para vários minutos, mas o número real de tokens das duas chamadas RAG ainda não foi observado. O `OllamaProvider` atual descarta metadados de execução retornados pelo Ollama e o fallback não preserva as respostas rejeitadas para diagnóstico; portanto, ainda não sabemos se a reprovação ocorreu por ausência de citações, cobertura incompleta, formato da resposta ou outra característica da geração.
+
+Correção: o teste controlado com 512 confirmou que reduzir o orçamento de saída reduz substancialmente a latência, mas não resolve a falha de grounding. Foi adicionada instrumentação sem alterar o comportamento: o `OllamaProvider` agora preserva métricas de cada geração (`total_duration`, `load_duration`, tokens e duração de prompt/saída, taxa de geração e `done_reason`), e o CLI mostra também validade, sintaxe, cobertura e motivo de cada tentativa do gate. A CI dessa instrumentação passou com Ruff verde e `92 passed, 4 warnings`. A validação real com Qwen permanece pendente.
+
+Aprendizado técnico: self-checks do gate validam a lógica determinística do RagTest, mas não validam automaticamente a aderência de um modelo local ao contrato de saída nem sua latência sob o prompt RAG real. Providers locais precisam expor métricas de geração e motivos de reprovação para que desempenho e groundedness sejam diagnosticados separadamente.
+
+
+## 18. O mesmo gate de grounding falhou com Gemini após recuperação de um 503
+
+Planejado: verificar se o Gemini 3.6 Flash havia voltado a responder no mesmo cenário oficial de `direitos_saude`, mantendo a pergunta, retrieval, corpus e `--no-decompose`.
+
+Observado: a primeira tentativa ao Gemini recebeu erro transitório 503; o retry de aplicação foi acionado após 1 segundo e a execução conseguiu prosseguir. O retrieval retornou as mesmas cinco páginas da Carta oficial, porém o chat terminou com `grounded=false`, sem `citation_ids` e com `citation_retry_count=1`, exatamente como no teste anterior com Qwen3 8B.
+
+Diagnóstico: o Gemini voltou a estar acessível, mas ainda apresentou indisponibilidade transitória. Como dois providers diferentes chegaram ao mesmo fallback estrutural sobre o mesmo contexto recuperado, a hipótese de que a reprovação seja específica do Qwen ficou enfraquecida. A causa exata do gate ainda não está identificada porque esse teste usou uma imagem anterior à instrumentação que expõe validade, sintaxe, cobertura e motivo por tentativa.
+
+Correção: nenhuma mudança funcional ainda. Atualizar/rebuildar a imagem com a instrumentação já implementada e repetir o mesmo teste com Gemini para observar o motivo preciso da reprovação antes de alterar prompt ou regras do gate. O Gemini pode voltar a ser usado como provider principal de desenvolvimento, mantendo o Ollama como contingência manual enquanto a disponibilidade externa oscilar.
+
+Aprendizado técnico: disponibilidade do provider e groundedness são dimensões independentes. Um retry pode recuperar uma falha 503 e ainda assim a resposta subsequente ser rejeitada pelo gate; além disso, quando o mesmo comportamento aparece em providers diferentes, a investigação deve priorizar o contrato compartilhado de prompt/validação antes de atribuir o problema ao modelo.
+
+
+## 19. Gate estrutural tratava heading Markdown como afirmação e retry regenerava do zero
+
+Planejado: usar o gate de cobertura da 0.5.19 para exigir citação em cada parágrafo ou item informativo e, em caso de falha, reparar a resposta uma única vez.
+
+Observado: no teste real com Gemini, a primeira resposta teve sintaxe de citações válida, mas cobertura de 0,786 (22/28 blocos); o retry caiu para 0,767 (23/30 blocos). A inspeção do classificador mostrou que um heading Markdown como `## Direitos da pessoa usuária` era normalizado para texto comum e contado como claim por ter três ou mais palavras. O self-check existente cobria apenas heading curto terminado em dois-pontos. Também foi verificado que o prompt de reparo não recebia a resposta anterior: ele apenas informava que a tentativa falhou e solicitava uma nova geração.
+
+Diagnóstico: há um falso positivo estrutural confirmado para headings Markdown sem dois-pontos. Separadamente, o retry não era um reparo direcionado; ele regenerava a resposta a partir do contexto, o que permite mudar quantidade e estrutura dos blocos e explica por que a cobertura pode piorar. Ainda é necessário retestar em runtime para medir quanto desses dois pontos explica os seis ou sete blocos não citados observados no Gemini.
+
+Correção: headings Markdown iniciados por `#` deixam de ser considerados claim blocks. O prompt de reparo passa a receber a resposta anterior e o motivo da validação, pedindo revisão do texto existente sem acrescentar novas afirmações. A exigência de citação continua inalterada para parágrafos e itens informativos. Foram adicionados testes específicos para heading Markdown e para reaproveitamento da resposta anterior. A correção passou na CI com Ruff `All checks passed!` e pytest `94 passed, 4 warnings`; permanece aguardando apenas validação real com Gemini.
+
+Aprendizado técnico: guardrails estruturais precisam distinguir conteúdo semântico de elementos de apresentação; caso contrário, podem produzir falsos negativos de groundedness. Um retry de reparo também precisa receber o artefato que falhou e o motivo da falha, em vez de simplesmente repetir a geração.
+
+
+## 20. Groq foi bloqueada pelo Cloudflare 1010 devido à assinatura HTTP do urllib
+
+Planejado: validar o novo `GroqProvider` com `openai/gpt-oss-120b` usando a categoria oficial `direitos_saude`, primeiro com saída limitada a 512 tokens e depois com a pergunta completa.
+
+Observado: o `runtime-info` confirmou `llm_provider=groq`, modelo `openai/gpt-oss-120b`, endpoint correto e `reasoning_effort=low`. Porém as duas chamadas reais ao chat falharam antes da geração com `HTTP 403 Forbidden` e corpo `error code: 1010`. O traceback mostrou que a requisição era feita por `urllib.request.urlopen`.
+
+Diagnóstico: o erro 1010 é um bloqueio de assinatura de cliente na camada Cloudflare, não um erro de retrieval nem evidência de chave inválida. O provider usava o `User-Agent` padrão do `urllib`, assinatura que pode ser classificada como cliente automatizado/bot pelo Browser Integrity Check. A requisição foi rejeitada antes de chegar ao modelo e antes de qualquer validação de grounding.
+
+Correção: adicionar cabeçalhos HTTP explícitos ao `GroqProvider`, incluindo `Accept: application/json` e um `User-Agent` compatível com navegador identificando o RagTest. Foi adicionado teste de regressão para impedir que o provider volte a usar o `User-Agent` padrão do `urllib`. A correção passou na CI com Ruff verde e `102 passed, 4 warnings` e foi validada em runtime: o erro 403/1010 desapareceu e o GPT-OSS 120B respondeu normalmente.
+
+Aprendizado técnico: uma integração pode passar em testes unitários e ainda falhar na borda do provedor por políticas de WAF/anti-bot. Para providers protegidos por Cloudflare, o cliente HTTP real e seus cabeçalhos fazem parte do contrato de integração e precisam ser validados no ambiente de execução.
+
+
+## 21. GPT-OSS 120B respondeu rapidamente, mas não produziu citações verificáveis
+
+Planejado: após corrigir o bloqueio Cloudflare 1010, validar o `openai/gpt-oss-120b` com uma pergunta curta sobre direitos da pessoa usuária da saúde, duas fontes oficiais e limite de 512 tokens.
+
+Observado: a chamada chegou ao modelo e o provider funcionou. A primeira geração levou 1,12 s, processou 1121 tokens de prompt e gerou exatamente 512 tokens a aproximadamente 478,05 tokens/s, terminando por `length`. O gate encontrou 0/9 blocos citados e nenhuma citação verificável. O repair foi executado; a segunda geração levou 0,94 s, processou 1719 tokens de prompt, gerou 409 tokens a aproximadamente 478,22 tokens/s e terminou por `stop`, mas novamente apresentou 0/9 blocos citados e nenhuma citação `[n]`. O resultado final foi o fallback seguro com `grounded=false`.
+
+Diagnóstico: a integração de transporte e autenticação Groq está funcionando e a latência é muito inferior à do Qwen3 8B local. A primeira falha foi parcialmente influenciada pelo teto de 512 tokens, mas a captura da geração RAG bruta isolou a causa estrutural principal: o modelo produziu dez direitos acompanhados por referências `【1】` e `【2】`. O parser do RagTest procurava somente o padrão ASCII `[n]`, por isso reportava `syntax_valid=false` e cobertura 0 mesmo quando as referências estavam semanticamente presentes e dentro do intervalo de fontes. A falha era de normalização de markup, não ausência de citações.
+
+Correção: a chamada direta ao mesmo `GroqProvider`, sem retrieval e com limite de 256 tokens, retornou exatamente `Direito teste [1].`. Em seguida, a geração RAG bruta mostrou que o GPT-OSS citava corretamente os IDs das fontes, porém usando a variante Unicode `【1】`/`【2】`, enquanto o parser aceitava apenas `[1]`/`[2]`. Foi adicionada normalização canônica estrita `【n】 -> [n]` antes da validação, do repair e da resposta final; somente marcadores numéricos nessa forma são normalizados, sem aceitar IDs inválidos nem blocos sem fonte. Testes de regressão reproduzem o caso real e a CI passou com Ruff verde e `105 passed, 4 warnings`. A correção funcional ainda aguarda validação real no chat Groq.
+
+Aprendizado técnico: alta velocidade e conclusão normal da geração não garantem aderência ao contrato estrutural exigido pelo RAG. Desempenho do provider e groundedness devem continuar sendo medidos separadamente.
+
+
+## 22. Introdução longa de lista era classificada como claim sem citação
+
+Planejado: após normalizar as citações Unicode do GPT-OSS, o gate deveria aceitar uma resposta em que cada item informativo da lista estivesse citado.
+
+Observado: no reteste real com Groq/GPT-OSS 120B e 1024 tokens, a sintaxe passou, mas a cobertura ficou em 0,889 nas duas tentativas: 8 de 9 blocos foram considerados citados. As duas gerações terminaram por `stop`, descartando truncamento como causa. Um teste de regressão com a frase introdutória longa "Alguns dos direitos da pessoa usuária da saúde, conforme os trechos recuperados, são:" seguida por dois itens citados reproduziu a falha: o gate contou 3 blocos, sendo 2 citados e 1 não citado.
+
+Diagnóstico: a heurística anterior ignorava somente headings curtos terminados em dois-pontos. Uma introdução longa de lista terminada em `:` ultrapassava esse limite e era tratada como afirmação informativa, embora servisse apenas para introduzir os itens que continham as afirmações e suas citações.
+
+Correção: o gate passa a ignorar uma linha terminada em `:` somente quando o próximo bloco não vazio é realmente um item de lista numerada ou com marcador. Isso evita uma exceção ampla para qualquer frase longa com dois-pontos. O teste que reproduziu a falha passou após a correção, e a CI ficou verde com `106 passed, 4 warnings`. Porém o reteste real com Groq permaneceu em `8/9` nas duas tentativas, portanto essa hipótese não explica sozinha o bloco uncited observado em runtime. A correção estrutural continua válida para o caso testado, mas a causa real remanescente precisa ser isolada a partir da resposta bruta.
+
+Aprendizado técnico: guardrails de cobertura precisam considerar relações estruturais entre blocos, não apenas o conteúdo isolado de cada linha. Introduções de lista e itens informativos têm papéis diferentes e devem ser classificados de forma contextual.
+
+
+## 23. Repair sabia que havia cobertura incompleta, mas não qual bloco precisava ser corrigido
+
+Planejado: quando o gate encontrasse cobertura incompleta, o único retry de repair deveria corrigir especificamente os blocos sem citação.
+
+Observado: a análise linha a linha da resposta real do GPT-OSS mostrou que a introdução da lista estava corretamente ignorada e os dez itens estavam citados. O único bloco uncited era a frase final: "Esses direitos são extraídos dos documentos citados e refletem as garantias previstas para as pessoas usuárias dos serviços de saúde." Apesar disso, o repair repetia cobertura incompleta porque recebia apenas o motivo genérico `one or more informative answer blocks have no valid citation`, sem saber qual trecho específico havia falhado.
+
+Diagnóstico: o gate estava correto em exigir citação para a frase final, pois ela contém uma afirmação informativa. O problema estava na falta de granularidade do feedback enviado ao repair. Ignorar esse tipo de conclusão enfraqueceria o guardrail; o comportamento correto é direcionar o repair ao bloco exato.
+
+Correção: `CitationCoverage` passa a preservar os textos dos blocos sem citação válida. O prompt de repair recebe esses blocos em uma seção explícita `BLOCOS SEM CITAÇÃO VÁLIDA` e instrui o modelo a adicionar somente uma citação sustentada pelas fontes ou remover o bloco se ele for desnecessário e não puder ser sustentado. O gate e seus critérios permanecem inalterados. A mudança foi desenvolvida por TDD: os testes falharam primeiro nos três pontos ausentes e, após a implementação, a CI passou com Ruff verde e `106 passed, 4 warnings`. A validação real com Groq ainda está pendente.
+
+Aprendizado técnico: um repair baseado em validação programática é mais eficaz quando recebe feedback localizado sobre o artefato que falhou. Um motivo agregado identifica a classe do problema, mas não necessariamente fornece informação suficiente para uma correção determinística.
+
+
+## 24. Repair direcionado continuou repetindo conclusão sem citação no GPT-OSS
+
+Planejado: depois de informar explicitamente ao repair qual bloco estava sem citação, o GPT-OSS deveria adicionar uma fonte válida ao bloco ou removê-lo.
+
+Observado: no reteste real, a primeira tentativa continuou em cobertura 0,889 (8/9) e o repair também terminou em 0,889 (8/9), ambos com `syntax=yes` e `done_reason=stop`. O segundo prompt ficou maior, confirmando que o feedback adicional chegou ao modelo, mas a resposta continuou contendo um claim sem fonte.
+
+Diagnóstico: o problema deixou de ser falta de informação no prompt de repair. O provider, o formato de citação e o bloco exato já estavam corretamente identificados; mesmo assim, o modelo não garantiu a remoção ou citação do claim final. Portanto, depender apenas de mais prompting não oferece um guardrail determinístico.
+
+Correção: adicionar um último estágio determinístico após o único repair. Ele só é elegível quando a sintaxe das citações é válida, existe ao menos um claim corretamente citado e restam claim blocks sem citação. Esses blocos sem suporte são removidos, a resposta é revalidada e somente é aceita se a cobertura final chegar a 100%. Citações inválidas ou ausência completa de citações continuam indo para fallback. O desenvolvimento seguiu TDD: o teste falhou primeiro por ausência da função de poda; após a implementação, a CI passou com Ruff verde e `108 passed, 3 warnings`.
+
+Aprendizado técnico: guardrails de groundedness não devem depender exclusivamente de instruction-following do LLM. Quando a regra de segurança é estrutural e determinística, um pós-processamento limitado e auditável pode ser mais confiável do que retries adicionais de geração.
+
+
+## 25. Grounding passou em três domínios, mas o repair duplicou chamadas externas
+
+Planejado: validar se o fluxo Groq/GPT-OSS 120B generalizava além da pergunta de direitos e acompanhar o consumo de chamadas durante o desenvolvimento.
+
+Observado: três cenários oficiais distintos retornaram grounded=true: direitos da pessoa usuária, vacinação de pessoas idosas e saúde bucal na gestação. Nos três, porém, citation_retry_count=1, portanto cada pergunta exigiu duas gerações externas antes da resposta final. No caso de direitos, já havia sido demonstrado que um único claim sem citação podia ser removido deterministicamente e a resposta revalidada em 100%.
+
+Diagnóstico: o repair é necessário para falhas estruturais maiores, mas estava sendo acionado também em respostas com cobertura inicial alta e apenas um bloco uncited. Nesse padrão, a chamada adicional consome requisições e tokens da cota Groq sem necessariamente acrescentar conteúdo útil.
+
+Correção: introduzir uma condição conservadora de pós-processamento antes do repair: sintaxe válida, exatamente um bloco uncited, pelo menos um bloco citado e cobertura inicial >= 0,80. A poda só é aceita se a revalidação atingir 100%; caso contrário, o repair tradicional continua. TDD confirmou o comportamento: o teste novo falhou primeiro com duas chamadas ao LLM e a implementação final passou na CI com 109 passed, 4 warnings. No reteste real do endpoint /v1/chat com direitos_saude, a resposta permaneceu grounded=true, usou citation_ids=[1,2] e apresentou citation_retry_count=0, verificando que nenhuma chamada de repair ocorreu nessa execução. Como o contrato atual da API não expõe os estágios de validação, o log não permite afirmar se a resposta inicial já estava válida ou se a poda antecipada foi acionada.
+
+Aprendizado técnico: otimização de custo em RAG deve preservar o guardrail e ser acionada por evidência estrutural mensurável, não apenas por heurísticas de prompt. Evitar uma chamada externa é seguro apenas quando a transformação local é estritamente limitada e seguida de revalidação completa.
+
+
+## 26. Auditoria final encontrou poda pós-repair permissiva demais
+
+Planejado: usar o pós-processamento determinístico apenas para remover um pequeno resíduo sem citação, preservando uma resposta substancialmente grounded.
+
+Observado: a auditoria do PR #13 mostrou que, após o repair, bastava existir uma citação válida e sintaxe correta para a poda ser tentada. Um teste de regressão com 4 claims, dos quais apenas 1 estava citado, reproduziu o problema: o sistema removeu os outros 3 e retornou grounded=true com apenas 25% do conteúdo original sustentado antes da poda.
+
+Diagnóstico: a regra conservadora da D023 (cobertura >= 80% e exatamente 1 claim uncited) existia antes do repair, mas o caminho pós-repair ainda usava a condição antiga e ampla da D022. Isso podia transformar uma resposta muito incompleta em uma resposta curta estruturalmente válida, prejudicando completude.
+
+Correção: aplicar a mesma condição conservadora nos dois estágios. Pós-processamento, antes ou depois do repair, só é elegível com sintaxe válida, exatamente 1 claim uncited, pelo menos 1 claim citado e cobertura >= 0,80; a resposta podada ainda precisa revalidar em 100%. TDD confirmado: o teste falhou primeiro porque o caso de 25% era aceito; após a correção, CI verde com 110 testes aprovados e 4 warnings.
+
+Aprendizado técnico: groundedness estrutural não deve ser obtido à custa de apagar grande parte da resposta. Guardrails de poda precisam limitar também a perda de completude, não apenas validar a saída restante.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:

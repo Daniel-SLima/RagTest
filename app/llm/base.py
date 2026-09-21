@@ -1,6 +1,10 @@
 from typing import Protocol
 
 
+class LLMServiceUnavailableError(Exception):
+    """Raised when the configured LLM service remains temporarily unavailable."""
+
+
 class LLMProvider(Protocol):
     @property
     def model_name(self) -> str: ...

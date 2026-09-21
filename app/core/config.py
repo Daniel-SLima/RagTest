@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.5.18"
+    app_version: str = "0.5.19"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -46,8 +46,24 @@ class Settings(BaseSettings):
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.6-flash"
+    groq_api_key: str | None = None
+    groq_model: str = "openai/gpt-oss-120b"
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    groq_reasoning_effort: Literal["low", "medium", "high"] = "low"
+    groq_request_timeout_seconds: float = Field(default=120.0, ge=1.0, le=600.0)
+    ollama_base_url: str = "http://host.docker.internal:11434"
+    ollama_model: str = "qwen3:8b"
+    ollama_context_window: int = Field(default=8192, ge=2048, le=65536)
+    ollama_think: bool = False
+    ollama_request_timeout_seconds: float = Field(default=180.0, ge=1.0, le=600.0)
     llm_temperature: float = 0.1
     llm_max_output_tokens: int = 2400
+    llm_service_retry_attempts: int = Field(default=2, ge=0, le=5)
+    llm_service_retry_base_delay_seconds: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=30.0,
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -56,7 +72,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @field_validator("qdrant_api_key", "gemini_api_key", mode="before")
+    @field_validator("qdrant_api_key", "gemini_api_key", "groq_api_key", mode="before")
     @classmethod
     def empty_secret_is_none(cls, value: object) -> object:
         if value == "":

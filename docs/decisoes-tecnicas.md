@@ -168,3 +168,52 @@ Impacto:
 **Mudança:** a 0.5.18 introduz um contrato explícito para rótulos de fonte em datasets futuros: `acceptable_sources` representa alternativas OR (qualquer uma pode satisfazer o caso), enquanto `required_sources` só deve ser usado quando todas as fontes listadas forem deliberadamente exigidas para cobertura. O campo histórico `expected_sources` permanece suportado, mas é marcado como semântica legada ambígua.  
 **Motivo:** o dataset congelado 2026-09-20-v1 foi criado antes dessa distinção. Em casos com múltiplas `expected_sources`, as métricas SourceRecall/SourceNDCG tratam todas como conjuntamente relevantes, embora os rótulos não tenham sido produzidos como julgamentos completos de relevância.  
 **Impacto:** as métricas históricas e o holdout v1 permanecem intocados e reproduzíveis. A 0.5.18 não reinterpreta nem reescreve resultados antigos. Para datasets explícitos, o avaliador passa a usar `AcceptableHitRate` para alternativas OR e `RequiredRecall`/`RequiredNDCG` para fontes AND. Um caso explícito só passa quando satisfaz todas as condições declaradas. Runs não podem misturar esquema legado e explícito.
+
+
+## D018 — Medir cobertura de citações antes de introduzir um juiz semântico externo
+
+**Data:** 2026-09-20  
+**Mudança:** a 0.5.19 adiciona uma validação determinística de cobertura estrutural das citações por bloco informativo. Ela complementa a validação sintática já existente, que apenas verificava se havia ao menos uma citação válida e se os IDs estavam no intervalo disponível.  
+**Motivo:** uma resposta pode passar na validação sintática mesmo contendo várias afirmações sem citação. Ao mesmo tempo, usar imediatamente um LLM externo como juiz de entailment poderia reenviar trechos recuperados, inclusive de fontes CHATSCM ainda não revisadas manualmente quanto à privacidade.  
+**Impacto:** `ragtest-check-grounding-coverage` mede se cada bloco informativo contém ao menos uma citação válida, sem chamar LLM externo. Após o self-check determinístico passar, a segunda etapa promove essa cobertura a gate do runtime: uma resposta com citação válida em apenas parte dos blocos é reparada uma vez; se a segunda tentativa continuar com cobertura incompleta, o chat usa o fallback seguro e retorna `grounded=false`. Essa checagem continua estrutural e não prova que a fonte citada sustenta semanticamente a afirmação. Qualquer juiz semântico externo permanece adiado até existir política adequada de privacidade para os CHATSCM.
+
+
+## D019 — Retry de aplicação somente para indisponibilidade transitória do LLM
+
+**Data:** 2026-09-20  
+**Mudança:** o provider Gemini passa a executar até 2 retries adicionais de aplicação, com backoff exponencial curto, somente para códigos transitórios 429/500/502/503/504.  
+**Motivo:** no teste real da 0.5.19, o SDK propagou 503 UNAVAILABLE por alta demanda mesmo após sua política interna de retry.  
+**Impacto:** falhas transitórias recebem uma segunda janela limitada de recuperação. Após esgotamento, o provider levanta `LLMServiceUnavailableError`; a API responde 503 e o CLI mostra mensagem amigável. Erros 4xx não transitórios não são repetidos. Os parâmetros são configuráveis por `LLM_SERVICE_RETRY_ATTEMPTS` e `LLM_SERVICE_RETRY_BASE_DELAY_SECONDS`. Essa mudança não altera retrieval, corpus ou Qdrant.
+
+
+## D020 — Ollama como provider local explícito, sem fallback automático entre modelos
+
+**Data:** 2026-09-20  
+**Mudança:** adicionar `OllamaProvider` à interface existente de LLM e permitir seleção explícita por `LLM_PROVIDER=ollama`, usando `qwen3:8b`, `think=false` e contexto 8192 como baseline local inicial.  
+**Motivo:** o Gemini ficou temporariamente indisponível durante a validação da 0.5.19, e o notebook local confirmou execução do Qwen3 8B com API acessível a partir do container Docker.  
+**Evidência local:** `qwen3:8b` Q4_K_M, 8.2B parâmetros, resposta sem reasoning com `think=false`, contexto 8192, carga observada de aproximadamente 36% CPU / 64% GPU nesse contexto e acesso via `http://host.docker.internal:11434`.  
+**Impacto:** o mesmo retrieval, corpus, Qdrant e gate de grounding podem ser testados com Gemini ou Ollama sem reindexação. A troca é explícita para preservar rastreabilidade experimental; não há fallback automático Gemini→Ollama nesta etapa. O provider rejeita vazamento de `</think>` quando thinking está desativado.
+
+
+## D021 — Groq como terceiro provider explícito para contingência e comparação
+
+**Data:** 2026-09-20  
+**Mudança:** adicionar `GroqProvider` à interface de LLM, inicialmente com `openai/gpt-oss-120b`, seleção explícita por `LLM_PROVIDER=groq` e sem fallback automático entre providers.  
+**Motivo:** o Gemini apresentou indisponibilidade transitória por 503 e, posteriormente, 429 mesmo após retries; o Qwen3 8B local é funcional, mas a geração medida no notebook ficou em aproximadamente 8,94 tokens/s. A Groq oferece endpoint OpenAI-compatible e permite testar o GPT-OSS 120B sem alterar retrieval, corpus ou Qdrant.  
+**Impacto:** o mesmo RAG pode ser executado explicitamente com Gemini, Groq/GPT-OSS 120B ou Ollama/Qwen3 8B. O provider Groq desativa reasoning na resposta, mantém reasoning effort baixo, registra tokens/latência e trata 429/498/5xx como falhas transitórias limitadas. Testes externos continuam restritos a fontes oficiais enquanto CHATSCM não tiver revisão manual de privacidade.
+
+
+## D022 — Pós-processamento determinístico remove claims sem citação após o repair
+
+**Data:** 2026-09-20  
+**Mudança:** após a geração inicial e um único repair, o RagTest pode remover deterministicamente o claim sem citação apenas quando a resposta reparada mantém sintaxe válida, exatamente um claim uncited, pelo menos um claim citado e cobertura de pelo menos 80%. A resposta é revalidada e só é aceita se a cobertura resultante for 100%.  
+**Motivo:** no teste real com Groq/GPT-OSS 120B, o modelo manteve repetidamente uma conclusão final sem citação mesmo quando o repair recebeu o bloco exato que precisava ser corrigido. Continuar adicionando retries ou relaxar o gate tornaria o comportamento menos previsível.  
+**Impacto:** o sistema deixa de depender exclusivamente da obediência do LLM no último estágio sem permitir poda ampla de respostas pouco sustentadas. Citações fora do intervalo, baixa cobertura, múltiplos claims sem citação, respostas sem nenhuma citação válida ou respostas que continuem inválidas após a poda caem no fallback seguro. O CLI passa a distinguir `stage=initial`, `stage=repair` e `stage=postprocess`, enquanto `citation_retry_count` permanece representando apenas chamadas adicionais ao LLM. Validado em runtime com Groq/GPT-OSS 120B: `initial 8/9`, `repair 8/9`, `postprocess 8/8`, cobertura final 1.000 e `grounded=true`.
+
+
+## D023 — Pós-processamento antecipado para alta cobertura evita repair externo desnecessário
+
+**Data:** 2026-09-20  
+**Mudança:** antes de chamar o repair do LLM, o RagTest pode tentar a poda determinística quando a resposta inicial já possui sintaxe de citação válida, exatamente um claim sem citação, pelo menos um claim citado e cobertura estrutural de pelo menos 80%. A resposta podada é revalidada e só é aceita se atingir 100% de cobertura.  
+**Motivo:** três validações reais com fontes oficiais distintas — direitos da pessoa usuária, vacinação da pessoa idosa e saúde bucal na gestação — terminaram com grounded=true, mas todas consumiram citation_retry_count=1. No padrão observado, um único bloco uncited podia ser eliminado deterministicamente, tornando a segunda chamada externa um custo evitável de tokens e requisições.  
+**Impacto:** casos de alta cobertura podem terminar com uma única chamada ao LLM e citation_retry_count=0. Respostas com cobertura inferior a 80%, mais de um claim uncited ou sintaxe inválida preservam o fluxo anterior de repair/fallback. A mudança foi desenvolvida por TDD; o teste novo falhou primeiro porque duas chamadas ainda eram feitas e, após a implementação, a CI passou com Ruff verde e 109 passed, 4 warnings. Observado em runtime com Groq/GPT-OSS 120B no cenário de direitos_saude: grounded=true, citation_ids=[1,2] e citation_retry_count=0, confirmando que nenhuma chamada de repair foi necessária nessa execução. Como a resposta da API não expõe os estágios de validação, esse log isolado não distingue uma resposta inicial já válida de um caso resolvido por postprocess-before-repair.

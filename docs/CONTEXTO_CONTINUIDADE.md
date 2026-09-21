@@ -1040,3 +1040,376 @@ Ollama defaults:
 Sem fallback automático nesta etapa. A intenção é permitir comparação controlada do mesmo RAG entre Gemini e Qwen3 8B.
 
 Próximo teste após CI/rebuild: definir `LLM_PROVIDER=ollama`, executar `ragtest-runtime-info --skip-qdrant` e repetir a pergunta oficial de direitos com `--category direitos_saude --no-decompose`. Não reindexar.
+
+
+### Primeira validação RAG real com Qwen3 8B — aguardando diagnóstico
+
+A validação local do provider Ollama foi executada com `LLM_PROVIDER=ollama`, `qwen3:8b`, `OLLAMA_CONTEXT_WINDOW=8192`, `OLLAMA_THINK=false` e `LLM_MAX_OUTPUT_TOKENS=4096`.
+
+Verificado:
+
+- `/health` retornou versão 0.5.19;
+- `ragtest-runtime-info --skip-qdrant` confirmou provider/modelo/configuração esperados;
+- `ragtest-check-grounding`: PASS;
+- `ragtest-check-grounding-coverage`: PASS;
+- o retrieval real para "Quais são os direitos da pessoa usuária da saúde?" com `--category direitos_saude --no-decompose` retornou cinco páginas da Carta oficial.
+
+Falha observada:
+
+- execução do chat levou aproximadamente seis minutos;
+- `citation_retry_count=1`, portanto houve geração inicial + uma geração de reparo;
+- ambas não produziram saída aceita pelo gate;
+- resultado final: `grounded=false`, sem `citation_ids`, com fallback seguro.
+
+Registrado como Dificuldade TCC #17.
+
+Diagnóstico atual: retrieval e validadores determinísticos estão funcionando no cenário observado, mas o provider não expõe ainda os metadados de timing/tokenização retornados pelo Ollama nem preserva para diagnóstico as respostas rejeitadas pelo gate. A causa exata da latência e da reprovação estrutural ainda é hipótese e não deve ser tratada como corrigida.
+
+O teste controlado seguinte alterou somente `LLM_MAX_OUTPUT_TOKENS` de 4096 para 512. O resultado manteve `citation_retry_count=1`, `grounded=false` e as mesmas cinco fontes recuperadas, mas reduziu o tempo total para 158,5 s. Isso verifica que o orçamento de saída influencia fortemente a latência, mas não explica nem corrige a reprovação do gate.
+
+Um teste direto do `qwen3:8b` fora do RAG mediu 254 tokens em 28,68 s, com 8,94 tokens/s; o tempo de avaliação do prompt curto foi de aproximadamente 0,21 s e o de geração de saída, 28,42 s.
+
+Instrumentação implementada na mesma branch, sem alterar o comportamento funcional:
+
+- `OllamaProvider` passa a preservar métricas por geração: duração total/carga, tokens e duração do prompt, tokens e duração de saída, tokens/s e `done_reason`;
+- o CLI passa a mostrar o diagnóstico estrutural de cada tentativa do gate: validade, sintaxe, cobertura, blocos citados/total e motivo da reprovação;
+- respostas brutas rejeitadas não são persistidas nem impressas;
+- CI verificada: Ruff `All checks passed!`; pytest `92 passed, 4 warnings`.
+
+Próxima ação: atualizar/rebuildar o ambiente local e repetir a mesma pergunta com override temporário de 512 tokens para observar as novas métricas. Não reindexar Qdrant e não fazer merge do PR #13.
+
+
+### Reteste do Gemini após período de 503
+
+O mesmo chat oficial foi executado com override temporário `LLM_PROVIDER=gemini`, sem alterar o `.env`.
+
+Resultado observado:
+
+- o Gemini recebeu um erro transitório 503 na primeira tentativa;
+- o retry de aplicação entrou em ação após 1 segundo;
+- a chamada subsequente conseguiu prosseguir;
+- o retrieval retornou as mesmas cinco páginas da Carta oficial;
+- o chat terminou com `grounded=false`, `citation_retry_count=1` e sem `citation_ids`.
+
+Conclusão atual:
+
+- o Gemini está novamente acessível, mas ainda apresenta oscilação transitória;
+- o retry da Dificuldade #15 funcionou no cenário real;
+- como Gemini e Qwen3 8B chegaram ao mesmo fallback estrutural, a investigação do grounding passa a priorizar o contrato compartilhado de prompt/gate, não um provider específico;
+- registrado como Dificuldade TCC #18;
+- Gemini pode voltar a ser o provider principal de desenvolvimento, com Ollama como contingência manual; fallback automático continua fora do escopo desta etapa para preservar rastreabilidade.
+
+Próxima ação: atualizar/rebuildar a imagem com a instrumentação já implementada e repetir o mesmo teste com Gemini para capturar `Citation validation attempts`. Não reindexar Qdrant e não fazer merge do PR #13.
+
+
+### Diagnóstico do gate após instrumentação — heading Markdown e repair direcionado
+
+O reteste real com Gemini usando a instrumentação mostrou:
+
+    tentativa 1: syntax=yes, coverage=0.786, blocks=22/28
+    tentativa 2: syntax=yes, coverage=0.767, blocks=23/30
+    resultado: grounded=false, citation_retry_count=1
+
+A investigação encontrou dois pontos no contrato compartilhado do gate:
+
+1. headings Markdown como `## Direitos da pessoa usuária` eram tratados como claim blocks quando não terminavam em dois-pontos;
+2. o chamado "repair" não recebia a resposta anterior nem o motivo específico da falha e, portanto, regenerava do zero.
+
+Registrado como Dificuldade TCC #19.
+
+Correção implementada e verificada em CI (`All checks passed!`; `94 passed, 4 warnings`), aguardando validação real:
+
+- headings Markdown iniciados por `#` não contam como afirmação informativa;
+- parágrafos e itens continuam exigindo citações válidas;
+- o retry recebe a resposta anterior e o motivo da validação;
+- o modelo é instruído a revisar a resposta existente sem acrescentar novas afirmações;
+- testes adicionados para os dois comportamentos.
+
+Próxima ação: aguardar CI, rebuildar e repetir exatamente o chat oficial com Gemini. Não reindexar Qdrant e não fazer merge do PR #13.
+
+
+### Nova oscilação do Gemini — 429 após retries
+
+Após o rebuild com a correção do gate, duas execuções do chat oficial com `LLM_PROVIDER=gemini` não chegaram à geração: ambas receberam `429` na chamada inicial e nos dois retries configurados (1 s e 2 s), terminando com `LLMServiceUnavailableError`.
+
+Isso não invalida a correção do gate; o teste real dessa correção continua pendente porque o provider externo não chegou a produzir resposta. A Dificuldade #15 foi atualizada para registrar que a indisponibilidade do Gemini agora também se manifesta como rate limit/cota, além do 503 já observado.
+
+Próxima decisão: avaliar um terceiro provider de desenvolvimento/fallback manual sem alterar corpus, retrieval ou Qdrant. O Ollama continua disponível localmente; nenhum fallback automático foi habilitado.
+
+
+### Integração Groq / GPT-OSS 120B
+
+Após novas falhas 429 do Gemini, foi iniciada a integração de um terceiro provider explícito para desenvolvimento e contingência manual:
+
+    LLM_PROVIDER=groq
+    GROQ_MODEL=openai/gpt-oss-120b
+    GROQ_BASE_URL=https://api.groq.com/openai/v1
+    GROQ_REASONING_EFFORT=low
+
+A integração preserva a interface `LLMProvider`, corpus, retrieval, Qdrant e gate de grounding. Não existe fallback automático nesta etapa.
+
+Características implementadas:
+
+- API OpenAI-compatible da Groq via HTTP, sem nova dependência Python;
+- `include_reasoning=false` para não expor reasoning;
+- citações nativas da Groq desabilitadas para preservar o contrato `[n]` do RagTest;
+- retry limitado para 429/498/500/502/503/504;
+- respeito a `Retry-After` com espera limitada;
+- métricas de prompt/output e latência expostas ao CLI;
+- chave somente via `GROQ_API_KEY` no ambiente;
+- runtime-info identifica provider/modelo/configuração.
+
+D021 registra a decisão. A validação real deve usar somente a categoria oficial `direitos_saude`; CHATSCM continua proibido em providers externos antes de revisão manual de privacidade.
+
+CI da integração Groq verificada: Ruff `All checks passed!`; pytest `101 passed, 4 warnings`. Próximo passo: adicionar a chave Groq somente no `.env` local, rebuildar e testar primeiro o `runtime-info` e depois o chat RAG oficial. Não reindexar Qdrant.
+
+
+### Primeira validação real da Groq — Cloudflare 1010
+
+O `runtime-info` confirmou corretamente:
+
+    llm_provider: groq
+    llm_model: openai/gpt-oss-120b
+    groq_base_url: https://api.groq.com/openai/v1
+    groq_reasoning_effort: low
+
+As duas primeiras chamadas reais ao chat falharam antes da geração com `HTTP 403` e `error code: 1010`. O traceback mostrou o bloqueio em `urllib.request.urlopen`.
+
+Diagnóstico: Cloudflare 1010 indica bloqueio por assinatura do cliente HTTP. O provider usava o `User-Agent` padrão do `urllib`, portanto o erro não prova chave inválida e não chegou ao modelo. Registrado como Dificuldade TCC #20.
+
+Correção implementada:
+
+- `GroqProvider` envia `Accept: application/json`;
+- envia `User-Agent: Mozilla/5.0 (compatible; RagTest/0.5.19)`;
+- teste de regressão exige `User-Agent` explícito;
+- nenhuma alteração em corpus, retrieval, Qdrant, prompt ou modelo.
+
+CI da correção verificada: Ruff verde; pytest `102 passed, 4 warnings`. Próxima ação: rebuildar a imagem e repetir apenas o teste curto Groq com 512 tokens. Se ele chegar ao modelo, então executar a pergunta completa. Não reindexar Qdrant.
+
+
+### Groq chegou ao GPT-OSS 120B — transporte validado, citações pendentes
+
+Após a correção do User-Agent, o teste curto com `LLM_PROVIDER=groq`, `openai/gpt-oss-120b`, duas fontes oficiais e 512 tokens chegou ao modelo com sucesso.
+
+Resultado:
+
+    geração 1: 1,12 s | 512 tokens | ~478,05 tok/s | done_reason=length
+    geração 2: 0,94 s | 409 tokens | ~478,22 tok/s | done_reason=stop
+    citation validation 1: syntax=no | coverage=0.000 | 0/9
+    citation validation 2: syntax=no | coverage=0.000 | 0/9
+    grounded=false
+
+A Dificuldade #20 fica validada como corrigida em runtime: o 403/1010 desapareceu.
+
+Nova Dificuldade #21: o GPT-OSS 120B não produziu nenhuma citação literal `[n]` em nenhuma das duas tentativas. Como o repair terminou por `stop`, a falha não pode ser atribuída somente ao teto de 512 tokens.
+
+Próxima ação: executar uma chamada direta mínima ao `GroqProvider`, sem retrieval, solicitando explicitamente uma frase com `[1]`. Não alterar prompt/gate antes desse isolamento. Não reindexar Qdrant.
+
+
+### Teste literal de citação no GPT-OSS 120B
+
+Uma chamada direta ao `GroqProvider`, sem retrieval e com `LLM_MAX_OUTPUT_TOKENS=256`, solicitou exatamente:
+
+    Direito teste [1].
+
+O modelo retornou exatamente essa frase, incluindo `[1]`.
+
+Conclusão: o GPT-OSS 120B e o `GroqProvider` conseguem obedecer ao formato literal de citação. A Dificuldade #21 fica restrita ao caminho RAG completo; não há evidência para trocar o provider nem para afrouxar o gate.
+
+Próxima ação: capturar uma geração RAG bruta antes da validação, usando somente a categoria oficial `direitos_saude`, para observar o efeito do prompt/contexto. Não reindexar Qdrant.
+
+
+### Causa da falha de citações do GPT-OSS isolada — variante Unicode
+
+A geração RAG bruta do GPT-OSS 120B revelou que o modelo estava citando as fontes, mas emitia:
+
+    【1】
+    【2】
+
+em vez do formato canônico:
+
+    [1]
+    [2]
+
+Isso explica por que o gate reportava `syntax=no`, `coverage=0.000` e 0 blocos citados apesar de a resposta visualmente conter referências válidas.
+
+Correção implementada:
+
+- normalização estrita `【n】 -> [n]`;
+- aplicada imediatamente após a geração inicial e após o repair;
+- `extract_citation_ids` também reconhece a variante por normalização;
+- IDs continuam obrigados a estar dentro do intervalo de fontes;
+- blocos informativos continuam exigindo citação;
+- resposta final usa o formato canônico ASCII;
+- testes reproduzem o caso do GPT-OSS.
+
+CI verificada: Ruff `All checks passed!`; pytest `105 passed, 4 warnings`.
+
+Próxima ação: rebuildar e repetir o chat oficial curto com Groq usando 1024 tokens. A correção ainda precisa de validação real antes de marcar a Dificuldade #21 como resolvida em runtime. Não reindexar Qdrant.
+
+
+### Dificuldade #22 — introdução estrutural de lista no gate
+
+Após a normalização `【n】 -> [n]`, o reteste real com Groq avançou para:
+
+    syntax=yes
+    coverage=0.889
+    blocks=8/9
+    done_reason=stop nas duas gerações
+
+A regressão reproduziu a causa: uma introdução longa terminada em dois-pontos antes de uma lista citada era contada como claim independente.
+
+Correção implementada:
+
+- uma linha terminada em `:` só é tratada como introdução estrutural quando o próximo bloco não vazio é um item real de lista;
+- os itens continuam obrigados a conter citações válidas;
+- demais frases informativas continuam sujeitas ao gate;
+- CI verificada: Ruff `All checks passed!`; pytest `106 passed, 4 warnings`.
+
+Próxima ação: rebuildar e repetir exatamente o mesmo chat curto com Groq e 1024 tokens. Não reindexar Qdrant.
+
+
+### Reteste após correção da introdução de lista
+
+O chat curto com Groq/GPT-OSS 120B e 1024 tokens foi repetido após a correção contextual da introdução de lista.
+
+Resultado real permaneceu:
+
+    tentativa 1: syntax=yes | coverage=0.889 | blocks=8/9
+    tentativa 2: syntax=yes | coverage=0.889 | blocks=8/9
+    grounded=false
+    done_reason=stop nas duas gerações
+
+Conclusão: a regra de introdução de lista está coberta por teste e CI, mas não explica sozinha o bloco uncited do caso real. A Dificuldade #22 continua aberta em runtime.
+
+Próxima ação: capturar novamente a resposta RAG bruta e comparar linha a linha com a classificação do gate para identificar exatamente qual bloco está sendo contado como uncited. Não alterar o gate até essa identificação.
+
+
+### Dificuldade #23 — repair agora recebe o bloco uncited exato
+
+O diagnóstico linha a linha isolou o bloco real que causava `8/9`:
+
+    Esses direitos são extraídos dos documentos citados e refletem as garantias previstas para as pessoas usuárias dos serviços de saúde.
+
+A introdução da lista estava corretamente classificada como estrutural, e os dez itens estavam citados. Portanto, a hipótese anterior de que a introdução explicava o caso real foi descartada.
+
+Problema identificado: o repair recebia apenas um motivo genérico de cobertura incompleta, sem o texto do bloco que precisava ser corrigido.
+
+Correção implementada:
+
+- `CitationCoverage` preserva `uncited_blocks`;
+- o repair recebe uma seção `BLOCOS SEM CITAÇÃO VÁLIDA`;
+- o modelo deve citar o bloco somente se houver fonte que o sustente ou removê-lo se for desnecessário;
+- nenhuma regra do gate foi relaxada;
+- TDD confirmado: os novos testes falharam antes da implementação;
+- CI após implementação: Ruff `All checks passed!`; pytest `106 passed, 4 warnings`.
+
+Próxima ação: rebuildar e repetir exatamente o mesmo chat curto com Groq e 1024 tokens. O resultado esperado é primeira tentativa possivelmente 8/9 e segunda tentativa 100%, ou primeira tentativa já 100% se a geração variar. Não reindexar Qdrant.
+
+
+### Pós-processamento determinístico após repair — D022 / Dificuldade #24
+
+O reteste real do repair localizado ainda retornou:
+
+    tentativa 1: syntax=yes | coverage=0.889 | blocks=8/9
+    tentativa 2: syntax=yes | coverage=0.889 | blocks=8/9
+    done_reason=stop nas duas gerações
+
+Como o bloco uncited já era explicitamente enviado ao repair, a estratégia baseada apenas em prompting foi considerada insuficiente.
+
+Implementação atual:
+
+1. geração inicial;
+2. validação estrutural;
+3. um único repair com blocos uncited explícitos;
+4. nova validação;
+5. se a sintaxe estiver válida, houver pelo menos um claim citado e restarem claims sem citação, remover deterministicamente apenas esses claims;
+6. revalidar;
+7. aceitar somente se a cobertura final for 100%; caso contrário, fallback seguro.
+
+O CLI passa a mostrar:
+
+    stage=initial
+    stage=repair
+    stage=postprocess
+
+`citation_retry_count` continua contando somente retries de LLM, portanto permanece 1 quando o postprocess é usado.
+
+TDD confirmado e CI verificada: Ruff `All checks passed!`; pytest `108 passed, 3 warnings`.
+
+Próxima ação: rebuildar e repetir o mesmo chat curto com Groq e 1024 tokens. O resultado esperado, caso o modelo repita o padrão observado, é initial 8/9, repair 8/9, postprocess 100% e `Grounded: yes`. Não reindexar Qdrant.
+
+
+### Groq/GPT-OSS 120B — grounding estrutural validado em runtime
+
+O reteste após a D022 confirmou o fluxo completo:
+
+    Grounded: yes
+    Citation ids: [1, 2]
+    Citation retries: 1
+
+    [1] stage=initial     valid=no  syntax=yes coverage=0.889 blocks=8/9
+    [2] stage=repair      valid=no  syntax=yes coverage=0.889 blocks=8/9
+    [3] stage=postprocess valid=yes syntax=yes coverage=1.000 blocks=8/8
+
+Métricas observadas:
+
+    geração inicial: 1,14 s | 516 tokens | ~476,58 tok/s | stop
+    repair:          1,63 s | 488 tokens | ~316,53 tok/s | stop
+
+A resposta final manteve apenas os oito blocos citados e removeu o claim final sem fonte.
+
+Status:
+
+- `GroqProvider`: verificado em runtime;
+- `openai/gpt-oss-120b`: verificado para geração RAG oficial;
+- normalização `【n】 -> [n]`: verificada em runtime;
+- repair localizado: implementado, mas insuficiente sozinho no caso observado;
+- pós-processamento determinístico D022: verificado em runtime;
+- grounding estrutural final: verificado com `coverage=1.000`;
+- grounding semântico/entailment de cada claim para a fonte citada: ainda não verificado automaticamente.
+
+O Groq pode ser usado como provider principal de desenvolvimento enquanto o Gemini estiver limitado, mantendo a seleção explícita e sem fallback automático. CHATSCM continua proibido em providers externos antes da revisão manual de privacidade.
+
+
+### D023 — otimização de cota validada em CI
+
+Três testes reais com fontes oficiais distintas passaram com grounded=true: direitos_saude, vacinacao/idoso e gestacao/saude bucal. Nos três houve citation_retry_count=1.
+
+Foi implementado postprocess antes do repair apenas quando a resposta inicial tem sintaxe válida, exatamente um claim sem citação, pelo menos um claim citado e cobertura >= 0,80. A poda é aceita somente após revalidação em 100%; caso contrário, o repair normal continua.
+
+TDD confirmado: o novo teste falhou primeiro com duas chamadas ao LLM. Após a implementação, CI verde com 109 testes aprovados e 4 warnings.
+
+Próxima ação: rebuildar e repetir um único teste real com Groq. Esperado no padrão conhecido: grounded=true e citation_retry_count=0. Não reindexar Qdrant.
+
+
+### D023 — validação real concluída
+
+O reteste real de direitos_saude após a otimização observou:
+
+    grounded=true
+    citation_ids=[1,2]
+    citation_retry_count=0
+
+A resposta final manteve os oito direitos citados e não precisou de uma segunda geração Groq. Isso confirma a execução sem repair externo, mas o JSON da API não expõe citation_validation_attempts; portanto, não distingue se a geração inicial já estava totalmente válida ou se o postprocess-before-repair foi acionado. A lógica da D023 permanece verificada por TDD/CI; o caminho interno específico ainda não foi observado diretamente em runtime.
+
+Status da 0.5.19: grounding estrutural, normalização de citações, repair localizado, postprocess determinístico e otimização de cota estão implementados e verificados em CI; os fluxos principais foram validados em runtime com fontes oficiais de direitos_saude, vacinacao/idoso e gestacao/saude bucal. Grounding semântico/entailment automático continua fora do escopo validado desta versão.
+
+
+### Auditoria final do PR #13 — proteção contra poda excessiva
+
+A auditoria identificou que o caminho pós-repair ainda aceitava poda com qualquer cobertura, desde que existisse ao menos um claim citado. Um teste novo reproduziu um caso de 25% de cobertura que era reduzido a um único claim e aceito como grounded=true.
+
+Correção final:
+
+- a regra conservadora passa a valer antes e depois do repair;
+- sintaxe de citação válida;
+- exatamente 1 claim uncited;
+- pelo menos 1 claim citado;
+- cobertura >= 0,80;
+- revalidação obrigatória em 100%;
+- fora dessas condições, o fluxo segue para repair ou fallback.
+
+TDD: RED com 1 falha e 109 testes passando; GREEN após correção com Ruff verde e 110 testes aprovados, 4 warnings.
+
+A auditoria também confirmou que o PR #13 não altera data/source, corpus, OCR, chunks, embeddings ou a collection Qdrant. README e metadados do pacote foram atualizados para refletir Groq, múltiplos providers e o fluxo final da 0.5.19.

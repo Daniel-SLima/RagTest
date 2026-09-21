@@ -9,7 +9,7 @@ from app.api.dependencies import (
     get_vector_store,
 )
 from app.core.config import Settings, get_settings
-from app.llm.base import LLMProvider
+from app.llm.base import LLMProvider, LLMServiceUnavailableError
 from app.rag.chat import answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
@@ -60,6 +60,11 @@ async def chat(
             auto_decompose=auto_decompose,
             max_subqueries=settings.retrieval_max_subqueries,
         )
+    except LLMServiceUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
     except Exception as exc:

@@ -1,4 +1,8 @@
-from app.rag.citations import extract_citation_ids, validate_citations
+from app.rag.citations import (
+    extract_citation_ids,
+    normalize_citation_markup,
+    validate_citations,
+)
 
 
 def test_extract_citation_ids_deduplicates_and_sorts() -> None:
@@ -25,3 +29,16 @@ def test_validate_citations_rejects_out_of_range_id() -> None:
 
     assert result.valid is False
     assert result.invalid_ids == (3,)
+
+
+def test_normalize_citation_markup_converts_unicode_brackets() -> None:
+    assert normalize_citation_markup("Direito A【1】 e Direito B【2】.") == (
+        "Direito A[1] e Direito B[2]."
+    )
+
+
+def test_validate_citations_accepts_unicode_bracket_variant() -> None:
+    result = validate_citations("Direito sustentado pela fonte【1】.", 1)
+
+    assert result.valid is True
+    assert result.citation_ids == (1,)

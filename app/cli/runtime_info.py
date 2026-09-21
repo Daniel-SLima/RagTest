@@ -78,6 +78,19 @@ async def run(args: argparse.Namespace) -> None:
     print(f"fastapi: {_package_version('fastapi')}")
     print(f"pymupdf: {_package_version('pymupdf')}")
     print(f"pypdf: {_package_version('pypdf')}")
+    print(f"llm_provider: {settings.llm_provider}")
+    if settings.llm_provider == "ollama":
+        print(f"llm_model: {settings.ollama_model}")
+        print(f"ollama_base_url: {settings.ollama_base_url}")
+        print(f"ollama_context_window: {settings.ollama_context_window}")
+        print(f"ollama_think: {settings.ollama_think}")
+    elif settings.llm_provider == "groq":
+        print(f"llm_model: {settings.groq_model}")
+        print(f"groq_base_url: {settings.groq_base_url}")
+        print(f"groq_reasoning_effort: {settings.groq_reasoning_effort}")
+    else:
+        print(f"llm_model: {settings.gemini_model}")
+    print(f"llm_max_output_tokens: {settings.llm_max_output_tokens}")
     print(f"embedding_model: {settings.embedding_model}")
     print(f"sparse_embedding_model: {settings.sparse_embedding_model}")
     print(f"sparse_embedding_language: {settings.sparse_embedding_language}")
