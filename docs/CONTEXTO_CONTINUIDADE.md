@@ -1588,18 +1588,18 @@ Após cada avanço relevante, informar explicitamente ao usuário:
 
 ### Estado atual
 
-Versão integrada em main: 0.5.20.
-Versão em desenvolvimento: 0.5.21.
-Branch atual de trabalho: `feature/chatbot-demo-frontend-0.5.21`.
-PR atual: #16 draft.
+Versão integrada em main: 0.5.21.
+Versão em desenvolvimento: 0.5.22.
+Branch atual de trabalho: `feature/frontend-fastapi-0.5.22`.
+PR atual: #17 draft.
 
 A prioridade da 0.5.21 foi redefinida após alinhamento com o e-mail completo do orientador. O scaffold Next.js criado inicialmente no PR #16 foi substituído por React Native + Expo + TypeScript. O frontend demonstrativo agora segue a linha multiplataforma sugerida no TCC e continua desacoplado do backend.
 
 ### Roadmap
 
-    0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat
+    0.5.21  Scaffold React Native + Expo + TypeScript + CI + contrato /v1/chat [CONCLUÍDA]
        ->
-    0.5.22  Chat funcional consumindo FastAPI por REST
+    0.5.22  Chat funcional consumindo FastAPI por REST [ATUAL]
        ->
     0.5.23  Rich-text, citações, fontes e links
        ->
@@ -1778,3 +1778,104 @@ Status final da 0.5.21:
     backend ........................... inalterado
     corpus/Qdrant ..................... inalterados
     integração tela -> FastAPI ........ próxima versão (0.5.22)
+
+
+### Início e checkpoint da 0.5.22 — integração Expo -> FastAPI
+
+Base da versão:
+
+    main validada/mesclada: 0.5.21
+    merge 0.5.21: f369db053761b31175588d22ac586c56d4670746
+    branch: feature/frontend-fastapi-0.5.22
+    PR: #17 draft
+
+Objetivo da 0.5.22:
+
+Conectar a interface Expo ao backend real por REST, sem mover regras de RAG para o frontend e sem alterar corpus, embeddings ou Qdrant.
+
+Implementado até este checkpoint:
+
+- CORS configurável no FastAPI;
+- origens padrão restritas a localhost:8081 e 127.0.0.1:8081;
+- teste confirma preflight permitido e origem desconhecida não liberada;
+- URL do backend configurável por EXPO_PUBLIC_RAG_API_BASE_URL;
+- padrão de desenvolvimento web: http://localhost:8000;
+- botão Enviar conectado a sendChatMessage;
+- pergunta da usuária renderizada na tela;
+- loading "Buscando resposta...";
+- resposta textual da API renderizada;
+- botão desabilitado para pergunta com menos de 2 caracteres;
+- envio desabilitado durante chamada em andamento;
+- erro de rede mostrado de forma amigável;
+- ChatApiError criado para HTTP não-2xx com status e detail;
+- exemplos de URL para web, Android emulator e dispositivo físico;
+- backend/frontend/versionamento alinhados para 0.5.22;
+- Dificuldade #28 registrada;
+- D027 registrada.
+
+TDD/CI observado:
+
+1. RED CORS:
+       OPTIONS /v1/chat -> 405
+       1 failed, 114 passed, 6 warnings
+
+2. GREEN CORS:
+       115 passed, 6 warnings
+       frontend 3/3
+       Ruff verde
+
+3. RED integração da tela:
+       pergunta não aparecia após Enviar
+
+4. implementação da tela:
+       testes funcionais passaram, mas o teste usava eventos síncronos incompatíveis com RNTL 14;
+       correção do teste para await fireEvent.changeText / await fireEvent.press.
+
+5. typecheck:
+       lógica funcional 4/4 passou;
+       TS2591 em process.env;
+       corrigido com @types/node + types node.
+
+6. RED erro HTTP:
+       Promise resolveu em HTTP 503 quando deveria rejeitar.
+
+7. GREEN erro HTTP:
+       ChatApiError implementado.
+
+Decisão de compatibilidade:
+
+- Expo Web no mesmo PC usa http://localhost:8000 por padrão;
+- Android Emulator usa normalmente http://10.0.2.2:8000;
+- dispositivo físico precisa apontar para o IP LAN da máquina;
+- CORS só afeta clientes web em navegador; origens adicionais precisam ser explicitamente autorizadas;
+- não usar allow_origins=["*"] como atalho.
+
+Estado aproximado da 0.5.22: 85% implementada.
+
+Aguardando:
+
+- CI final do head consolidado;
+- validação local ponta a ponta com Docker/FastAPI + Expo Web;
+- confirmação visual de pergunta, loading e resposta RAG real.
+
+Próximo passo exato:
+
+1. confirmar CI final;
+2. usuário atualizar branch feature/frontend-fastapi-0.5.22;
+3. rebuildar/subir backend Docker sem recriar Qdrant;
+4. iniciar Expo Web;
+5. fazer uma pergunta oficial pela tela;
+6. confirmar que a resposta real do /v1/chat aparece na interface;
+7. registrar runtime e, se estiver tudo correto, fechar/mesclar 0.5.22.
+
+Roadmap após este checkpoint:
+
+    0.5.21  Expo + contrato REST ............ concluída/merged
+    0.5.22  tela -> FastAPI real ............ atual (~85%)
+    0.5.23  rich-text + fontes + citações ... próxima
+    0.5.24  UX + erros + grounding .......... futura
+    0.6.x   sessões .......................... futura
+    0.7.x   auditoria/LGPD/segurança ........ futura
+    0.8.x   agendamento/lembretes ........... futura
+    0.9.x   avaliação/usabilidade ........... futura
+    1.0     artefato final do TCC ........... futura
