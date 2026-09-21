@@ -242,7 +242,7 @@ Observado: o `runtime-info` confirmou `llm_provider=groq`, modelo `openai/gpt-os
 
 Diagnóstico: o erro 1010 é um bloqueio de assinatura de cliente na camada Cloudflare, não um erro de retrieval nem evidência de chave inválida. O provider usava o `User-Agent` padrão do `urllib`, assinatura que pode ser classificada como cliente automatizado/bot pelo Browser Integrity Check. A requisição foi rejeitada antes de chegar ao modelo e antes de qualquer validação de grounding.
 
-Correção: adicionar cabeçalhos HTTP explícitos ao `GroqProvider`, incluindo `Accept: application/json` e um `User-Agent` compatível com navegador identificando o RagTest. Foi adicionado teste de regressão para impedir que o provider volte a usar o `User-Agent` padrão do `urllib`. A correção permanece aguardando validação real contra a Groq.
+Correção: adicionar cabeçalhos HTTP explícitos ao `GroqProvider`, incluindo `Accept: application/json` e um `User-Agent` compatível com navegador identificando o RagTest. Foi adicionado teste de regressão para impedir que o provider volte a usar o `User-Agent` padrão do `urllib`. A correção passou na CI com Ruff verde e `102 passed, 4 warnings`; permanece aguardando validação real contra a Groq.
 
 Aprendizado técnico: uma integração pode passar em testes unitários e ainda falhar na borda do provedor por políticas de WAF/anti-bot. Para providers protegidos por Cloudflare, o cliente HTTP real e seus cabeçalhos fazem parte do contrato de integração e precisam ser validados no ambiente de execução.
 
