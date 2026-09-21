@@ -22,3 +22,9 @@ Thumbs.db
 
 # Local Qdrant storage (Docker named volume is preferred)
 qdrant_storage/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
