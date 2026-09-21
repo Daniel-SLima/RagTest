@@ -4,7 +4,11 @@ from app.llm.base import LLMProvider
 from app.rag.citations import extract_citation_ids, normalize_citation_markup
 from app.rag.decomposition import decompose_question
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
-from app.rag.grounding import CitationCoverage, validate_citation_coverage
+from app.rag.grounding import (
+    CitationCoverage,
+    prune_uncited_claim_blocks,
+    validate_citation_coverage,
+)
 from app.rag.multi_query import multi_query_search
 from app.rag.prompting import (
     SYSTEM_PROMPT,
@@ -17,6 +21,7 @@ from app.rag.vector_store import QdrantVectorStore, SearchHit
 
 @dataclass(frozen=True, slots=True)
 class CitationValidationAttempt:
+    stage: str
     valid: bool
     syntax_valid: bool
     total_claim_blocks: int
@@ -26,8 +31,14 @@ class CitationValidationAttempt:
     reason: str | None
 
     @classmethod
-    def from_coverage(cls, coverage: CitationCoverage) -> "CitationValidationAttempt":
+    def from_coverage(
+        cls,
+        coverage: CitationCoverage,
+        *,
+        stage: str,
+    ) -> "CitationValidationAttempt":
         return cls(
+            stage=stage,
             valid=coverage.valid,
             syntax_valid=coverage.syntax_valid,
             total_claim_blocks=coverage.total_claim_blocks,
@@ -70,7 +81,10 @@ async def _generate_with_validated_citations(
     answer = normalize_citation_markup(answer)
     validation = validate_citation_coverage(answer, len(hits))
 
-    first_attempt = CitationValidationAttempt.from_coverage(validation)
+    first_attempt = CitationValidationAttempt.from_coverage(
+        validation,
+        stage="initial",
+    )
 
     if validation.valid:
         return answer, True, list(extract_citation_ids(answer)), 0, (first_attempt,)
@@ -88,11 +102,42 @@ async def _generate_with_validated_citations(
     repaired_answer = normalize_citation_markup(repaired_answer)
     repaired_validation = validate_citation_coverage(repaired_answer, len(hits))
 
-    second_attempt = CitationValidationAttempt.from_coverage(repaired_validation)
+    second_attempt = CitationValidationAttempt.from_coverage(
+        repaired_validation,
+        stage="repair",
+    )
     attempts = (first_attempt, second_attempt)
 
     if repaired_validation.valid:
         return repaired_answer, True, list(extract_citation_ids(repaired_answer)), 1, attempts
+
+    if (
+        repaired_validation.syntax_valid
+        and repaired_validation.cited_claim_blocks > 0
+        and repaired_validation.uncited_claim_blocks > 0
+    ):
+        postprocessed_answer = prune_uncited_claim_blocks(
+            repaired_answer,
+            len(hits),
+        )
+        postprocessed_validation = validate_citation_coverage(
+            postprocessed_answer,
+            len(hits),
+        )
+        postprocess_attempt = CitationValidationAttempt.from_coverage(
+            postprocessed_validation,
+            stage="postprocess",
+        )
+        attempts = (*attempts, postprocess_attempt)
+
+        if postprocessed_validation.valid:
+            return (
+                postprocessed_answer,
+                True,
+                list(extract_citation_ids(postprocessed_answer)),
+                1,
+                attempts,
+            )
 
     return _GROUNDING_FALLBACK, False, [], 1, attempts
 
