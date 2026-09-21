@@ -268,7 +268,7 @@ Observado: no reteste real com Groq/GPT-OSS 120B e 1024 tokens, a sintaxe passou
 
 Diagnóstico: a heurística anterior ignorava somente headings curtos terminados em dois-pontos. Uma introdução longa de lista terminada em `:` ultrapassava esse limite e era tratada como afirmação informativa, embora servisse apenas para introduzir os itens que continham as afirmações e suas citações.
 
-Correção: o gate passa a ignorar uma linha terminada em `:` somente quando o próximo bloco não vazio é realmente um item de lista numerada ou com marcador. Isso evita uma exceção ampla para qualquer frase longa com dois-pontos. O teste que reproduziu a falha passou após a correção, e a CI ficou verde com `106 passed, 4 warnings`.
+Correção: o gate passa a ignorar uma linha terminada em `:` somente quando o próximo bloco não vazio é realmente um item de lista numerada ou com marcador. Isso evita uma exceção ampla para qualquer frase longa com dois-pontos. O teste que reproduziu a falha passou após a correção, e a CI ficou verde com `106 passed, 4 warnings`. Porém o reteste real com Groq permaneceu em `8/9` nas duas tentativas, portanto essa hipótese não explica sozinha o bloco uncited observado em runtime. A correção estrutural continua válida para o caso testado, mas a causa real remanescente precisa ser isolada a partir da resposta bruta.
 
 Aprendizado técnico: guardrails de cobertura precisam considerar relações estruturais entre blocos, não apenas o conteúdo isolado de cada linha. Introduções de lista e itens informativos têm papéis diferentes e devem ser classificados de forma contextual.
 
