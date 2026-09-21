@@ -1283,3 +1283,25 @@ Resultado real permaneceu:
 Conclusão: a regra de introdução de lista está coberta por teste e CI, mas não explica sozinha o bloco uncited do caso real. A Dificuldade #22 continua aberta em runtime.
 
 Próxima ação: capturar novamente a resposta RAG bruta e comparar linha a linha com a classificação do gate para identificar exatamente qual bloco está sendo contado como uncited. Não alterar o gate até essa identificação.
+
+
+### Dificuldade #23 — repair agora recebe o bloco uncited exato
+
+O diagnóstico linha a linha isolou o bloco real que causava `8/9`:
+
+    Esses direitos são extraídos dos documentos citados e refletem as garantias previstas para as pessoas usuárias dos serviços de saúde.
+
+A introdução da lista estava corretamente classificada como estrutural, e os dez itens estavam citados. Portanto, a hipótese anterior de que a introdução explicava o caso real foi descartada.
+
+Problema identificado: o repair recebia apenas um motivo genérico de cobertura incompleta, sem o texto do bloco que precisava ser corrigido.
+
+Correção implementada:
+
+- `CitationCoverage` preserva `uncited_blocks`;
+- o repair recebe uma seção `BLOCOS SEM CITAÇÃO VÁLIDA`;
+- o modelo deve citar o bloco somente se houver fonte que o sustente ou removê-lo se for desnecessário;
+- nenhuma regra do gate foi relaxada;
+- TDD confirmado: os novos testes falharam antes da implementação;
+- CI após implementação: Ruff `All checks passed!`; pytest `106 passed, 4 warnings`.
+
+Próxima ação: rebuildar e repetir exatamente o mesmo chat curto com Groq e 1024 tokens. O resultado esperado é primeira tentativa possivelmente 8/9 e segunda tentativa 100%, ou primeira tentativa já 100% se a geração variar. Não reindexar Qdrant.
