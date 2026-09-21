@@ -350,6 +350,19 @@ Correção: aguardar os eventos do RNTL 14 nos testes; manter a configuração o
 
 Aprendizado técnico: em stacks modernas, testes de interação e validação estática exercitam contratos diferentes. A CI do frontend deve manter os dois gates separados: Jest/RNTL para comportamento e TypeScript para integração/configuração de ambiente.
 
+
+## 29. Alteração local automática do Expo impediu a troca para a branch 0.5.22
+
+Planejado: atualizar o ambiente local para `feature/frontend-fastapi-0.5.22` e validar o fluxo ponta a ponta Expo Web -> FastAPI -> RAG.
+
+Observado: `git switch feature/frontend-fastapi-0.5.22` e `git pull --ff-only origin feature/frontend-fastapi-0.5.22` foram abortados porque `frontend/tsconfig.json` possuía alteração local. Mesmo assim, Docker e Expo foram iniciados; os comandos `npm test` e `npm run web` mostraram explicitamente `ragtest-frontend@0.5.21`, e o botão Enviar permaneceu sem ação.
+
+Diagnóstico: a validação executou a versão 0.5.21, não a 0.5.22. Na execução anterior do Expo, o próprio CLI havia informado que atualizou a propriedade `include` do `tsconfig.json`, deixando uma modificação local que bloqueou a troca de branch. O comportamento do botão é, portanto, compatível com a 0.5.21, em que a integração da tela com o backend ainda não existia.
+
+Correção: antes de repetir o runtime, inspecionar e descartar apenas a alteração automática de `frontend/tsconfig.json`, confirmar a branch e a versão 0.5.22 e só então rebuildar o backend e iniciar o Expo.
+
+Aprendizado técnico: uma validação ponta a ponta precisa confirmar branch e versão efetivamente executadas antes de interpretar o comportamento da aplicação. Ferramentas como Expo podem ajustar arquivos de configuração localmente e impedir uma troca de branch sem que o código remoto tenha qualquer defeito.
+
 ## Como registrar novos casos
 
 Usar sempre exatamente estes campos:
