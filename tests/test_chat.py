@@ -41,6 +41,17 @@ class FakeLLM:
         return "A fonte informa vacinação anual contra influenza [1]."
 
 
+class UnicodeCitationFakeLLM:
+    model_name = "unicode-citation-fake-llm"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.calls += 1
+        return "A fonte informa vacinação anual contra influenza【1】."
+
+
 class RepairingFakeLLM:
     model_name = "repairing-fake-llm"
 
@@ -178,3 +189,23 @@ async def test_answer_with_rag_falls_back_when_coverage_still_fails() -> None:
         assert attempt.coverage == 0.5
         assert attempt.reason == "one or more informative answer blocks have no valid citation"
     assert "Não foi possível gerar uma resposta" in result.answer
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_normalizes_unicode_citations_before_validation() -> None:
+    llm = UnicodeCitationFakeLLM()
+
+    result = await answer_with_rag(
+        "Quais vacinas?",
+        embeddings=FakeEmbeddings(),
+        vector_store=FakeStore(),
+        llm=llm,
+        audience="idoso",
+    )
+
+    assert llm.calls == 1
+    assert result.grounded is True
+    assert result.citation_ids == [1]
+    assert result.citation_retry_count == 0
+    assert "【1】" not in result.answer
+    assert result.answer.endswith("[1].")
