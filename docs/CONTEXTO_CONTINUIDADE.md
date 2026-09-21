@@ -1204,3 +1204,16 @@ A Dificuldade #20 fica validada como corrigida em runtime: o 403/1010 desaparece
 Nova Dificuldade #21: o GPT-OSS 120B não produziu nenhuma citação literal `[n]` em nenhuma das duas tentativas. Como o repair terminou por `stop`, a falha não pode ser atribuída somente ao teto de 512 tokens.
 
 Próxima ação: executar uma chamada direta mínima ao `GroqProvider`, sem retrieval, solicitando explicitamente uma frase com `[1]`. Não alterar prompt/gate antes desse isolamento. Não reindexar Qdrant.
+
+
+### Teste literal de citação no GPT-OSS 120B
+
+Uma chamada direta ao `GroqProvider`, sem retrieval e com `LLM_MAX_OUTPUT_TOKENS=256`, solicitou exatamente:
+
+    Direito teste [1].
+
+O modelo retornou exatamente essa frase, incluindo `[1]`.
+
+Conclusão: o GPT-OSS 120B e o `GroqProvider` conseguem obedecer ao formato literal de citação. A Dificuldade #21 fica restrita ao caminho RAG completo; não há evidência para trocar o provider nem para afrouxar o gate.
+
+Próxima ação: capturar uma geração RAG bruta antes da validação, usando somente a categoria oficial `direitos_saude`, para observar o efeito do prompt/contexto. Não reindexar Qdrant.
