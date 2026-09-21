@@ -8,6 +8,7 @@ _LEADING_MARKUP_PATTERN = re.compile(
     r"^\s*(?:[-*+]\s+|\d+[.)]\s+|#{1,6}\s+)"
 )
 _MARKDOWN_HEADING_PATTERN = re.compile(r"^\s*#{1,6}\s+\S")
+_LIST_ITEM_PATTERN = re.compile(r"^\s*(?:[-*+]\s+|\d+[.)]\s+)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,16 +46,30 @@ def _is_claim_block(line: str) -> bool:
     return True
 
 
+def _is_list_intro(lines: list[str], index: int) -> bool:
+    normalized = _normalized_block(lines[index])
+    if not normalized.endswith(":"):
+        return False
+
+    for next_line in lines[index + 1 :]:
+        if not next_line.strip():
+            continue
+        return _LIST_ITEM_PATTERN.match(next_line) is not None
+
+    return False
+
+
 def validate_citation_coverage(
     answer: str,
     source_count: int,
 ) -> CitationCoverage:
     syntax = validate_citations(answer, source_count)
+    lines = answer.splitlines()
 
     claim_blocks = [
         line.strip()
-        for line in answer.splitlines()
-        if _is_claim_block(line)
+        for index, line in enumerate(lines)
+        if _is_claim_block(line) and not _is_list_intro(lines, index)
     ]
 
     if not claim_blocks:
