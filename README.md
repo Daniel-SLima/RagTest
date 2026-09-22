@@ -40,6 +40,11 @@ O banco de sessões fica em `data/state/sessions.sqlite3` localmente e em um vol
 separado (`session_state`). O Qdrant, corpus e embeddings não são alterados. O Expo permanece
 como cliente demonstrativo; nenhuma alteração visual é necessária para usar os endpoints REST.
 
+Validação manual da 0.6.0 concluída em 22/09/2026: `docker compose` subiu API e Qdrant com
+`/health=ok` e `/ready=ready`; uma sessão foi criada, a API foi reiniciada e a sessão continuou
+disponível; uma pergunta factual executada pelo provider Groq retornou `grounded=true` e cinco
+fontes. A sessão usada no teste foi removida ao final.
+
 ## Fase 0.5.9 — avaliação holdout
 
 A 0.5.8 foi validada e mesclada. O modo padrão continua sendo `dense-rerank`.

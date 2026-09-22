@@ -29,7 +29,7 @@
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
 - O plano TDD foi executado de forma nativa nesta branch.
-- As Tasks 1–6 da 0.6.0 estão implementadas; a suíte local tem 150 testes aprovados.
+- As Tasks 1–7 da 0.6.0 estão implementadas; a suíte local tem 150 testes aprovados.
 - Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
 ### O que a 0.5.24 entregou
@@ -75,11 +75,11 @@
 
 ---
 
-**Última atualização:** 2026-09-21  
+**Última atualização:** 2026-09-22
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** implementação backend da `0.6.0` concluída na branch `feature/sessions-0.6.0`; resta apenas validação manual com provider real e decisão de integração/merge.
+**Trabalho em andamento:** implementação backend da `0.6.0` e validação manual Docker/provider concluídas na branch `feature/sessions-0.6.0`; resta decisão de integração/merge.
 
 ---
 
@@ -2494,7 +2494,10 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - suíte local: 150 testes aprovados; Ruff aprovado;
 - SQLite de sessões separado do Qdrant; corpus, embeddings e Expo não foram alterados;
 - versão do backend atualizada para `0.6.0`;
-- ainda falta validação Docker e teste manual com provider real antes de abrir PR ou mesclar.
+- validação manual concluída em Docker: `health=ok`, `ready=ready`, API reiniciada sem perder
+  a sessão criada e uma pergunta real ao Groq retornou `grounded=true` com 5 fontes;
+- a sessão de teste foi removida após a validação; nenhum dado pessoal real foi usado;
+- permanece pendente somente a decisão de integração/merge, que exige autorização explícita.
 
 
 ### Design da 0.6.0 — 2026-09-21
