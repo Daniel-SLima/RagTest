@@ -280,3 +280,11 @@ Impacto:
 **Mudança:** o cartão de erro do cliente Expo passa a oferecer `Tentar novamente`, reutilizando a última pergunta e o mesmo fluxo de envio. A repetição ocorre somente após ação explícita da usuária.
 **Motivo:** a mensagem de indisponibilidade recomendava uma nova tentativa, mas o campo já havia sido limpo e não existia uma forma direta de repetir a pergunta. Um retry automático poderia gerar chamadas externas inesperadas, aumentar consumo de cota e esconder indisponibilidades persistentes.
 **Impacto:** falhas transitórias ficam recuperáveis sem redigitação e sem alterar o contrato REST ou o backend. O loading e a proteção contra envios concorrentes permanecem compartilhados entre o envio inicial e a repetição manual. A conversa rola para o fim quando loading, resposta ou erro mudam, mantendo a ação visível em viewports menores.
+
+
+## D032 — Priorizar o módulo RAG portável e persistir sessões por abstração própria
+
+**Data:** 2026-09-21
+**Mudança:** a 0.6.x será desenvolvida com foco backend-first. O cliente Expo permanece como consumidor demonstrativo, enquanto sessões, histórico e contexto ficam no backend. O armazenamento seguirá a abstração `SessionStore`, com SQLite como implementação portátil padrão, e o uso de sessão será opcional no `POST /v1/chat` para preservar o modo stateless.
+**Motivo:** o objetivo oficial do TCC é entregar um módulo conversacional RAG implementável no Se Cuida Mulher ou em outro sistema com baixo esforço. Colocar regras no cliente, usar o Qdrant como banco transacional ou acoplar sessões a uma tecnologia de interface reduziria essa portabilidade. SQLite permite persistência local e em Docker sem novo serviço, enquanto a abstração admite outro banco no futuro.
+**Impacto:** o refinamento visual deixa de ser prioridade até o núcleo funcional estar concluído. A 0.6.0 deverá oferecer criação, consulta, exclusão, expiração e concorrência controlada de sessões; histórico será contexto não confiável e nunca evidência documental. Corpus, embeddings e collection Qdrant permanecem inalterados. A especificação completa está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md`.

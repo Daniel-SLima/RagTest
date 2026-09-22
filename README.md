@@ -2,6 +2,19 @@
 
 Módulo RAG reutilizável via API.
 
+## Estado atual
+
+A versão `0.5.24` está integrada em `main`. A branch `feature/sessions-0.6.0`
+contém o desenho aprovado da próxima fase: sessões conversacionais persistentes e portáveis.
+
+O entregável principal é o backend RAG integrável ao Se Cuida Mulher ou a outro sistema.
+O cliente Expo é somente uma demonstração; funcionalidade, qualidade de respostas, retrieval,
+segurança, auditoria e contratos de integração têm prioridade sobre estilização.
+
+Especificação da 0.6.0:
+
+    docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md
+
 ## Fase 0.5.9 — avaliação holdout
 
 A 0.5.8 foi validada e mesclada. O modo padrão continua sendo `dense-rerank`.

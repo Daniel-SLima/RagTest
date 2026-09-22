@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.24
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 DESIGN DA 0.6.0
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -25,8 +25,10 @@
 - CI pós-merge em `main`: run `35677503800`, com os três jobs em `success`
 - Runtime local Expo Web da 0.5.24: **verificado para grounding e retry manual**
 - Corpus, embeddings e Qdrant: **inalterados**
-- Nenhuma versão funcional está aberta neste checkpoint.
-- Próxima fase planejada: **0.6.x — sessões conversacionais**, ainda sem design aprovado ou branch funcional criada.
+- Branch atual: `feature/sessions-0.6.0`.
+- A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
+- A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e aguarda revisão final do usuário antes do plano de implementação.
+- Nenhum código funcional da 0.6.0 foi escrito neste checkpoint.
 - Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
 ### O que a 0.5.24 entregou
@@ -44,12 +46,19 @@
 - `POST /v1/chat` validado em runtime real;
 - retrieval sem filtros da pergunta de vacinação para idosos retornou fonte oficial, sem `chatscm/`.
 
+### Direção oficial consolidada
+
+- O produto principal é o módulo RAG portável e integrável; o Expo é somente cliente demonstrativo.
+- Funcionalidade, qualidade de retrieval, respostas, segurança, auditoria e capacidade de integração têm prioridade sobre estilização.
+- Providers de LLM devem continuar intercambiáveis pela abstração existente, sem afetar API, sessões ou clientes.
+- Gatilhos futuros de agendamento e lembretes devem ser ações estruturadas neutras, executadas pelo sistema integrador.
+
 ### Próximo passo exato
 
-1. preservar a 0.5.24 integrada e validada em `main`;
-2. não abrir a 0.6.x antes de definir e aprovar um recorte pequeno para sessões conversacionais;
-3. manter regras de sessão e histórico no backend/contrato, sem acoplá-las ao cliente demonstrativo;
-4. seguir TDD RED -> GREEN para qualquer novo comportamento;
+1. revisar e aprovar a consolidação escrita do design da 0.6.0;
+2. após essa aprovação, escrever o plano de implementação TDD;
+3. implementar sessões no backend sem acoplamento ao cliente e sem alterar Qdrant/corpus;
+4. atualizar documentação, decisões, dificuldades e contexto a cada avanço relevante;
 5. não mesclar futuros PRs sem autorização explícita.
 
 ### Regras críticas preservadas
@@ -69,7 +78,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** nenhum recorte funcional aberto; próxima fase planejada `0.6.x`, aguardando design de sessões conversacionais.
+**Trabalho em andamento:** design da `0.6.0` consolidado na branch `feature/sessions-0.6.0`, aguardando revisão escrita antes do plano TDD.
 
 ---
 
@@ -2474,4 +2483,16 @@ Validação visual segura:
 - corpus, embeddings, Qdrant e os 767 pontos permaneceram inalterados;
 - nenhum conteúdo `chatscm/` foi enviado a provider externo durante as validações deste recorte.
 
-Próximo marco: desenhar o primeiro recorte da 0.6.x para sessões conversacionais antes de criar código ou branch funcional.
+O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído posteriormente e está consolidado no handoff autoritativo do início deste documento.
+
+
+### Design da 0.6.0 — 2026-09-21
+
+- prioridade oficial confirmada: módulo RAG completo, lapidado, desacoplado e implementável em outros sistemas;
+- frontend Expo mantido apenas como cliente demonstrativo, sem nova prioridade de estilização;
+- arquitetura de sessões persistentes aprovada com `SessionStore` abstrato e SQLite padrão;
+- modo stateless do `POST /v1/chat` preservado;
+- histórico definido como contexto não confiável, nunca como evidência documental;
+- especificação consolidada em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md`;
+- branch criada: `feature/sessions-0.6.0`;
+- próximo passo: revisão escrita do design e, somente após aprovação, plano de implementação TDD.
