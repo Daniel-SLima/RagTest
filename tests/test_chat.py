@@ -41,6 +41,17 @@ class FakeLLM:
         return "A fonte informa vacinação anual contra influenza [1]."
 
 
+class ContextAwareFakeLLM:
+    model_name = "context-aware-fake-llm"
+
+    def __init__(self) -> None:
+        self.user_prompt = ""
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        self.user_prompt = user_prompt
+        return "Resposta baseada na fonte atual [1]."
+
+
 class UnicodeCitationFakeLLM:
     model_name = "unicode-citation-fake-llm"
 
@@ -84,6 +95,35 @@ async def test_answer_with_rag_returns_grounded_answer_and_sources() -> None:
     assert result.citation_retry_count == 0
     assert len(result.sources) == 1
     assert result.sources[0].audience == "idoso"
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_separates_retrieval_query_from_current_question() -> None:
+    embeddings = FakeEmbeddings()
+    queries: list[str] = []
+    original_embed_query = embeddings.embed_query
+
+    async def record_query(text: str) -> list[float]:
+        queries.append(text)
+        return await original_embed_query(text)
+
+    embeddings.embed_query = record_query  # type: ignore[method-assign]
+    llm = ContextAwareFakeLLM()
+
+    result = await answer_with_rag(
+        "Pergunta atual",
+        retrieval_question="Contexto anterior\nPergunta atual: Pergunta atual",
+        conversation_context="Usuária: pergunta anterior",
+        embeddings=embeddings,
+        vector_store=FakeStore(),
+        llm=llm,
+        auto_decompose=False,
+    )
+
+    assert queries == ["Contexto anterior\nPergunta atual: Pergunta atual"]
+    assert "Usuária: pergunta anterior" in llm.user_prompt
+    assert "Pergunta do usuário:\nPergunta atual" in llm.user_prompt
+    assert result.retrieval_queries == ["Contexto anterior\nPergunta atual: Pergunta atual"]
 
 
 @pytest.mark.asyncio

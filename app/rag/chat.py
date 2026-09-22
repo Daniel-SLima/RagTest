@@ -96,10 +96,16 @@ async def _generate_with_validated_citations(
     question: str,
     hits: list[SearchHit],
     llm: LLMProvider,
+    *,
+    conversation_context: str | None = None,
 ) -> tuple[str, bool, list[int], int, tuple[CitationValidationAttempt, ...]]:
     answer = await llm.generate(
         system_prompt=SYSTEM_PROMPT,
-        user_prompt=build_user_prompt(question, hits),
+        user_prompt=build_user_prompt(
+            question,
+            hits,
+            conversation_context=conversation_context,
+        ),
     )
     answer = normalize_citation_markup(answer)
     validation = validate_citation_coverage(answer, len(hits))
@@ -136,6 +142,7 @@ async def _generate_with_validated_citations(
             previous_answer=answer,
             validation_reason=validation.reason,
             uncited_blocks=validation.uncited_blocks,
+            conversation_context=conversation_context,
         ),
     )
     repaired_answer = normalize_citation_markup(repaired_answer)
@@ -198,9 +205,12 @@ async def answer_with_rag(
     hybrid_sparse_weight: float = 1.2,
     auto_decompose: bool = True,
     max_subqueries: int = 3,
+    retrieval_question: str | None = None,
+    conversation_context: str | None = None,
 ) -> ChatResult:
+    search_question = retrieval_question or question
     decomposition = await decompose_question(
-        question,
+        search_question,
         llm=llm,
         enabled=auto_decompose,
         max_subqueries=max_subqueries,
@@ -228,9 +238,9 @@ async def answer_with_rag(
         )
         hits = [item.hit for item in fused]
     else:
-        retrieval_queries = [question]
+        retrieval_queries = [search_question]
         hits = await semantic_search(
-            question,
+            search_question,
             embeddings=embeddings,
             sparse_embeddings=sparse_embeddings,
             vector_store=vector_store,
@@ -273,6 +283,7 @@ async def answer_with_rag(
         question,
         hits,
         llm,
+        conversation_context=conversation_context,
     )
 
     return ChatResult(
