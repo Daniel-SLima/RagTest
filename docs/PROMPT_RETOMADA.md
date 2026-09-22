@@ -24,27 +24,27 @@ Use o GitHub conectado e leia, nesta ordem:
 
 No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
-**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 COM 0.5.24 EM DESENVOLVIMENTO**
+**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.24**
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
 ## Estado atual que deve ser confirmado no GitHub
 
-- `main` contém a versão **0.5.23** validada e mesclada.
-- PR #18 foi **merged**.
-- Merge commit da 0.5.23: `402f27b48a8d7c97252782cd653a61a405638870`.
-- Head validado da feature antes do merge: `74dd4ca58ef76401e5d9c6b1b05bd8729c17053b`.
-- CI final da feature: run #291, com lint, backend test, frontend tests e frontend typecheck em success.
-- Runtime local Expo Web da 0.5.23 foi validado.
+- `main` contém a versão **0.5.24** validada e mesclada.
+- PR #19 foi **merged**.
+- Merge commit da 0.5.24: `28edf6a51bf29a4aa62ff56a74efbffb640e728f`.
+- Head final da feature antes do merge: `534e1c5334424a57e7cd0adb56f6ea763c20b4ec`.
+- CI final pré-merge: run `35677374957`, com todos os jobs em success.
+- CI pós-merge da `main`: run `35677503800`, com todos os jobs em success.
+- Runtime local Expo Web da 0.5.24 foi validado para grounding e retry manual.
 - Corpus, embeddings e Qdrant permaneceram inalterados.
-- Versão em desenvolvimento: **0.5.24 — UX + grounding/refinamentos**.
-- Branch: `feature/ux-grounding-0.5.24`.
-- PR #19: aberto, draft e sem autorização de merge.
+- Nenhuma versão funcional está aberta neste checkpoint.
+- Próxima fase planejada: **0.6.x — sessões conversacionais**, ainda sem design aprovado.
 - Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
 - Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
 - Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
 - Retry manual validado visualmente no Expo Web com falha de rede exclusivamente local; botão visível e duas chamadas explícitas observadas.
-- Antes de continuar, confirme o head atual da feature, o estado da CI e o checkout local.
+- Antes de continuar, confirme o head atual da `main`, o estado local e desenhe o primeiro recorte da 0.6.x antes de criar código.
 
 ## 0.5.24 — estado atual
 
@@ -206,7 +206,7 @@ Antes de trocar branch após executar Expo:
 0.5.21  Expo + contrato REST ............... merged
 0.5.22  Expo -> FastAPI -> RAG ............. merged
 0.5.23  rich-text + fontes + citações ...... merged
-0.5.24  UX + grounding/refinamentos ........ EM DESENVOLVIMENTO
+0.5.24  UX + grounding/refinamentos ........ merged
 0.6.x   sessões ............................. futura
 0.7.x   auditoria/LGPD/segurança ........... futura
 0.8.x   agendamento/lembretes .............. futura
