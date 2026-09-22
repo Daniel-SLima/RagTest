@@ -27,7 +27,8 @@
 - Corpus, embeddings e Qdrant: **inalterados**
 - Branch atual: `feature/sessions-0.6.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
-- A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e aguarda revisão final do usuário antes do plano de implementação.
+- A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
+- O plano TDD foi consolidado em `docs/superpowers/plans/2026-09-22-sessoes-conversacionais-0.6.0.md` e aguarda escolha da forma de execução.
 - Nenhum código funcional da 0.6.0 foi escrito neste checkpoint.
 - Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
@@ -55,9 +56,9 @@
 
 ### Próximo passo exato
 
-1. revisar e aprovar a consolidação escrita do design da 0.6.0;
-2. após essa aprovação, escrever o plano de implementação TDD;
-3. implementar sessões no backend sem acoplamento ao cliente e sem alterar Qdrant/corpus;
+1. revisar o plano de implementação TDD da 0.6.0;
+2. escolher a forma de execução prevista no plano;
+3. após essa aprovação, implementar sessões no backend sem acoplamento ao cliente e sem alterar Qdrant/corpus;
 4. atualizar documentação, decisões, dificuldades e contexto a cada avanço relevante;
 5. não mesclar futuros PRs sem autorização explícita.
 
@@ -78,7 +79,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** design da `0.6.0` consolidado na branch `feature/sessions-0.6.0`, aguardando revisão escrita antes do plano TDD.
+**Trabalho em andamento:** design e plano TDD da `0.6.0` concluídos na branch `feature/sessions-0.6.0`; implementação ainda não iniciada.
 
 ---
 
@@ -2495,4 +2496,5 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - histórico definido como contexto não confiável, nunca como evidência documental;
 - especificação consolidada em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md`;
 - branch criada: `feature/sessions-0.6.0`;
-- próximo passo: revisão escrita do design e, somente após aprovação, plano de implementação TDD.
+- design escrito aprovado pelo usuário em 2026-09-22;
+- próximo passo: revisar o plano TDD antes de iniciar qualquer código funcional.

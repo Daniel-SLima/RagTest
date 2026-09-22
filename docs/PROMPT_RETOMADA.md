@@ -40,13 +40,14 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - Corpus, embeddings e Qdrant permaneceram inalterados.
 - Branch atual: `feature/sessions-0.6.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
-- A especificação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e aguarda revisão final antes do plano TDD.
+- A especificação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada em 2026-09-22.
+- O plano TDD está em `docs/superpowers/plans/2026-09-22-sessoes-conversacionais-0.6.0.md`, foi autorrevisado e aguarda escolha da forma de execução.
 - Nenhum código funcional da 0.6.0 foi escrito.
 - Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
 - Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
 - Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
 - Retry manual validado visualmente no Expo Web com falha de rede exclusivamente local; botão visível e duas chamadas explícitas observadas.
-- Antes de continuar, leia a especificação da 0.6.0 e confirme sua aprovação; somente depois escreva o plano TDD e inicie o código.
+- Antes de continuar, leia a especificação e o plano da 0.6.0; só inicie o código após aprovação do plano e escolha da forma de execução.
 
 ## Prioridade oficial do produto
 
@@ -217,7 +218,7 @@ Antes de trocar branch após executar Expo:
 0.5.22  Expo -> FastAPI -> RAG ............. merged
 0.5.23  rich-text + fontes + citações ...... merged
 0.5.24  UX + grounding/refinamentos ........ merged
-0.6.0   sessões portáveis .................. design em revisão
+0.6.0   sessões portáveis .................. plano concluído
 0.7.x   auditoria/LGPD/segurança ........... futura
 0.8.x   agendamento/lembretes .............. futura
 0.9.x   avaliação/usabilidade .............. futura

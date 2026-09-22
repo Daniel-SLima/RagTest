@@ -2,7 +2,7 @@
 
 **Data:** 2026-09-21
 
-**Status:** arquitetura aprovada em conversa; consolidação escrita aguardando revisão
+**Status:** especificação escrita aprovada em 2026-09-22
 
 **Branch:** `feature/sessions-0.6.0`
 
