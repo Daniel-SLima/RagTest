@@ -260,9 +260,9 @@ Impacto:
 
 ## D029 — Representar grounding na UI sem confundir retrieval com citação
 
-**Data:** 2026-09-21  
-**Mudança:** a 0.5.24 passa a traduzir o campo `grounded` em três estados de interface: citações verificadas; citações não verificadas com fontes recuperadas disponíveis; e base documental insuficiente quando nenhuma fonte foi recuperada. Quando `grounded=false` mas existem `sources`, essas fontes aparecem em uma seção separada chamada `Fontes recuperadas para consulta`, sem badge de `citation_id`.  
-**Motivo:** `grounded=true` no RagTest representa cobertura estrutural válida das citações, e não prova automática de entailment semântico ou correção clínica. Além disso, o fallback do backend orienta a consultar fontes recuperadas, mas a UI 0.5.23 escondia todas quando `citation_ids=[]`.  
+**Data:** 2026-09-21
+**Mudança:** a 0.5.24 passa a traduzir o campo `grounded` em três estados de interface: citações verificadas; citações não verificadas com fontes recuperadas disponíveis; e base documental insuficiente quando nenhuma fonte foi recuperada. Quando `grounded=false` mas existem `sources`, essas fontes aparecem em uma seção separada chamada `Fontes recuperadas para consulta`, sem badge de `citation_id`.
+**Motivo:** `grounded=true` no RagTest representa cobertura estrutural válida das citações, e não prova automática de entailment semântico ou correção clínica. Além disso, o fallback do backend orienta a consultar fontes recuperadas, mas a UI 0.5.23 escondia todas quando `citation_ids=[]`.
 **Impacto:** a experiência deixa de sugerir que uma fonte recuperada foi necessariamente citada, preserva a distinção estabelecida na D028 e torna o fallback de grounding acionável para a usuária. O contrato REST, o pipeline de grounding e o corpus permanecem inalterados.
 
 
