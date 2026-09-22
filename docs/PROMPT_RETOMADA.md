@@ -58,6 +58,7 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - o histórico rola para o fim após mudanças de loading, resposta ou erro, evitando que o botão fique cortado em viewports baixas;
 - suíte frontend local após o terceiro recorte: 13/13 e typecheck verde;
 - CI do terceiro recorte no commit `69d7868`: run `35643606329`, com lint, backend test e frontend-test/typecheck em success;
+- ajuste visual final no commit `b8aed87`: run `35645801364`, com lint, backend test e frontend-test/typecheck em success;
 - CI do commit funcional `d207b89`: run `35641533624`, com lint, backend test e frontend-test/typecheck em success;
 - avisos não bloqueantes da CI: actions Node.js 20 forçadas para Node.js 24 e migração futura de `ubuntu-latest` para Ubuntu 26;
 - corpus, embeddings e Qdrant permanecem inalterados em 767 pontos.
