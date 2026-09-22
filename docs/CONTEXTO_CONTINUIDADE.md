@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 COM 0.5.24 EM DESENVOLVIMENTO
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.24
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -17,41 +17,40 @@
 
 - Repositório: `Daniel-SLima/RagTest`
 - Branch padrão: `main`
-- Versão integrada e validada em `main`: **0.5.23**
-- PR #18: **merged**
-- Merge commit da 0.5.23: `402f27b48a8d7c97252782cd653a61a405638870`
-- Head validado da feature antes do merge: `74dd4ca58ef76401e5d9c6b1b05bd8729c17053b`
-- CI final da feature: workflow `CI` run #291, com `lint`, backend `test`, frontend tests e frontend typecheck em `success`
-- Runtime local Expo Web da 0.5.23: **verificado**
+- Versão integrada e validada em `main`: **0.5.24**
+- PR #19: **merged**
+- Merge commit da 0.5.24: `28edf6a51bf29a4aa62ff56a74efbffb640e728f`
+- Head final da feature antes do merge: `534e1c5334424a57e7cd0adb56f6ea763c20b4ec`
+- CI final pré-merge: run `35677374957`, com `lint`, backend `test` e frontend tests/typecheck em `success`
+- CI pós-merge em `main`: run `35677503800`, com os três jobs em `success`
+- Runtime local Expo Web da 0.5.24: **verificado para grounding e retry manual**
 - Corpus, embeddings e Qdrant: **inalterados**
-- Versão em desenvolvimento: **0.5.24 — UX + grounding/refinamentos**
-- Branch: `feature/ux-grounding-0.5.24`
-- PR #19: **draft**
-- Head de implementação validado antes deste checkpoint documental: `182219d8a272b92785c83f4fa99b1ee4c978ae95`
-- Primeiro recorte da 0.5.24: UX de grounding e separação explícita entre fontes citadas e fontes apenas recuperadas.
-- Runtime visual local da 0.5.24: **verificado para o cenário `grounded=true`**.
+- Nenhuma versão funcional está aberta neste checkpoint.
+- Próxima fase planejada: **0.6.x — sessões conversacionais**, ainda sem design aprovado ou branch funcional criada.
+- Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
-### O que a 0.5.23 entregou
+### O que a 0.5.24 entregou
 
-- renderização Markdown/rich-text no cliente Expo;
-- negrito e listas sem marcadores crus;
-- seção `Fontes consultadas`;
-- cartões com `citation_id`, documento, página e excerpt;
-- exibição principal restrita às fontes presentes em `citation_ids`;
+- três estados explícitos de grounding na interface;
+- separação entre fontes citadas e fontes apenas recuperadas;
+- mensagem amigável específica para HTTP 503 sem exposição do detalhe técnico do provider;
+- retry manual da última pergunta, sem chamadas automáticas;
+- auto-scroll do histórico para manter loading, respostas e erros visíveis;
+- validação visual de `grounded=true` e do retry em viewport baixa;
 - contrato público `POST /v1/chat` preservado;
 - backend RAG continuou desacoplado do frontend;
-- `GET /health` validado com versão `0.5.23`;
+- `GET /health` validado com versão `0.5.24`;
 - `GET /ready` validado com Qdrant `ok`;
 - `POST /v1/chat` validado em runtime real;
 - retrieval sem filtros da pergunta de vacinação para idosos retornou fonte oficial, sem `chatscm/`.
 
 ### Próximo passo exato
 
-1. preservar o primeiro recorte da 0.5.24 já validado em CI e runtime;
-2. manter os cenários `grounded=false` cobertos por testes determinísticos, sem provocar falha externa artificial;
-3. concluir a validação automatizada do terceiro recorte da 0.5.24;
+1. preservar a 0.5.24 integrada e validada em `main`;
+2. não abrir a 0.6.x antes de definir e aprovar um recorte pequeno para sessões conversacionais;
+3. manter regras de sessão e histórico no backend/contrato, sem acoplá-las ao cliente demonstrativo;
 4. seguir TDD RED -> GREEN para qualquer novo comportamento;
-5. manter o PR #19 draft e não mesclar sem autorização explícita.
+5. não mesclar futuros PRs sem autorização explícita.
 
 ### Regras críticas preservadas
 
@@ -69,8 +68,8 @@
 **Última atualização:** 2026-09-21  
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
-**Estado validado e mesclado no main:** `0.5.23`  
-**Trabalho em andamento:** `0.5.24` em `feature/ux-grounding-0.5.24`; primeiro recorte de UX/grounding implementado e verificado em CI, aguardando validação visual local.
+**Estado validado e mesclado no main:** `0.5.24`
+**Trabalho em andamento:** nenhum recorte funcional aberto; próxima fase planejada `0.6.x`, aguardando design de sessões conversacionais.
 
 ---
 
@@ -2463,3 +2462,16 @@ Validação visual segura:
 - após reiniciar o Metro com bundle novo, o botão ficou totalmente visível: `y=247–286` dentro da viewport rolável que termina em `y=330`;
 - o navegador registrou exatamente duas chamadas `POST /v1/chat`: envio inicial e retry explícito;
 - a Dificuldade #31 registra o recorte visual e o cuidado com bundle congelado no Expo em modo CI.
+
+
+### Merge da 0.5.24 — 2026-09-21
+
+- PR #19 `Refina UX de grounding e fontes na 0.5.24`: merged;
+- head final da feature: `534e1c5334424a57e7cd0adb56f6ea763c20b4ec`;
+- merge commit em `main`: `28edf6a51bf29a4aa62ff56a74efbffb640e728f`;
+- CI pré-merge: run `35677374957`, todos os jobs em success;
+- CI pós-merge da `main`: run `35677503800`, todos os jobs em success;
+- corpus, embeddings, Qdrant e os 767 pontos permaneceram inalterados;
+- nenhum conteúdo `chatscm/` foi enviado a provider externo durante as validações deste recorte.
+
+Próximo marco: desenhar o primeiro recorte da 0.6.x para sessões conversacionais antes de criar código ou branch funcional.
