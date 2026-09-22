@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     retrieval_auto_decompose: bool = True
     retrieval_max_subqueries: int = Field(default=3, ge=2, le=3)
 
+    session_db_path: Path = Path("data/state/sessions.sqlite3")
+    session_retention_days: int = Field(default=7, ge=1, le=365)
+    session_max_stored_turns: int = Field(default=20, ge=1, le=200)
+    session_context_turns: int = Field(default=6, ge=1, le=20)
+    session_context_max_chars: int = Field(default=12000, ge=1000, le=50000)
+    session_lease_seconds: int = Field(default=600, ge=30, le=3600)
+
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.6-flash"
