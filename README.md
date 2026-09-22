@@ -751,3 +751,18 @@ Quando a resposta possui `citation_ids`, o cliente cruza esses IDs com `sources`
 Uma fonte retornada em `sources` mas ausente de `citation_ids` não aparece nessa seção. Ela foi recuperada pelo RAG, mas não deve ser apresentada à usuária como se tivesse sido citada na resposta.
 
 O backend e o contrato de `POST /v1/chat` permanecem inalterados. A mudança é exclusivamente de apresentação no cliente.
+
+
+### Grounding e erros transitórios na interface — 0.5.24
+
+O cliente Expo apresenta três estados de grounding sem confundir fonte recuperada com fonte citada:
+
+- `grounded=true`: `Citações verificadas` e `Fontes consultadas`;
+- `grounded=false` com fontes: `Citações não verificadas` e `Fontes recuperadas para consulta`, sem badge de citação;
+- `grounded=false` sem fontes: `Sem base documental suficiente`, sem seção vazia.
+
+Quando o backend responde HTTP 503, o cliente mostra uma mensagem específica de indisponibilidade temporária. Erros de rede ou inesperados mantêm a mensagem genérica. O detalhe técnico do provider não é renderizado para a usuária.
+
+Após qualquer falha, a usuária pode acionar `Tentar novamente` para reenviar explicitamente a última pergunta. Não existe retry automático: novas chamadas ao backend e ao provider dependem de ação da usuária.
+
+Essas mudanças são de apresentação e não alteram o contrato `POST /v1/chat`, o backend RAG ou a collection Qdrant.

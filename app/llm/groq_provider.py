@@ -122,7 +122,7 @@ class GroqProvider:
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "Mozilla/5.0 (compatible; RagTest/0.5.23)",
+            "User-Agent": "Mozilla/5.0 (compatible; RagTest/0.5.24)",
         }
 
     def _payload(self, *, system_prompt: str, user_prompt: str) -> dict[str, object]:

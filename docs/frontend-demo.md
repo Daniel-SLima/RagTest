@@ -164,3 +164,87 @@ Ainda não faz parte da 0.5.23:
 - deep-link para PDFs locais;
 - histórico persistente;
 - sessões multi-turn.
+
+
+## Grounding e fontes recuperadas — 0.5.24
+
+O primeiro refinamento da 0.5.24 usa o campo `grounded` já existente no contrato para tornar o estado da resposta mais claro.
+
+### Resposta com grounding estrutural válido
+
+A interface exibe:
+
+    Citações verificadas
+    As afirmações informativas estão acompanhadas de referências do corpus.
+
+A seção `Fontes consultadas` continua mostrando somente fontes presentes em `citation_ids`.
+
+Esse texto não deve ser interpretado como garantia clínica nem como prova de entailment semântico; ele representa o gate estrutural de citações implementado no backend.
+
+### Grounding inválido com fontes recuperadas
+
+Quando o backend recuperou trechos, mas a resposta final não passou na validação de citações:
+
+    Citações não verificadas
+    Não foi possível validar as citações desta resposta.
+    Consulte as fontes recuperadas abaixo.
+
+A interface então mostra:
+
+    Fontes recuperadas para consulta
+
+Esses cartões não exibem badge `[citation_id]`, porque não devem ser apresentados como citações efetivamente usadas na resposta.
+
+### Nenhuma fonte relevante
+
+Quando `grounded=false` e `sources=[]`, a interface mostra:
+
+    Sem base documental suficiente
+
+e não cria seção de fontes vazia.
+
+Nenhuma mudança de backend ou de contrato foi necessária.
+
+### Validação visual local
+
+O cenário `grounded=true` foi verificado no Expo Web com a pergunta:
+
+    Quais vacinas são recomendadas para pessoas idosas?
+
+Antes da chamada externa, o retrieval local retornou somente a Caderneta da Pessoa Idosa, página 34, sem conteúdo `chatscm/`.
+
+A interface real exibiu:
+
+- resposta em Markdown/lista;
+- cartão `Citações verificadas`;
+- texto `As afirmações informativas estão acompanhadas de referências do corpus.`;
+- seção `Fontes consultadas`;
+- badge `[1]`;
+- documento `caderneta_saude_pessoa_idosa_5ed_1re.pdf`;
+- `Página 34` e excerpt da fonte.
+
+Os estados `grounded=false` continuam validados por testes determinísticos; não foi provocada uma falha externa da LLM apenas para observá-los visualmente.
+
+## Mensagem específica para indisponibilidade temporária — 0.5.24
+
+O cliente agora distingue uma indisponibilidade temporária da API de uma falha genérica de rede:
+
+- HTTP 503 representado por `ChatApiError` mostra `O serviço de geração está temporariamente indisponível. Tente novamente em alguns instantes.`;
+- erros de rede e erros inesperados preservam `Não foi possível obter uma resposta agora. Verifique a conexão e tente novamente.`;
+- o `detail` técnico retornado pelo backend continua disponível no objeto de erro, mas não é exibido diretamente à usuária.
+
+Essa apresentação evita expor mensagens internas de provider ou cota e orienta corretamente que a falha pode ser transitória. O contrato `POST /v1/chat` e o backend não foram alterados.
+
+## Retry manual da última pergunta — 0.5.24
+
+Quando uma requisição falha, o cartão de erro apresenta o botão `Tentar novamente`. A ação:
+
+- reutiliza a última pergunta exibida na conversa;
+- limpa o erro antes do novo envio;
+- mostra o mesmo estado de loading do envio inicial;
+- remove o cartão de erro quando a nova resposta é concluída;
+- não executa retry automático nem altera mensagens internas do provider.
+
+O comportamento foi validado deterministicamente com uma primeira chamada simulando HTTP 503 e uma segunda chamada bem-sucedida. Nenhuma falha externa foi provocada e nenhuma alteração foi feita no backend, corpus ou Qdrant.
+
+Na validação visual do Expo Web, a API foi configurada para uma porta local sem serviço. A primeira captura mostrou o botão parcialmente fora da viewport rolável; o cliente passou então a rolar o histórico para o fim após mudanças de loading, resposta ou erro. Com bundle novo, o botão apareceu integralmente e o navegador observou duas chamadas `POST /v1/chat`, correspondentes ao envio inicial e ao retry manual. Nenhum provider externo foi acessado.

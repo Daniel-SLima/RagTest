@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.23
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 COM 0.5.24 EM DESENVOLVIMENTO
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -24,8 +24,12 @@
 - CI final da feature: workflow `CI` run #291, com `lint`, backend `test`, frontend tests e frontend typecheck em `success`
 - Runtime local Expo Web da 0.5.23: **verificado**
 - Corpus, embeddings e Qdrant: **inalterados**
-- Próxima versão planejada: **0.5.24 — UX + grounding/refinamentos**
-- Neste checkpoint, a branch 0.5.24 ainda não foi criada.
+- Versão em desenvolvimento: **0.5.24 — UX + grounding/refinamentos**
+- Branch: `feature/ux-grounding-0.5.24`
+- PR #19: **draft**
+- Head de implementação validado antes deste checkpoint documental: `182219d8a272b92785c83f4fa99b1ee4c978ae95`
+- Primeiro recorte da 0.5.24: UX de grounding e separação explícita entre fontes citadas e fontes apenas recuperadas.
+- Runtime visual local da 0.5.24: **verificado para o cenário `grounded=true`**.
 
 ### O que a 0.5.23 entregou
 
@@ -43,11 +47,11 @@
 
 ### Próximo passo exato
 
-1. sincronizar o checkout local com `main` após confirmar `git status --short` limpo;
-2. manter a 0.5.23 como baseline integrada;
-3. definir o escopo concreto da 0.5.24 antes de alterar código;
-4. criar a branch 0.5.24 somente a partir da `main` atualizada;
-5. seguir TDD e manter corpus/Qdrant inalterados salvo necessidade autorizada.
+1. preservar o primeiro recorte da 0.5.24 já validado em CI e runtime;
+2. manter os cenários `grounded=false` cobertos por testes determinísticos, sem provocar falha externa artificial;
+3. concluir a validação automatizada do terceiro recorte da 0.5.24;
+4. seguir TDD RED -> GREEN para qualquer novo comportamento;
+5. manter o PR #19 draft e não mesclar sem autorização explícita.
 
 ### Regras críticas preservadas
 
@@ -66,7 +70,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.23`  
-**Trabalho em andamento:** próxima versão planejada `0.5.24` (UX + grounding/refinamentos); branch ainda não criada neste checkpoint.
+**Trabalho em andamento:** `0.5.24` em `feature/ux-grounding-0.5.24`; primeiro recorte de UX/grounding implementado e verificado em CI, aguardando validação visual local.
 
 ---
 
@@ -2287,3 +2291,175 @@ Status da 0.5.23:
     CI pós-reconciliação ............... verificada
     compatibilidade com main ........... verificada
     decisão de merge ................... aguardando autorização explícita
+
+
+### Checkpoint 0.5.24 — UX de grounding
+
+Objetivo do primeiro recorte:
+
+Corrigir a diferença entre **fonte citada** e **fonte apenas recuperada** quando o backend retorna `grounded=false`, além de tornar o estado do grounding compreensível na interface sem prometer correção clínica ou entailment semântico.
+
+Comportamentos implementados:
+
+- `grounded=true`:
+  - exibe `Citações verificadas`;
+  - explica que as afirmações informativas estão acompanhadas de referências do corpus;
+  - mantém `Fontes consultadas` apenas com IDs presentes em `citation_ids`.
+
+- `grounded=false` com `sources`:
+  - exibe `Citações não verificadas`;
+  - orienta a consultar as fontes recuperadas;
+  - mostra `Fontes recuperadas para consulta`;
+  - não exibe `[citation_id]` nesses cartões, evitando representá-los como citações efetivamente usadas.
+
+- `grounded=false` sem `sources`:
+  - exibe `Sem base documental suficiente`;
+  - não cria uma seção de fontes vazia.
+
+Motivação concreta observada na 0.5.23:
+
+O fallback de grounding do backend diz `Consulte as fontes retornadas antes de usar a informação`, mas a UI 0.5.23 filtrava todas as fontes por `citation_ids`. Como o fallback usa `citation_ids=[]`, as fontes recuperadas ficavam invisíveis. A 0.5.24 separa semanticamente essas fontes sem tratá-las como citações.
+
+TDD observado:
+
+    RED — commit d4f9a7e2feca6f57ec16afc9b9765249cbf7bf5b
+    CI run #293
+    backend test: success
+    lint: success
+    frontend tests: failure esperado
+    frontend typecheck: skipped após falha dos testes
+
+    GREEN — head 182219d8a272b92785c83f4fa99b1ee4c978ae95
+    CI run #297
+    backend test: success
+    lint: success
+    frontend tests: success
+    frontend typecheck: success
+
+Arquitetura:
+
+- contrato `POST /v1/chat`: inalterado;
+- backend de grounding: inalterado;
+- corpus/embeddings/Qdrant: inalterados;
+- mudança concentrada na interpretação/apresentação do contrato no cliente Expo;
+- versões backend/frontend alinhadas em 0.5.24.
+
+Status:
+
+    implementação primeiro recorte .......... verificada em CI
+    runtime visual Expo Web grounded=true ... verificado
+    PR #19 .................................. draft
+
+
+### Validação visual local da 0.5.24 — 2026-09-21
+
+Status: verificado para o cenário `grounded=true`.
+
+Evidências observadas:
+
+- checkout em `feature/ux-grounding-0.5.24`, head `756d149aa5d971c72236569a73041432633cbe4c`;
+- frontend local: 2 suites / 11 testes aprovados;
+- `npm run typecheck`: concluído sem erros;
+- `GET /health`: versão `0.5.24`;
+- `GET /ready`: Qdrant `ok`;
+- retrieval local para `Quais vacinas são recomendadas para pessoas idosas?` retornou apenas `pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf`, página 34, sem `chatscm/`;
+- `POST /v1/chat` executado pela interface Expo Web retornou uma resposta `grounded=true`;
+- a interface exibiu `Citações verificadas` e o texto sobre referências do corpus;
+- a seção `Fontes consultadas` exibiu `[1]`, o documento da Caderneta da Pessoa Idosa e a página 34;
+- Markdown/lista foram renderizados sem marcadores crus;
+- os cenários `grounded=false` não foram provocados artificialmente e permanecem cobertos pelos testes determinísticos.
+
+Ambiente e dados:
+
+- API foi reconstruída para a 0.5.24 sem recriar volumes;
+- a collection `ragtest_documents`, o corpus, embeddings e os 767 pontos não foram alterados;
+- nenhum conteúdo `chatscm/` foi enviado ao provider externo.
+
+Próximo passo: definir e aprovar um refinamento pequeno e isolado para continuar a 0.5.24, mantendo TDD e o PR #19 em draft.
+
+
+### Segundo recorte da 0.5.24 — indisponibilidade temporária na interface
+
+Problema concreto:
+
+O cliente REST já preservava o status HTTP em `ChatApiError`, mas `App.tsx` tratava HTTP 503, falhas de rede e demais erros com a mesma mensagem genérica. Assim, uma indisponibilidade temporária do provider não era distinguida de um problema de conexão local.
+
+Comportamento implementado:
+
+- `ChatApiError` com `status=503` mostra `O serviço de geração está temporariamente indisponível. Tente novamente em alguns instantes.`;
+- detalhes técnicos retornados pelo provider não são exibidos à usuária;
+- falhas de rede e erros não classificados continuam usando a mensagem genérica anterior;
+- backend, contrato REST, corpus, retrieval, embeddings e Qdrant permanecem inalterados.
+
+TDD local observado:
+
+    RED: teste direcionado com 1 falha esperada e 8 testes aprovados
+    causa observada: App.tsx ainda exibia a mensagem genérica para ChatApiError(503)
+
+    GREEN: teste direcionado 9/9
+    suíte frontend completa 12/12
+    TypeScript typecheck: success
+
+Status:
+
+    tratamento específico de HTTP 503 .... implementado e verificado localmente
+    documentação .......................... atualizada
+    CI do commit d207b89 .................. success (run 35641533624)
+    lint .................................. success (38 s)
+    backend test .......................... success (39 s)
+    frontend-test + typecheck ............. success (1 min 35 s)
+    PR #19 ................................ draft
+
+Avisos não bloqueantes observados na CI:
+
+- o GitHub passou a forçar actions baseadas em Node.js 20 a executar em Node.js 24;
+- o rótulo `ubuntu-latest` tem migração para Ubuntu 26 anunciada para 2026-10-19;
+- esses avisos não causaram falha e não alteram o escopo funcional deste recorte, mas ficam registrados para manutenção futura do workflow.
+
+
+### Terceiro recorte da 0.5.24 — retry manual da última pergunta
+
+Problema concreto:
+
+Depois de uma falha, inclusive HTTP 503, a interface orientava a tentar novamente, mas limpava o campo de entrada e não oferecia uma ação para repetir a pergunta anterior. A usuária precisava digitar novamente o mesmo conteúdo.
+
+Comportamento implementado:
+
+- o cartão de erro apresenta o botão acessível `Tentar novamente`;
+- o acionamento reenvia explicitamente a última pergunta usando o mesmo contrato `POST /v1/chat`;
+- erro e resposta anterior são limpos antes da nova tentativa, e o loading normal é reutilizado;
+- não existe retry automático nem chamada silenciosa ao provider;
+- backend, contrato REST, providers, corpus, retrieval, embeddings e Qdrant permanecem inalterados.
+
+TDD local observado:
+
+    RED: teste direcionado com 1 falha esperada e 9 testes aprovados
+    causa observada: botão acessível Tentar novamente ainda não existia
+
+    GREEN: teste direcionado 10/10
+    suíte frontend completa 13/13
+    TypeScript typecheck: success
+
+Status:
+
+    retry manual da última pergunta ........ implementado e verificado em CI
+    documentação ........................... atualizada
+    CI do commit 69d7868 ................... success (run 35643606329)
+    lint ................................... success (36 s)
+    backend test ........................... success (46 s)
+    frontend-test + typecheck .............. success (1 min 20 s)
+    validação visual Expo Web .............. verificada sem provider externo
+    CI do ajuste visual b8aed87 ............ success (run 35645801364)
+    lint final ............................. success (42 s)
+    backend test final ..................... success (40 s)
+    frontend-test final .................... success (1 min 37 s)
+    PR #19 ................................. draft
+
+Validação visual segura:
+
+- Expo Web apontou para `http://127.0.0.1:65534`, porta local sem serviço, sem acessar provider, corpus ou Qdrant;
+- a primeira captura revelou que o cartão crescia além da viewport rolável e deixava parte do botão sob o limite do composer;
+- o histórico passou a executar `scrollToEnd` quando loading, resposta ou erro mudam;
+- após reiniciar o Metro com bundle novo, o botão ficou totalmente visível: `y=247–286` dentro da viewport rolável que termina em `y=330`;
+- o navegador registrou exatamente duas chamadas `POST /v1/chat`: envio inicial e retry explícito;
+- a Dificuldade #31 registra o recorte visual e o cuidado com bundle congelado no Expo em modo CI.

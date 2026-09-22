@@ -256,3 +256,27 @@ Impacto:
 **Mudança:** a 0.5.23 passa a renderizar respostas do assistente como Markdown nativo no cliente Expo usando `@ronradtke/react-native-markdown-display` e mostra na interface principal apenas as fontes cujo `citation_id` aparece em `citation_ids`.  
 **Motivo:** a 0.5.22 exibia marcadores como `**negrito**` literalmente e misturar todas as fontes recuperadas com as efetivamente citadas poderia sugerir uma atribuição que a resposta não realizou.  
 **Impacto:** listas, negrito e demais elementos Markdown passam a ser apresentados como rich-text; cada fonte citada recebe cartão com identificador, documento, página e trecho. Fontes recuperadas mas não citadas não aparecem na seção principal e poderão ser expostas futuramente apenas em painel técnico/auditoria. O backend e o contrato REST permanecem inalterados.
+
+
+## D029 — Representar grounding na UI sem confundir retrieval com citação
+
+**Data:** 2026-09-21
+**Mudança:** a 0.5.24 passa a traduzir o campo `grounded` em três estados de interface: citações verificadas; citações não verificadas com fontes recuperadas disponíveis; e base documental insuficiente quando nenhuma fonte foi recuperada. Quando `grounded=false` mas existem `sources`, essas fontes aparecem em uma seção separada chamada `Fontes recuperadas para consulta`, sem badge de `citation_id`.
+**Motivo:** `grounded=true` no RagTest representa cobertura estrutural válida das citações, e não prova automática de entailment semântico ou correção clínica. Além disso, o fallback do backend orienta a consultar fontes recuperadas, mas a UI 0.5.23 escondia todas quando `citation_ids=[]`.
+**Impacto:** a experiência deixa de sugerir que uma fonte recuperada foi necessariamente citada, preserva a distinção estabelecida na D028 e torna o fallback de grounding acionável para a usuária. O contrato REST, o pipeline de grounding e o corpus permanecem inalterados.
+
+
+## D030 — Distinguir indisponibilidade temporária sem expor detalhes do provider
+
+**Data:** 2026-09-21
+**Mudança:** o cliente Expo passa a tratar `ChatApiError` com HTTP 503 como indisponibilidade temporária do serviço de geração, mantendo a mensagem genérica para falhas de rede e demais erros não classificados.
+**Motivo:** o contrato do cliente já preservava o status HTTP, mas a interface descartava essa informação e apresentava todo erro como problema de conexão. Exibir o `detail` bruto também poderia revelar mensagens internas de provider, cota ou infraestrutura.
+**Impacto:** a usuária recebe orientação mais precisa e segura sem mudança no backend ou no contrato REST. Detalhes técnicos continuam disponíveis para diagnóstico, mas não são renderizados na experiência principal.
+
+
+## D031 — Exigir ação explícita para repetir uma pergunta após erro
+
+**Data:** 2026-09-21
+**Mudança:** o cartão de erro do cliente Expo passa a oferecer `Tentar novamente`, reutilizando a última pergunta e o mesmo fluxo de envio. A repetição ocorre somente após ação explícita da usuária.
+**Motivo:** a mensagem de indisponibilidade recomendava uma nova tentativa, mas o campo já havia sido limpo e não existia uma forma direta de repetir a pergunta. Um retry automático poderia gerar chamadas externas inesperadas, aumentar consumo de cota e esconder indisponibilidades persistentes.
+**Impacto:** falhas transitórias ficam recuperáveis sem redigitação e sem alterar o contrato REST ou o backend. O loading e a proteção contra envios concorrentes permanecem compartilhados entre o envio inicial e a repetição manual. A conversa rola para o fim quando loading, resposta ou erro mudam, mantendo a ação visível em viewports menores.

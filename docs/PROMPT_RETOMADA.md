@@ -24,7 +24,7 @@ Use o GitHub conectado e leia, nesta ordem:
 
 No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
-**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 APÓS MERGE DA 0.5.23**
+**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 COM 0.5.24 EM DESENVOLVIMENTO**
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
@@ -37,9 +37,31 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - CI final da feature: run #291, com lint, backend test, frontend tests e frontend typecheck em success.
 - Runtime local Expo Web da 0.5.23 foi validado.
 - Corpus, embeddings e Qdrant permaneceram inalterados.
-- Próxima versão planejada: **0.5.24 — UX + grounding/refinamentos**.
-- Neste checkpoint ainda não existe branch 0.5.24 criada.
-- Antes de começar a 0.5.24, confirme o head atual da `main` e o estado local do usuário.
+- Versão em desenvolvimento: **0.5.24 — UX + grounding/refinamentos**.
+- Branch: `feature/ux-grounding-0.5.24`.
+- PR #19: aberto, draft e sem autorização de merge.
+- Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
+- Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
+- Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
+- Retry manual validado visualmente no Expo Web com falha de rede exclusivamente local; botão visível e duas chamadas explícitas observadas.
+- Antes de continuar, confirme o head atual da feature, o estado da CI e o checkout local.
+
+## 0.5.24 — estado atual
+
+- `grounded=true`: mostra `Citações verificadas` e somente fontes citadas;
+- `grounded=false` com fontes: mostra `Citações não verificadas` e fontes recuperadas sem badge de citação;
+- `grounded=false` sem fontes: mostra `Sem base documental suficiente` e nenhuma seção vazia;
+- HTTP 503: mostra indisponibilidade temporária em linguagem amigável;
+- falha de rede/outro erro: preserva a mensagem genérica;
+- detalhes técnicos de provider não são exibidos à usuária;
+- erros apresentam `Tentar novamente`, que reenvia manualmente a última pergunta;
+- o histórico rola para o fim após mudanças de loading, resposta ou erro, evitando que o botão fique cortado em viewports baixas;
+- suíte frontend local após o terceiro recorte: 13/13 e typecheck verde;
+- CI do terceiro recorte no commit `69d7868`: run `35643606329`, com lint, backend test e frontend-test/typecheck em success;
+- ajuste visual final no commit `b8aed87`: run `35645801364`, com lint, backend test e frontend-test/typecheck em success;
+- CI do commit funcional `d207b89`: run `35641533624`, com lint, backend test e frontend-test/typecheck em success;
+- avisos não bloqueantes da CI: actions Node.js 20 forçadas para Node.js 24 e migração futura de `ubuntu-latest` para Ubuntu 26;
+- corpus, embeddings e Qdrant permanecem inalterados em 767 pontos.
 
 ## 0.5.23 — estado verificado
 
@@ -184,7 +206,7 @@ Antes de trocar branch após executar Expo:
 0.5.21  Expo + contrato REST ............... merged
 0.5.22  Expo -> FastAPI -> RAG ............. merged
 0.5.23  rich-text + fontes + citações ...... merged
-0.5.24  UX + grounding/refinamentos ........ PRÓXIMA
+0.5.24  UX + grounding/refinamentos ........ EM DESENVOLVIMENTO
 0.6.x   sessões ............................. futura
 0.7.x   auditoria/LGPD/segurança ........... futura
 0.8.x   agendamento/lembretes .............. futura

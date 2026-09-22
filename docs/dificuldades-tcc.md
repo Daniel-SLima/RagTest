@@ -346,9 +346,9 @@ Observado: no primeiro GREEN da interface, o teste ainda mostrava o campo vazio 
 
 Diagnóstico: a React Native Testing Library 14 usa eventos assíncronos com React 19, portanto `fireEvent.changeText` e `fireEvent.press` precisam ser aguardados. Separadamente, o projeto Expo não incluía os tipos Node necessários para tipar `process.env` durante `tsc --noEmit`.
 
-Correção: aguardar os eventos do RNTL 14 nos testes; manter a configuração oficial `EXPO_PUBLIC_*`; adicionar `@types/node` e incluir `node` nos tipos do TypeScript. A lógica funcional da interface não precisou ser removida nem contornada.
+Correção: aguardar os eventos do RNTL 14 nos testes; manter a configuração oficial `EXPO_PUBLIC_*`; adicionar `@types/node` e incluir `node` nos tipos do TypeScript. A lógica funcional da interface não precisou ser removida nem contornada. Na 0.5.24, o mesmo gate de interação foi ampliado para verificar que `ChatApiError(503)` produz uma mensagem específica de indisponibilidade temporária, sem renderizar o `detail` técnico do provider; erros genéricos continuam cobertos separadamente.
 
-Aprendizado técnico: em stacks modernas, testes de interação e validação estática exercitam contratos diferentes. A CI do frontend deve manter os dois gates separados: Jest/RNTL para comportamento e TypeScript para integração/configuração de ambiente.
+Aprendizado técnico: em stacks modernas, testes de interação e validação estática exercitam contratos diferentes. A CI do frontend deve manter os dois gates separados: Jest/RNTL para comportamento e TypeScript para integração/configuração de ambiente. Preservar um erro tipado na camada REST permite que a interface diferencie falhas transitórias sem acoplar a experiência a mensagens internas do backend.
 
 
 ## 29. Alteração local automática do Expo impediu a troca para a branch 0.5.22
@@ -375,6 +375,19 @@ Diagnóstico: o pacote distribuía código que ainda continha JSX, enquanto o Je
 Correção: manter `jest-expo` como preset e adicionar `@ronradtke/react-native-markdown-display` à whitelist de `transformIgnorePatterns`, seguindo o mecanismo previsto pela documentação oficial do Expo para módulos que precisam ser transpilados. Após o ajuste, a suíte voltou a executar e os testes de rich-text/fontes passaram.
 
 Aprendizado técnico: uma dependência ser JS-only não significa que seu artefato publicado já esteja em sintaxe diretamente consumível pelo Jest. Bibliotecas React Native podem exigir transpile explícito em testes mesmo sem possuir código nativo.
+
+
+## 31. Validação visual revelou botão cortado e bundle congelado no Expo Web
+
+Planejado: validar que o botão `Tentar novamente` ficava visível e reenviava a última pergunta sem provocar falha em provider externo.
+
+Observado: em uma viewport de 488 px de altura, o botão terminava em `y=349`, enquanto a área rolável terminava em `y=330`; a parte inferior era cortada pelo limite do histórico. As primeiras tentativas de correção repetiram exatamente as mesmas medidas, mesmo após o código mudar.
+
+Diagnóstico: o conteúdo da conversa crescia após o erro, mas o histórico permanecia com `scrollTop=0`. Além disso, o Metro iniciado com `CI=true` continuou servindo um bundle já gerado; o JavaScript entregue não continha as alterações de diagnóstico, fazendo execuções posteriores testarem código antigo. A ausência da string diagnóstica no bundle comprovou esse segundo problema.
+
+Correção: disparar `scrollToEnd` após mudanças de loading, resposta ou erro; encerrar somente o processo Node identificado na porta 8081; reiniciar o Metro; desabilitar cache no Edge headless; e repetir o mesmo gate visual. O resultado final colocou o botão entre `y=247–286` dentro da viewport que termina em `y=330` e registrou duas chamadas POST locais, uma inicial e uma de retry.
+
+Aprendizado técnico: testes de interação comprovam o fluxo, mas não detectam recortes causados pela geometria real da viewport. Validações visuais automatizadas devem medir limites dos elementos e confirmar que o bundle carregado contém a alteração atual; do contrário, um servidor de desenvolvimento congelado pode produzir falsos negativos e levar a correções sobre código que nem chegou ao navegador.
 
 ## Como registrar novos casos
 
