@@ -3,11 +3,19 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import (
+    get_conversation_service,
     get_embedding_provider,
     get_llm_provider,
     get_sparse_embedding_provider,
     get_vector_store,
 )
+from app.conversation.models import (
+    SessionBusyError,
+    SessionConflictError,
+    SessionExpiredError,
+    SessionNotFoundError,
+)
+from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider, LLMServiceUnavailableError
 from app.rag.chat import answer_with_rag
@@ -30,6 +38,9 @@ async def chat(
     vector_store: Annotated[QdrantVectorStore, Depends(get_vector_store)],
     llm: Annotated[LLMProvider, Depends(get_llm_provider)],
     settings: Annotated[Settings, Depends(get_settings)],
+    conversation_service: Annotated[
+        ConversationService, Depends(get_conversation_service)
+    ],
 ) -> ChatResponse:
     profile = get_profile(settings.retrieval_mode)
     auto_decompose = (
@@ -38,9 +49,11 @@ async def chat(
         else request.auto_decompose
     )
 
-    try:
-        result = await answer_with_rag(
+    async def run_rag(retrieval_question: str, conversation_context: str | None):
+        return await answer_with_rag(
             request.message,
+            retrieval_question=retrieval_question,
+            conversation_context=conversation_context,
             embeddings=embeddings,
             sparse_embeddings=sparse_embeddings if profile.use_sparse else None,
             vector_store=vector_store,
@@ -60,6 +73,27 @@ async def chat(
             auto_decompose=auto_decompose,
             max_subqueries=settings.retrieval_max_subqueries,
         )
+
+    try:
+        if request.session_id is None:
+            result = await run_rag(request.message, None)
+            response_session_id = None
+        else:
+            completed = await conversation_service.run_turn(
+                request.session_id,
+                request.message,
+                run_rag,
+            )
+            result = completed.result
+            response_session_id = request.session_id
+    except SessionNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Session not found.") from exc
+    except SessionBusyError as exc:
+        raise HTTPException(status_code=409, detail="Session is busy.") from exc
+    except SessionConflictError as exc:
+        raise HTTPException(status_code=409, detail="Session conflict.") from exc
+    except SessionExpiredError as exc:
+        raise HTTPException(status_code=410, detail="Session expired.") from exc
     except LLMServiceUnavailableError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -74,6 +108,7 @@ async def chat(
         ) from exc
 
     return ChatResponse(
+        session_id=response_session_id,
         answer=result.answer,
         model=result.model,
         grounded=result.grounded,

@@ -1,7 +1,10 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
+    session_id: UUID | None = None
     message: str = Field(min_length=2, max_length=4000)
     limit: int = Field(default=5, ge=1, le=10)
     category: str | None = Field(default=None, max_length=100)
@@ -22,6 +25,7 @@ class ChatSource(BaseModel):
 
 
 class ChatResponse(BaseModel):
+    session_id: UUID | None = None
     answer: str
     model: str
     grounded: bool
