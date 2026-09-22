@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 DESIGN DA 0.6.0
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-22 ESTADO LOCAL E INFRAESTRUTURA MULTIAGENTE
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -17,7 +17,8 @@
 
 - Repositório: `Daniel-SLima/RagTest`
 - Branch padrão: `main`
-- Versão integrada e validada em `main`: **0.5.24**
+- Versão integrada e validada no `origin/main` remoto: **0.5.24**
+- Versão integrada e validada na `main` local: **0.6.0**, commit `f173a29`
 - PR #19: **merged**
 - Merge commit da 0.5.24: `28edf6a51bf29a4aa62ff56a74efbffb640e728f`
 - Head final da feature antes do merge: `534e1c5334424a57e7cd0adb56f6ea763c20b4ec`
@@ -25,11 +26,35 @@
 - CI pós-merge em `main`: run `35677503800`, com os três jobs em `success`
 - Runtime local Expo Web da 0.5.24: **verificado para grounding e retry manual**
 - Corpus, embeddings e Qdrant: **inalterados**
-- Branch atual: `feature/sessions-0.6.0`.
+- O `origin/main` remoto permanece em `4badc96`; o workspace local está deliberadamente à frente.
+- Branch atual: `feature/audit-0.7.0`.
+- HEAD local: `eb17d28`, contendo a especificação da auditoria estruturada 0.7.0-A; a implementação
+  funcional da auditoria está pausada.
+- Não existe branch remota nem PR correspondente a `feature/audit-0.7.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
 - O plano TDD foi executado de forma nativa nesta branch.
-- As Tasks 1–7 da 0.6.0 estão implementadas; a suíte local tem 150 testes aprovados.
+- As Tasks 1–7 da 0.6.0 estão implementadas e integradas na `main` local; a coleta atual contém
+  149 testes e a suíte local passa integralmente.
+- A configuração multiagente foi criada, tecnicamente revisada e versionada nesta branch por este
+  commit: `AGENTS.md`, `.codex/config.toml` e `.codex/agents/*.toml`.
+- `.codex/config.toml` não define `model` nem `model_reasoning_effort` no nível do projeto: o modelo
+  principal continua sendo determinado pela sessão do Codex. Cada agente personalizado possui seu
+  próprio modelo/esforço explícitos; todos usam exclusivamente `gpt-5.6-luna`; não há default
+  implícito de subagente.
+- A referência anterior a **150 testes** foi uma contagem incorreta: a execução oficial atual e a
+  coleta explícita retornam **149**. Uma revalidação leve do QA chegou a relatar 147 por erro de
+  soma/transcrição; a saída por arquivo foi conferida e totaliza 149, incluindo os 2 testes de
+  `test_vector_store.py`. Não há diff em `tests/`, marcadores skip/xfail, seletores de exclusão ou
+  teste removido/desabilitado.
+- O QA foi executado como subagente real em `workspace-write`, sem alterar código, testes,
+  documentação, corpus, Qdrant ou dependências e sem deixar artefatos: backend pytest **149 passed**,
+  Ruff **All checks passed**, frontend Jest **13 passed** e TypeScript **passou**.
+- A mudança de QA para `workspace-write` é deliberada para permitir caches/artefatos transitórios de
+  ferramentas. Uma sondagem posterior com `read-only` não retornou dentro do intervalo de observação
+  e foi interrompida, sem produzir erro de permissão diagnosticável; por isso não tratamos read-only
+  como gate confiável para esta suíte. `AGENTS.md` e `qa.toml` proíbem alterar código de produção,
+  testes ou documentação para fazer uma validação passar.
 - Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
 ### O que a 0.5.24 entregou
@@ -56,11 +81,14 @@
 
 ### Próximo passo exato
 
-1. revisar o plano de implementação TDD da 0.6.0;
-2. escolher a forma de execução prevista no plano;
-3. após essa aprovação, implementar sessões no backend sem acoplamento ao cliente e sem alterar Qdrant/corpus;
-4. atualizar documentação, decisões, dificuldades e contexto a cada avanço relevante;
-5. não mesclar futuros PRs sem autorização explícita.
+1. **Fase A:** sincronizar a `main` local 0.6.0 (`f173a29`) com `origin/main` 0.5.24 (`4badc96`),
+   preferencialmente por fast-forward; se houver proteção de branch, abrir uma branch/PR exclusiva
+   para essa sincronização;
+2. **Fase B:** publicar `feature/audit-0.7.0` em sua branch remota e abrir PR contra `origin/main`
+   já atualizado para 0.6.0;
+3. só depois retomar a implementação funcional da auditoria 0.7.0-A, seguindo REVIEWER → DEVELOPER
+   → QA → REVIEWER → DOCUMENTER;
+4. não fazer merge, push ou sincronização sem autorização explícita.
 
 ### Regras críticas preservadas
 
@@ -75,11 +103,11 @@
 
 ---
 
-**Última atualização:** 2026-09-22
+**Última atualização:** 2026-09-22 — revisão técnica multiagente, QA real e commit de infraestrutura concluídos.
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** implementação backend da `0.6.0` e validação manual Docker/provider concluídas na branch `feature/sessions-0.6.0`; resta decisão de integração/merge.
+**Trabalho em andamento:** configuração multiagente versionada na branch `feature/audit-0.7.0`; a implementação funcional da auditoria 0.7.0-A permanece pausada até nova autorização.
 
 ---
 
@@ -2491,7 +2519,7 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - branch: `feature/sessions-0.6.0`;
 - commits funcionais: `dc9796d`, `aa58e4d`, `ec531a1`, `0d4a33a`, `453d3ad`, `6d72909`;
 - contratos, SQLite, contexto seguro, serviço conversacional, API REST e integração opcional do chat concluídos;
-- suíte local: 150 testes aprovados; Ruff aprovado;
+- suíte local: 149 testes aprovados; Ruff aprovado;
 - SQLite de sessões separado do Qdrant; corpus, embeddings e Expo não foram alterados;
 - versão do backend atualizada para `0.6.0`;
 - validação manual concluída em Docker: `health=ok`, `ready=ready`, API reiniciada sem perder

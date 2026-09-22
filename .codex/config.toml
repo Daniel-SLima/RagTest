@@ -1,0 +1,26 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3
+interrupt_message = true
+
+[agents.reviewer]
+description = "Revisor read-only do RagTest para requisitos, arquitetura, segurança, regressões e testes."
+config_file = "./agents/reviewer.toml"
+
+[agents.developer]
+description = "Implementador do backend/frontend do RagTest seguindo especificações, TDD e limites de segurança."
+config_file = "./agents/developer.toml"
+
+[agents.qa]
+description = "Validador do RagTest para testes, regressões, integração, CI e casos negativos."
+config_file = "./agents/qa.toml"
+
+[agents.documenter]
+description = "Mantenedor da documentação do RagTest, registrando apenas estado sustentado por evidências."
+config_file = "./agents/documenter.toml"
+
+[agents.security_privacy_reviewer]
+description = "Revisor read-only especializado em segurança, privacidade e LGPD para o RAG de saúde."
+config_file = "./agents/security_privacy_reviewer.toml"
