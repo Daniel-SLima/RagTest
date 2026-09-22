@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 
+from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.llm.factory import create_llm_provider
@@ -18,6 +19,13 @@ def get_qdrant_service(request: Request) -> QdrantService:
     service = getattr(request.app.state, "qdrant", None)
     if service is None:
         raise RuntimeError("Qdrant service was not initialized")
+    return service
+
+
+def get_conversation_service(request: Request) -> ConversationService:
+    service = getattr(request.app.state, "conversation_service", None)
+    if service is None:
+        raise RuntimeError("Conversation service was not initialized")
     return service
 
 
