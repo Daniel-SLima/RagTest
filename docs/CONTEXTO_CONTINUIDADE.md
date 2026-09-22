@@ -28,8 +28,8 @@
 - Branch atual: `feature/sessions-0.6.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
-- O plano TDD foi consolidado em `docs/superpowers/plans/2026-09-22-sessoes-conversacionais-0.6.0.md` e aguarda escolha da forma de execução.
-- Nenhum código funcional da 0.6.0 foi escrito neste checkpoint.
+- O plano TDD foi executado de forma nativa nesta branch.
+- As Tasks 1–6 da 0.6.0 estão implementadas; a suíte local tem 150 testes aprovados.
 - Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
 ### O que a 0.5.24 entregou
@@ -79,7 +79,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** design e plano TDD da `0.6.0` concluídos na branch `feature/sessions-0.6.0`; implementação ainda não iniciada.
+**Trabalho em andamento:** implementação backend da `0.6.0` concluída na branch `feature/sessions-0.6.0`; resta apenas validação manual com provider real e decisão de integração/merge.
 
 ---
 
@@ -2485,6 +2485,16 @@ Validação visual segura:
 - nenhum conteúdo `chatscm/` foi enviado a provider externo durante as validações deste recorte.
 
 O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído posteriormente e está consolidado no handoff autoritativo do início deste documento.
+
+### Implementação das sessões 0.6.0 — 2026-09-22
+
+- branch: `feature/sessions-0.6.0`;
+- commits funcionais: `dc9796d`, `aa58e4d`, `ec531a1`, `0d4a33a`, `453d3ad`, `6d72909`;
+- contratos, SQLite, contexto seguro, serviço conversacional, API REST e integração opcional do chat concluídos;
+- suíte local: 150 testes aprovados; Ruff aprovado;
+- SQLite de sessões separado do Qdrant; corpus, embeddings e Expo não foram alterados;
+- versão do backend atualizada para `0.6.0`;
+- ainda falta validação Docker e teste manual com provider real antes de abrir PR ou mesclar.
 
 
 ### Design da 0.6.0 — 2026-09-21

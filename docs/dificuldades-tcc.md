@@ -402,3 +402,15 @@ Diagnóstico:
 Correção:
 
 Aprendizado técnico:
+
+## 32. Ambiente Windows bloqueou diretórios temporários do pytest
+
+Planejado: executar a suíte completa localmente como gate de cada tarefa da 0.6.0.
+
+Observado: o pytest falhou em fixtures `tmp_path` com `PermissionError` no diretório temporário padrão e, posteriormente, em `.venv/tmp`.
+
+Diagnóstico: as permissões do sandbox/Windows impediam a criação de subdiretórios temporários, sem relação com o código testado.
+
+Correção: a suíte foi repetida com `TEMP` e `TMP` apontando para um diretório temporário autorizado fora do código do produto; o resultado foi 150 testes aprovados.
+
+Aprendizado técnico: o ambiente de validação deve declarar um diretório temporário gravável; falhas de fixture precisam ser separadas de regressões funcionais.

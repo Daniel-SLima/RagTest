@@ -288,3 +288,17 @@ Impacto:
 **Mudança:** a 0.6.x será desenvolvida com foco backend-first. O cliente Expo permanece como consumidor demonstrativo, enquanto sessões, histórico e contexto ficam no backend. O armazenamento seguirá a abstração `SessionStore`, com SQLite como implementação portátil padrão, e o uso de sessão será opcional no `POST /v1/chat` para preservar o modo stateless.
 **Motivo:** o objetivo oficial do TCC é entregar um módulo conversacional RAG implementável no Se Cuida Mulher ou em outro sistema com baixo esforço. Colocar regras no cliente, usar o Qdrant como banco transacional ou acoplar sessões a uma tecnologia de interface reduziria essa portabilidade. SQLite permite persistência local e em Docker sem novo serviço, enquanto a abstração admite outro banco no futuro.
 **Impacto:** o refinamento visual deixa de ser prioridade até o núcleo funcional estar concluído. A 0.6.0 deverá oferecer criação, consulta, exclusão, expiração e concorrência controlada de sessões; histórico será contexto não confiável e nunca evidência documental. Corpus, embeddings e collection Qdrant permanecem inalterados. A especificação completa está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md`.
+
+## D033 — Manter histórico fora do grounding probatório
+
+**Data:** 2026-09-22
+**Decisão:** o histórico recente pode orientar a consulta de retrieval, mas é delimitado como dado não confiável e não probatório no prompt. Citações antigas são removidas antes do novo turno.
+**Motivo:** respostas anteriores podem conter erro, instruções injetadas ou citações que não pertencem às fontes recuperadas no turno atual.
+**Impacto:** perguntas referenciais ficam melhores sem permitir que uma resposta antiga sustente uma nova afirmação.
+
+## D034 — Usar lease curta e revisão monotônica para concorrência
+
+**Data:** 2026-09-22
+**Decisão:** o SQLite adquire uma lease atômica por sessão, valida token e revisão na conclusão e libera a lease em falhas do RAG.
+**Motivo:** duas requisições simultâneas não podem duplicar turnos nem sobrescrever histórico silenciosamente.
+**Impacto:** chamadas concorrentes recebem conflito; uma lease expirada pode ser recuperada sem intervenção manual.

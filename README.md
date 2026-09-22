@@ -4,8 +4,8 @@ Módulo RAG reutilizável via API.
 
 ## Estado atual
 
-A versão `0.5.24` está integrada em `main`. A branch `feature/sessions-0.6.0`
-contém o desenho aprovado da próxima fase: sessões conversacionais persistentes e portáveis.
+A versão em desenvolvimento é `0.6.0`, na branch `feature/sessions-0.6.0`. Ela adiciona
+sessões conversacionais persistentes e portáveis ao backend RAG.
 
 O entregável principal é o backend RAG integrável ao Se Cuida Mulher ou a outro sistema.
 O cliente Expo é somente uma demonstração; funcionalidade, qualidade de respostas, retrieval,
@@ -14,6 +14,31 @@ segurança, auditoria e contratos de integração têm prioridade sobre estiliza
 Especificação da 0.6.0:
 
     docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md
+
+## Sessões conversacionais 0.6.0
+
+O backend oferece criação, consulta e exclusão de sessões, histórico limitado, expiração de
+sete dias e proteção contra duas respostas simultâneas na mesma sessão. O histórico é usado
+somente para interpretar referências e nunca é tratado como evidência documental.
+
+O identificador da sessão é opaco, mas a versão 0.6.0 ainda não possui autenticação. Não use
+dados pessoais reais neste ambiente demonstrativo. O modo stateless continua disponível e o
+provider de IA pode ser trocado pela configuração existente sem alterar o contrato da API.
+
+Exemplo local:
+
+```bash
+curl -X POST http://localhost:8000/v1/sessions
+curl -X POST http://localhost:8000/v1/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"UUID_DA_SESSAO","message":"Quais exames são recomendados?"}'
+curl http://localhost:8000/v1/sessions/UUID_DA_SESSAO
+curl -X DELETE http://localhost:8000/v1/sessions/UUID_DA_SESSAO
+```
+
+O banco de sessões fica em `data/state/sessions.sqlite3` localmente e em um volume Docker
+separado (`session_state`). O Qdrant, corpus e embeddings não são alterados. O Expo permanece
+como cliente demonstrativo; nenhuma alteração visual é necessária para usar os endpoints REST.
 
 ## Fase 0.5.9 — avaliação holdout
 

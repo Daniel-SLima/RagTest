@@ -41,13 +41,13 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - Branch atual: `feature/sessions-0.6.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A especificação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada em 2026-09-22.
-- O plano TDD está em `docs/superpowers/plans/2026-09-22-sessoes-conversacionais-0.6.0.md`, foi autorrevisado e aguarda escolha da forma de execução.
-- Nenhum código funcional da 0.6.0 foi escrito.
+- O plano TDD está em `docs/superpowers/plans/2026-09-22-sessoes-conversacionais-0.6.0.md` e foi executado de forma nativa.
+- As Tasks 1–6 estão implementadas; a suíte local tem 150 testes aprovados.
 - Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
 - Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
 - Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
 - Retry manual validado visualmente no Expo Web com falha de rede exclusivamente local; botão visível e duas chamadas explícitas observadas.
-- Antes de continuar, leia a especificação e o plano da 0.6.0; só inicie o código após aprovação do plano e escolha da forma de execução.
+- Antes de continuar, leia a especificação, o plano e o estado real da branch; não faça merge sem autorização explícita.
 
 ## Prioridade oficial do produto
 
@@ -227,5 +227,10 @@ depois  integração no Se Cuida Mulher ...... posterior
 ```
 
 Não me peça para repetir informações que estejam nesses arquivos. Leia-os e continue do estado real do repositório.
+
+Estado atual da 0.6.0: a implementação backend está na branch `feature/sessions-0.6.0`. As
+sessões REST e o `session_id` opcional do chat estão implementados, com 150 testes aprovados.
+Próximo gate: validar `docker compose config`, persistência após reinício do serviço e uma
+pergunta real com Qdrant/provider configurados. Não fazer merge sem autorização explícita.
 
 Ao final de cada avanço relevante, atualize `docs/CONTEXTO_CONTINUIDADE.md`; registre decisões em `docs/decisoes-tecnicas.md` e falhas reais em `docs/dificuldades-tcc.md`.
