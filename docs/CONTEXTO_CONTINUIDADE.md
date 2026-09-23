@@ -2829,3 +2829,58 @@ como validação de produção.
 Network/console permanecem limitações observacionais; elas não alteram a validação controlada
 registrada acima. Uso externo/produção continua bloqueado, e M5 permanece fora do escopo desta
 sidequest.
+
+## Atualização de continuidade — sidequest Demo M5 (2026-09-23)
+
+### Estado validado
+
+`M5 VALIDATED — LOCAL/CONTROLADO` na branch `sidequest/ragtest-demo`. A fotografia versionada no
+catálogo usa commit-base `75c924c`, versão `M5` e data `2026-09-23`. O workspace permaneceu sem
+alterações em backend, contrato de chat, retrieval, corpus, embeddings, collection Qdrant,
+providers, configuração de agentes ou replay.
+
+### Catálogo e decisões
+
+O catálogo TypeScript substituiu o inventário mínimo M2 por 12 itens em 12 áreas, distribuídos em
+6 Implementados, 2 Parciais / em desenvolvimento, 3 Planejados e 1 Em estudo. A tela calcula
+contagens e filtros a partir do catálogo, sem parsing de Markdown em runtime e sem porcentagens.
+Cada item mantém explicação simples e técnica, importância, limitações, dependências, evidências,
+origem e versão histórica de evidência, distinta do commit da fotografia global.
+
+O item `m3-replay` foi removido por não ter requisito M5 aprovado e por permanecer explicitamente
+fora do escopo. O Laboratório M4 foi reclassificado como Implementado com evidência local atual;
+avaliação especializada/usabilidade foi reclassificada como Planejado por depender de definição
+futura. Sessões do backend permanecem Parciais porque a integração de identidade no Expo não foi
+prometida.
+
+### Produto e limites
+
+A aba `O que ainda falta` exibe `VISÃO GERAL`, fotografia do projeto, `Arquitetura atual`,
+`Visão planejada`, cards por área, filtros por status/área e accordions acessíveis. A arquitetura
+atual é Demo/Expo → FastAPI → RAG/retrieval/grounding → Qdrant + provider. A integração ao Se
+Cuida Mulher aparece apenas como alvo documentado; o RagTest não é apresentado como produto
+completo, política clínica, integração oficial, serviço externo ou certificação LGPD. Autenticação,
+rate limiting, auditoria, logs sanitizados e prompt injection continuam limites para produção.
+
+### Evidências de verificação
+
+O Task 1 recebeu revisão final PASS; o Task 2 recebeu revisão UI PASS CONDICIONAL até a inspeção
+visual e QA PASS após a correção de duas asserções M2 obsoletas em `884d265`. Os gates finais
+automatizados foram **13 suites / 114 testes**, `npm run typecheck` e `git diff --check` aprovados.
+Na Expo Web sem backend, `1366x768`, `1024x600`, `390x844` e `360x800` mantiveram
+`scrollWidth == viewport`; desktop preservou a composição horizontal e móvel refluíu para colunas.
+Fotografia, filtros, cards e accordion foram observados em tema escuro.
+
+Tema claro, Dynamic Type, leitor de tela nativo e Network/Console do DevTools não foram observados
+(IAB sem CDP). Essas são limitações observacionais, não evidências de sucesso. Não houve provider,
+Qdrant, ingestão, Docker ou transmissão de conteúdo documental nessa validação.
+
+### Fronteira seguinte
+
+M6 fica apenas como proposta: validação externa autorizada, autenticação, rate limiting,
+observabilidade/auditoria sanitizadas, revisão de privacidade/LGPD e eventual integração formal
+ao Se Cuida Mulher. Replay e qualquer implementação M6 não foram iniciados.
+
+**Decisão:** `M5 VALIDATED — LOCAL/CONTROLADO`. O uso externo/produção permanece bloqueado e a
+retomada deve começar pela revisão/planejamento explícito de M6, sem presumir que os itens
+Planejados ou Em estudo já estejam implementados.

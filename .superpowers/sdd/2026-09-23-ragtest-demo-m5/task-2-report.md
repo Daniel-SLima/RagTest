@@ -61,17 +61,16 @@ foi alterado.
 
 ## Problemas, riscos e pendências
 
-`frontend/src/demo/screens/demo-screens.test.tsx` ainda contém duas expectativas incompatíveis
-com o catálogo M5: restringe `snapshotVersion` a M1/M2 embora o catálogo tenha evidências M4, e
-usa `getByText("Planejado")` apesar de a nova tela exibir o status no filtro e nos badges. O
-arquivo ficou fora da lista exclusiva de arquivos da Task 2 e não foi alterado. A suíte completa
-não pode ser declarada verde até o ORCHESTRATOR decidir a atualização desse teste obsoleto.
+Durante a integração, `frontend/src/demo/screens/demo-screens.test.tsx` revelou duas expectativas
+M2 obsoletas: restringia `snapshotVersion` a M1/M2 embora o catálogo tenha evidência M4, e usava
+`getByText("Planejado")` apesar de a nova tela exibir o status no filtro e nos badges. O
+ORCHESTRATOR atualizou somente essas asserções no commit `884d265`, preservando statuses,
+evidências e sanitização; a suíte completa passou após a correção.
 
 Validação visual manual dos quatro viewports e tema claro/escuro continua pendente para a Task 3;
 os gates automatizados não substituem essa observação.
 
 ## Próxima etapa recomendada
 
-ORCHESTRATOR/QA deve atualizar ou autorizar a atualização do teste M2 obsoleto, repetir a suíte e
-executar a validação visual dos viewports `1366x768`, `1024x600`, `390x844` e `360x800` sem
-backend/provider.
+QA deve confirmar a suíte verde e executar a validação visual dos viewports `1366x768`,
+`1024x600`, `390x844` e `360x800` sem backend/provider.

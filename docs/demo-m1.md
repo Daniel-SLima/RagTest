@@ -265,3 +265,78 @@ Os quatro viewports-alvo foram observados e não apresentaram overflow horizonta
 continua sem validação manual nesta sessão; ausência dessa observação não é evidência de sucesso.
 O M4 não transforma os benchmarks em validação clínica nem transforma `grounded` ou scores de
 retrieval em prova de verdade.
+
+## M5 — Visão rastreável do produto (2026-09-23)
+
+### Estado e fotografia
+
+Status: **M5 VALIDATED para uso LOCAL/CONTROLADO**. A entrega ficou restrita à branch
+`sidequest/ragtest-demo`, sem alteração de backend, contrato de chat, retrieval, corpus,
+embeddings, coleção Qdrant, providers ou replay. A fotografia versionada no catálogo é:
+
+- branch: `sidequest/ragtest-demo`;
+- commit-base: `75c924c`;
+- versão: `M5`;
+- data: `2026-09-23`.
+
+O commit-base identifica o estado de entrada da sidequest. Cada item também conserva a versão
+histórica que sustenta sua evidência; isso não significa que todo item histórico tenha sido
+implementado no commit M5.
+
+### Catálogo evidence-based
+
+O catálogo TypeScript versionado tem **12 itens em 12 áreas**, sem parsing de Markdown em runtime,
+com os quatro status oficiais e contagens calculadas por funções puras:
+
+- Implementado: **6**;
+- Parcial / em desenvolvimento: **2**;
+- Planejado: **3**;
+- Em estudo: **1**.
+
+As áreas são Núcleo RAG e API, Retrieval e avaliação, Grounding estrutural, Demo Expo, Laboratório
+experimental, Sessões e contexto, Base documental e sincronização, Segurança e produção,
+Privacidade e LGPD, Avaliação especializada e usabilidade, Integração Se Cuida Mulher e Auditoria
+e observabilidade. Cada item mantém explicação simples, detalhe técnico, importância, limitações,
+dependências, origem e evidências relativas.
+
+O item obsoleto `m3-replay` foi removido: não havia requisito M5 aprovado para replay e a
+especificação determina que ele permaneça fora do escopo. O Laboratório M4 foi corrigido para
+**Implementado**, sustentado pela validação local/controlada anterior; avaliação especializada e
+usabilidade foi classificada como **Planejado**, pois ainda depende de definição futura. Nenhum
+item sem evidência foi convertido em roadmap por inferência.
+
+### Visão apresentada
+
+A aba `O que ainda falta` agora separa `VISÃO GERAL`, `Arquitetura atual` e `Visão planejada`.
+Exibe a fotografia do projeto, cards de área com contagens do catálogo, filtros por status e área,
+resultado vazio honesto e accordions acessíveis. Cada detalhe mostra texto simples, técnica,
+importância, limitações, dependências, evidências e origem; `Por que ainda falta?` só aparece
+quando o item possui lacuna registrada. Não são exibidas porcentagens.
+
+A arquitetura atual fica descrita como Demo/Expo → FastAPI → RAG/retrieval/grounding → Qdrant +
+provider, mantendo o cliente demonstrativo separado do núcleo RAG. A visão planejada trata a
+integração ao Se Cuida Mulher como alvo documentado, não como integração oficial pronta. Saúde,
+privacidade/LGPD, autenticação, rate limiting, auditoria, logs sanitizados e prompt injection
+continuam limites explícitos; `grounded=true` permanece apenas cobertura estrutural de citações.
+
+### Evidências e gates
+
+O desenvolvimento multiagente registrou: catálogo com 6 testes direcionados e typecheck; tela
+com 9 testes direcionados; revisão do Task 1 com PASS; revisão do Task 2 com PASS CONDICIONAL
+apenas enquanto faltava a inspeção visual; QA com PASS após a correção mínima das asserções M2
+obsoletas no commit `884d265`. O fechamento automatizado ficou em **13 suites / 114 testes**,
+`npm run typecheck` e `git diff --check` aprovados.
+
+Na inspeção Expo Web sem backend, os viewports `1366x768`, `1024x600`, `390x844` e `360x800`
+mantiveram `scrollWidth == viewport`; os dois primeiros preservaram a composição horizontal e os
+dois últimos refluíram para colunas. Fotografia, filtros, cards e a abertura do accordion foram
+observados. O tema claro, leitor de tela nativo, Dynamic Type e Network/Console do DevTools não
+foram observados nesta sessão; o IAB não expôs CDP, portanto essas ausências permanecem
+limitações, não sucessos presumidos.
+
+### Fronteira M6
+
+M6 fica somente proposto como continuação futura: validação externa autorizada, autenticação,
+rate limiting, auditoria e observabilidade sanitizadas, revisão de privacidade/LGPD e eventual
+integração formal ao Se Cuida Mulher. Nenhum desses trabalhos foi iniciado nesta sidequest; replay
+continua fora do escopo.
