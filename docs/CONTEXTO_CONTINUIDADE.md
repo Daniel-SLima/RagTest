@@ -2884,3 +2884,41 @@ ao Se Cuida Mulher. Replay e qualquer implementação M6 não foram iniciados.
 **Decisão:** `M5 VALIDATED — LOCAL/CONTROLADO`. O uso externo/produção permanece bloqueado e a
 retomada deve começar pela revisão/planejamento explícito de M6, sem presumir que os itens
 Planejados ou Em estudo já estejam implementados.
+
+## Atualização de continuidade — sidequest Demo M6 (2026-09-23)
+
+### Decisão pré-implementação
+
+M6 foi tratado como fechamento da Demo Técnica, não como novo ciclo funcional. Reviewer, QA e
+security/privacy reviewer avaliaram custo, valor e risco do replay e convergiram para **REPLAY NÃO**.
+Não há replay funcional, fixture executável ou nova origem de dados no aplicativo. A contingência
+aprovada é documental/multimídia, com roteiro, checklist e eventual captura estática sanitizada.
+
+O runbook está em `docs/demo-ragtest-presentation.md`. Ele diferencia `AO VIVO`, `VALIDAÇÃO M5`
+e `CAPTURA HISTÓRICA`, explicita o build atual `0213d80` e o snapshot de catálogo M5 `75c924c`,
+e proíbe apresentar captura anterior como execução atual.
+
+### Segurança, privacidade e limites
+
+O security/privacy reviewer confirmou que a contingência sem replay reduz a superfície de risco,
+mas registrou bloqueios que não pertencem a este M6: possível envio de conteúdo CHATSCM a
+providers externos, sessões sem autenticação/autorização, erros brutos de providers e risco
+residual de prompt injection. Não corrigir esses itens nesta sidequest; uso externo/produção
+continua **BLOCKED**. Capturas, vídeo e roteiro devem usar somente interface e perguntas públicas/
+sintéticas, sem secrets, `.env`, paths pessoais, dados clínicos/pessoais, URLs privadas ou logs.
+
+### Evidências e estado
+
+O QA confirmou que não havia roteiro/checklist/capturas versionados e recomendou materializar a
+contingência documental. O documenter criou `docs/demo-ragtest-presentation.md` com sequência de
+5–10 minutos, checklist pré-reunião, fallback, perguntas prováveis e critérios de sanitização.
+Não foi criado script de inicialização: os comandos existentes são suficientes e não devem
+recriar Qdrant, reingerir corpus ou alterar os 767 pontos.
+
+Nenhum arquivo funcional, backend, teste, provider, corpus, Qdrant ou configuração de agentes foi
+alterado no M6. Tema claro, Dynamic Type, leitor de tela nativo e Network/Console permanecem
+limitações observacionais herdadas. M6 não implementa autenticação, rate limiting, produção,
+replay ou qualquer funcionalidade do M6 futuro.
+
+**Decisão:** `DEMO SIDEQUEST READY FOR PRESENTATION` para apresentação local/controlada, com
+replay fora do escopo e uso externo/produção bloqueado.
