@@ -196,6 +196,57 @@ alteração de secrets, providers, Docker ou Qdrant.
 QA final concluído, gates automatizados e bundle Expo Web sem backend verificados; M3 aguardando
 validação e revisão.
 
+## Atualização de continuidade — sidequest Demo M3 (2026-09-23)
+
+Esta seção registra o handoff do recorte M3 e complementa, sem apagar, os registros M1 e M2.
+
+### Estado implementado e contrato do cliente
+
+- **Implementado no frontend:** no HEAD `c7925d7`, a demo Expo usa estado/reducer compartilhado
+  entre `Chat` e `Como funciona`. `GET /v1/demo/runtime` é disparado uma vez na montagem;
+  `POST /v1/demo/run` ocorre somente no envio explícito e no retry explícito. Troca de abas,
+  modos de apresentação e montagem em StrictMode não devem duplicar a execução.
+- **Implementado/verificado por testes:** o cliente valida DTOs fechados, conteúdo obrigatório,
+  limites, valores finitos, monotonicidade de `retrieval_ms`, `generation_ms` e `total_ms`, e a
+  correlação de `citation_ids` com `source.order`. Erros são sanitizados para mensagens
+  allowlisted. A política de base URL aceita HTTP apenas em loopback/RFC1918 e HTTPS apenas em
+  origens exatas de `EXPO_PUBLIC_RAG_ALLOWED_HTTPS_ORIGINS`; isso é distinto de CORS e de
+  `DEMO_ENABLED` no backend.
+- **Implementado:** a apresentação live cobre vazio, loading, erro, retry manual, fontes e
+  grounding. Scores nulos/ausentes e diagnósticos que não existem no DTO M1 são exibidos como
+  indisponíveis. `grounded=true` é cobertura estrutural de citações, não garantia factual ou
+  clínica. O single-query é uma descrição estática da configuração da versão; multi-query,
+  decomposição, retry count, contexto final, dimensão de embedding e métricas pre/post-reranking
+  permanecem indisponíveis e não são inferidos.
+- **Fora do recorte:** nenhum código backend, provider, corpus, embedding, collection Qdrant,
+  Docker ou `.env` foi alterado. O endpoint `/v1/demo/retrieval` permanece contrato M1, mas não é
+  usado pelo fluxo principal M3. Replay não foi implementado; o Laboratório continua reservado
+  ao M4.
+
+### Evidências, validação e riscos
+
+- **Verificado pelo QA:** 84 testes Jest, `npm run typecheck`, `git diff --check` e bundle Expo
+  Web offline. O bundle confirma a inicialização da demo sem backend; não comprova operação live.
+  Ruff ficou **não executado** no ambiente do QA por indisponibilidade do executável e deve ser
+  verificado pelo orquestrador.
+- **Aguardando validação:** runtime real com provider, Qdrant e POST live; validação manual dos
+  viewports `1366x768`, `1024x600`, `390x844` e `360x800`; e qualquer uso com dados reais. Não há
+  evidência para classificar esses itens como verificados.
+- **Segurança:** revisão frontend **PASS condicionada**. Os logs crus preexistentes de Groq e
+  Ollama continuam um bloqueio P1 para exposição externa/produção e não foram alterados, pois a
+  autorização M3 exclui expansão backend. Operar somente em ambiente local controlado, manter
+  `DEMO_ENABLED=false` fora dele e não enviar dados pessoais/privados a providers externos.
+
+### Próxima fronteira
+
+M4 permanece apenas planejado: Laboratório experimental com Dense, Dense+rerank, Hybrid, Top K,
+Multi-query e comparação, sujeito a contrato explícito, privacidade, autenticação, rate limiting
+e logs sanitizados. Replay e demais diagnósticos de backend ficam para uma etapa futura autorizada.
+
+**Última atualização desta sidequest:** 2026-09-23 — M3 frontend implementado no HEAD `c7925d7`;
+gates Jest/typecheck/diff-check e bundle Expo Web offline registrados; runtime live, Ruff e quatro
+viewports permanecem pendentes conforme acima.
+
 ---
 
 ## 1. Objetivo final do projeto

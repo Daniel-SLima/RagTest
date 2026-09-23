@@ -75,13 +75,48 @@ aprovado, `git diff --check` aprovado e bundle Expo Web gerado sem backend. O ca
 somente referências versionadas do próprio repositório; não incorpora respostas, excerpts,
 scores, tempos, segredos, paths pessoais ou dados `CHATSCM`.
 
-### Limites e fronteira M3
+### M3 — integração live opt-in do cliente Expo
 
-M2 não implementa requests, replay, execução demonstrativa, ranking, resposta gerada,
-grounding ao vivo, telemetria ou integração de runtime. M3 só deve avançar após revisão dos
-seguintes pontos: validação dos DTOs de runtime no cliente, allowlist de origem/base URL com
-HTTPS quando aplicável, CORS/autenticação/privacidade e revisão dos exemplos, grounding e
-telemetria antes de qualquer uso com dados ou provider.
+Status: **implementado no frontend**, no HEAD `c7925d7`; a operação live com provider externo,
+Qdrant real e POST real permanece **aguardando validação**. M3 conecta a aba `Chat` ao endpoint
+`POST /v1/demo/run` e apresenta a execução sanitizada na aba `Como funciona`. O backend M1, os
+providers, o corpus, os embeddings e o Qdrant não foram alterados nesta etapa.
 
-Pendências são classificadas como **aguardando validação**; não há afirmação de que M3 esteja
-implementado.
+O fluxo autorizado é explícito: `GET /v1/demo/runtime` é consultado uma vez na montagem da demo;
+`POST /v1/demo/run` só ocorre ao enviar uma pergunta ou ao acionar retry. Um reducer/estado
+compartilhado mantém runtime e a última execução entre `Chat` e `Como funciona`, sem reexecução
+ao trocar abas ou ao alternar a apresentação. O replay continua fora do M3.
+
+O cliente valida DTOs fechados, tipos, valores finitos, monotonicidade dos tempos, correlação de
+`citation_ids` com `source.order` e limites de conteúdo. A URL usa política de origem segura:
+HTTP somente para loopback/RFC1918 e HTTPS somente para origens exatas configuradas em
+`EXPO_PUBLIC_RAG_ALLOWED_HTTPS_ORIGINS`; wildcard, query/hash e origens arbitrárias são
+rejeitados. Erros são reduzidos a códigos/status/mensagens allowlisted, sem expor corpo cru,
+traceback, prompt, token, path ou segredo.
+
+A resposta apresentada preserva texto, grounding estrutural, citações e fontes permitidas. Score
+ausente aparece como **Não disponível**; `grounded=true` significa somente cobertura estrutural
+das citações e nunca prova de verdade factual, clínica ou de entailment semântico. O indicador de
+single-query é uma descrição estática da configuração desta versão; diagnósticos de multi-query,
+decomposição, retry count, contexto final, dimensão de embedding e métricas pre/post-reranking
+não fazem parte do DTO M1 e aparecem como indisponíveis, sem serem inventados.
+
+A interface cobre vazio, loading, erro sanitizado, retry manual, fontes e grounding, além dos
+modos de apresentação automático, `Anterior`, `Próximo` e `Ver tudo`. A troca de abas e esses
+modos não fazem novas requisições. O Laboratório permanece uma superfície futura do M4.
+
+Evidências registradas pelo QA: 84 testes Jest, `npm run typecheck`, `git diff --check` e bundle
+Expo Web offline aprovados; Ruff não foi executado pelo QA porque o executável não estava
+disponível naquele ambiente. Não foram executados runtime real com provider/Qdrant, POST live,
+nem validação manual dos quatro viewports (`1366x768`, `1024x600`, `390x844`, `360x800`); esses
+itens permanecem **aguardando validação**. A revisão de segurança aprovou o frontend de forma
+condicionada, mas os logs crus preexistentes de Groq/Ollama continuam um bloqueio P1 para uso
+externo/produção e estão fora do escopo autorizado do M3. Manter `DEMO_ENABLED=false` fora de
+ambiente local controlado e não usar dados reais ou pessoais.
+
+### Fronteira M4
+
+M4 continua planejado como um Laboratório experimental para controles de Dense, Dense+rerank,
+Hybrid, Top K, Multi-query e comparação, condicionado a contrato de runtime, privacidade,
+autenticação, rate limiting e logs sanitizados. Replay e qualquer ampliação de backend são
+futuros e não fazem parte desta implementação.
