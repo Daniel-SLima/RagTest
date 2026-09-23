@@ -7,7 +7,9 @@ const unavailable = "Não disponível"
 export function buildDemoPipeline(state: DemoRunState): DemoPipelineStageView[] {
   const response = state.response; const runtime = state.runtime; const source = response?.sources[0]
   const retrievalMode = runtime?.retrieval
-  const retrievalSummary = response?.sources.map((item) => `#${item.order} ${item.document} · página ${item.page ?? unavailable} · dense ${item.scores.dense_score ?? unavailable} · sparse ${item.scores.sparse_score ?? unavailable} · ranking ${item.scores.rank_score ?? unavailable} · fusão ${item.scores.fusion_score ?? unavailable}`).join("; ")
+  const retrievalSummary = response?.sources.length
+    ? response.sources.map((item) => `#${item.order} ${item.document} · página ${item.page ?? unavailable} · dense ${item.scores.dense_score ?? unavailable} · sparse ${item.scores.sparse_score ?? unavailable} · ranking ${item.scores.rank_score ?? unavailable} · fusão ${item.scores.fusion_score ?? unavailable}`).join("; ")
+    : response ? "Nenhuma fonte retornada" : unavailable
   const rerankingStage = retrievalMode === "dense-rerank"
     ? { id: "reranking", title: "Reranking", simpleExplanation: "O perfil runtime indica uma etapa de reranking.", technicalDetails: "Perfil dense-rerank habilitado; comparação pré/pós e métricas de reranking: Não disponível", state: "available" as const, value: "dense-rerank", source: "runtime M1" }
     : { id: "reranking", title: "Reranking", simpleExplanation: "A UI não infere ranking além do DTO.", technicalDetails: retrievalMode === "dense" ? "O perfil dense não declara reranking; comparação pré/pós: Não disponível" : unavailable, state: retrievalMode === "dense" ? "not-required" as const : "unavailable" as const, value: retrievalMode === "dense" ? "não requerido pelo perfil" : unavailable, source: runtime ? "runtime M1" : undefined }

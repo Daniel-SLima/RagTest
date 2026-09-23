@@ -29,4 +29,10 @@ describe("buildDemoPipeline", () => {
     const dense = buildDemoPipeline(base)
     expect(dense[5]).toMatchObject({ state: "not-required", value: "não requerido pelo perfil" })
   })
+
+  it("uses an explicit empty-source summary", () => {
+    const pipeline = buildDemoPipeline({ ...base, response: { ...base.response!, sources: [], grounded: false, citation_ids: [] } })
+    expect(pipeline[4].technicalDetails).toContain("Nenhuma fonte retornada")
+    expect(pipeline[4].technicalDetails).not.toContain("Resumo permitido: .")
+  })
 })
