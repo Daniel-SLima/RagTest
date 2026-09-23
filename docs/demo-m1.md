@@ -1,6 +1,7 @@
-# Demo segura M1
+# Demo segura M1 e fundação visual M2
 
-Status: implementado nesta sidequest; aguardando validação independente do QA.
+Status M1: implementado e verificado separadamente no backend; a validação de runtime real
+com provider externo e Qdrant continua fora desta sidequest.
 
 Quando `DEMO_ENABLED=false` (padrão), as rotas `/v1/demo/run`, `/v1/demo/retrieval` e
 `/v1/demo/runtime` não são registradas nem aparecem no OpenAPI. A aplicação principal e o
@@ -26,3 +27,51 @@ providers externos nem Qdrant real.
 O runtime demo informa apenas versão, rótulos sanitizados de provider/modelo/embedding/retrieval,
 collection, habilitação e estado da política. UI, replay, corpus, embeddings, Qdrant e ingestão
 estão fora do escopo M1.
+
+## M2 — fundação visual opt-in no Expo
+
+Status: implementado no commit `8388f2e` e verificado após QA pelos gates registrados no
+handoff desta sidequest. Esta etapa adiciona somente a fundação visual da Demo Técnica no
+frontend Expo: quatro abas (`Chat`, `Como funciona`, `Laboratório` e `O que ainda falta`),
+estados vazios/neutros, catálogo de roadmap com referências verificáveis e contratos TypeScript
+preparados para uso futuro.
+
+O frontend é habilitado de forma independente pelo flag
+`EXPO_PUBLIC_RAG_DEMO_ENABLED`. Somente o valor `true`, depois de `trim().toLowerCase()`,
+habilita a demo; valores ausentes, vazios, `false`, `1`, `yes` e outros preservam o app normal.
+Esse flag não habilita o backend: `DEMO_ENABLED` e `DEMO_ALLOWED_SOURCE_PREFIXES` continuam
+sendo uma configuração separada. A implementação M2 não faz requests durante construção,
+renderização, troca de aba ou uso dos exemplos; não chama provider, Qdrant, `/v1/demo/run`,
+`/v1/demo/retrieval` nem executa live run.
+
+Para visualizar localmente sem depender do backend, use no PowerShell:
+
+```powershell
+cd frontend
+$env:EXPO_PUBLIC_RAG_DEMO_ENABLED="true"
+npm run web
+```
+
+O app nativo mantém `orientation: "portrait"`; no Expo Web, a validação usa landscape.
+Os viewports-alvo são `1366x768`, `1024x600`, `390x844` e `360x800`. A implementação inclui
+container responsivo, reflow/compactação das abas em telas estreitas, cards empilhados,
+safe-area, foco visível na Web, alvos de toque, estados acessíveis, contraste para temas
+claro/escuro e suporte a escala de fonte. Esses aspectos são estados implementados e foram
+verificados pelos testes e pelo bundle Expo Web sem backend; uma nova validação visual manual
+de runtime permanece uma pendência caso seja necessária para a entrega final.
+
+Evidências do fechamento M2: 49 testes Jest aprovados, `npm run typecheck` aprovado, Ruff
+aprovado, `git diff --check` aprovado e bundle Expo Web gerado sem backend. O catálogo usa
+somente referências versionadas do próprio repositório; não incorpora respostas, excerpts,
+scores, tempos, segredos, paths pessoais ou dados `CHATSCM`.
+
+### Limites e fronteira M3
+
+M2 não implementa requests, replay, execução demonstrativa, ranking, resposta gerada,
+grounding ao vivo, telemetria ou integração de runtime. M3 só deve avançar após revisão dos
+seguintes pontos: validação dos DTOs de runtime no cliente, allowlist de origem/base URL com
+HTTPS quando aplicável, CORS/autenticação/privacidade e revisão dos exemplos, grounding e
+telemetria antes de qualquer uso com dados ou provider.
+
+Pendências são classificadas como **aguardando validação**; não há afirmação de que M3 esteja
+implementado.

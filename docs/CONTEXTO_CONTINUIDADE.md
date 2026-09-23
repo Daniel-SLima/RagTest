@@ -139,6 +139,53 @@ autoritativo histórico acima.
   credenciais é pendência antes de compartilhar ou publicar qualquer transcript. Esta nota não
   classifica aquela execução como validação bem-sucedida.
 
+## Atualização de continuidade — sidequest Demo M2 (2026-09-23)
+
+Esta seção complementa a fotografia M1 acima. O handoff histórico e as decisões anteriores
+permanecem preservados; em caso de conflito, o estado local e as evidências desta seção são a
+fonte específica da sidequest.
+
+### Estado e evidências
+
+- **Implementado:** a fundação visual opt-in do Expo foi integrada na branch
+  `sidequest/ragtest-demo`, com HEAD `8388f2e` (`fix: improve disabled contrast and example
+  focus`). O M2 contém as abas `Chat`, `Como funciona`, `Laboratório` e `O que ainda falta`,
+  componentes responsivos, estados vazios/neutros, catálogo de roadmap e contratos TypeScript
+  para uso futuro.
+- **Verificado:** a flag `EXPO_PUBLIC_RAG_DEMO_ENABLED` só habilita o frontend para `true`
+  após normalização `trim().toLowerCase()`; ela é independente de `DEMO_ENABLED` e
+  `DEMO_ALLOWED_SOURCE_PREFIXES`. A matriz de valores falsy/ausentes e a separação entre
+  `NormalApp` e `DemoApp` são cobertas pelos testes. O M2 não faz requests na construção,
+  renderização, troca de aba ou exemplos e não aciona providers, Qdrant ou endpoints demo.
+- **Verificado:** a orientação nativa permanece `portrait` e a validação Web usa landscape.
+  Os viewports-alvo são `1366x768`, `1024x600`, `390x844` e `360x800`; o layout usa reflow de
+  abas, cards empilhados, safe-area, foco visível, alvos acessíveis, Dynamic Type e contraste
+  para os temas claro/escuro. O bundle Expo Web foi gerado sem backend.
+- **Verificado por gates:** 49 testes Jest, `npm run typecheck`, Ruff e `git diff --check`
+  passaram. O M1 backend permanece verificado separadamente; esses gates não são uma execução
+  real com provider externo ou Qdrant.
+- **Aguardando validação:** qualquer validação visual manual adicional em runtime nativo/Web
+  e a revisão operacional para permitir chamadas reais permanecem pendentes. M2 não classifica
+  M3, M4 ou M5 como implementados.
+
+### Limites e próxima fronteira
+
+M2 é exclusivamente visual e preparatório: não há live run, replay, ranking, resposta gerada,
+grounding ao vivo, telemetria nem requests. Antes de iniciar M3, são obrigatórias a validação
+dos DTOs de runtime no cliente, a política de origem/base URL com HTTPS allowlist quando
+aplicável, a revisão de CORS/autenticação/privacidade e a revisão dos exemplos, grounding e
+telemetria. O backend M1 e o frontend M2 continuam habilitados por flags independentes.
+
+### Risco operacional preservado
+
+Uma execução histórica de `docker compose config` materializou credenciais na saída. Nenhum
+valor é repetido aqui; a rotação deve ocorrer antes de compartilhar qualquer transcript que
+contenha aquela saída. Este incidente não é evidência de validação de runtime e não autoriza
+alteração de secrets, providers, Docker ou Qdrant.
+
+**Última atualização desta sidequest:** 2026-09-23 — M2 implementado no commit `8388f2e`,
+gates automatizados e bundle Expo Web sem backend verificados; M3 aguardando validação e revisão.
+
 ---
 
 ## 1. Objetivo final do projeto
