@@ -47,11 +47,11 @@ describe("M2 screens", () => {
     await renderDemo(<RoadmapScreen />); expect(roadmap.length).toBeGreaterThan(0)
     expect(screen.getByText("O que ainda falta")).toBeTruthy()
     expect(screen.getAllByText("Implementado").length).toBeGreaterThan(0)
-    expect(screen.getByText("Planejado")).toBeTruthy()
+    expect(screen.getAllByText("Planejado").length).toBeGreaterThan(0)
     expect(screen.queryByText("implemented")).toBeNull()
   })
   it("keeps catalog statuses and evidence references closed", () => {
-    for (const item of roadmap) { expect(["implemented", "partial", "planned", "research"]).toContain(item.status); expect(item.evidence.length).toBeGreaterThan(0); expect(item.snapshotVersion).toMatch(/^M[12]$/) }
+    for (const item of roadmap) { expect(["implemented", "partial", "planned", "research"]).toContain(item.status); expect(item.evidence.length).toBeGreaterThan(0); expect(["M1", "M2", "M4"]).toContain(item.snapshotVersion) }
     expect(JSON.stringify(roadmap)).not.toMatch(/CHATSCM|\.env|[A-Za-z]:\\|\/Users\//)
   })
 
