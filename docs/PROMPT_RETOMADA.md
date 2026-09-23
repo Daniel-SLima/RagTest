@@ -24,7 +24,7 @@ Use o GitHub conectado e leia, nesta ordem:
 
 No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
-**HANDOFF AUTORITATIVO ATUAL — 2026-09-21 DESIGN DA 0.6.0**
+**HANDOFF AUTORITATIVO ATUAL — 2026-09-22 ESTADO LOCAL E INFRAESTRUTURA MULTIAGENTE**
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
@@ -38,16 +38,27 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - CI pós-merge da `main`: run `35677503800`, com todos os jobs em success.
 - Runtime local Expo Web da 0.5.24 foi validado para grounding e retry manual.
 - Corpus, embeddings e Qdrant permaneceram inalterados.
-- Branch atual: `feature/sessions-0.6.0`.
+- O `origin/main` remoto permanece em `0.5.24` (`4badc96`), enquanto a `main` local contém a
+  0.6.0 validada (`f173a29`). O workspace local é a fonte mais avançada e não deve ser sobrescrito.
+- Branch atual: `feature/audit-0.7.0`, HEAD `eb17d28`.
+- A especificação da auditoria estruturada 0.7.0-A foi escrita; a implementação funcional está pausada.
+- A configuração multiagente local está criada, revisada e versionada nesta branch: `AGENTS.md`,
+  `.codex/config.toml` e `.codex/agents/*.toml`.
+- O projeto não fixa modelo do orquestrador; modelos/esforços são explícitos nos agentes. O QA real
+  passou com backend pytest (149), Ruff, frontend Jest (13) e TypeScript, sem alterações funcionais
+  nem artefatos persistentes.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A especificação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada em 2026-09-22.
 - O plano TDD está em `docs/superpowers/plans/2026-09-22-sessoes-conversacionais-0.6.0.md` e foi executado de forma nativa.
-- As Tasks 1–7 estão implementadas; a suíte local tem 150 testes aprovados.
+- As Tasks 1–7 estão implementadas; a coleta atual contém 149 testes e a suíte local passa integralmente.
 - Primeiro recorte de grounding validado em CI e visualmente no Expo Web.
 - Segundo recorte implementado por TDD: mensagem específica para HTTP 503 sem exposição do detalhe técnico do provider.
 - Terceiro recorte implementado por TDD: retry manual da última pergunta após erro, sem chamadas automáticas.
 - Retry manual validado visualmente no Expo Web com falha de rede exclusivamente local; botão visível e duas chamadas explícitas observadas.
-- Antes de continuar, leia a especificação, o plano e o estado real da branch; não faça merge sem autorização explícita.
+- A `main` local (`f173a29`) é descendente direta de `origin/main` (`4badc96`) e pode ser atualizada
+  por fast-forward se o remoto permanecer estável. Se branch protection impedir push direto, use uma
+  branch/PR exclusiva para a Fase A; somente depois abra a Fase B de `feature/audit-0.7.0` contra a
+  `main` remota já em 0.6.0. Não faça merge, push ou sincronização sem autorização explícita.
 
 ## Prioridade oficial do produto
 
@@ -219,7 +230,7 @@ Antes de trocar branch após executar Expo:
 0.5.23  rich-text + fontes + citações ...... merged
 0.5.24  UX + grounding/refinamentos ........ merged
 0.6.0   sessões portáveis .................. plano concluído
-0.7.x   auditoria/LGPD/segurança ........... futura
+0.7.x   auditoria/LGPD/segurança ........... design local; implementação pausada
 0.8.x   agendamento/lembretes .............. futura
 0.9.x   avaliação/usabilidade .............. futura
 1.0     artefato final do TCC .............. futura
@@ -228,10 +239,9 @@ depois  integração no Se Cuida Mulher ...... posterior
 
 Não me peça para repetir informações que estejam nesses arquivos. Leia-os e continue do estado real do repositório.
 
-Estado atual da 0.6.0: a implementação backend está na branch `feature/sessions-0.6.0`. As
-sessões REST e o `session_id` opcional do chat estão implementados, com 150 testes aprovados.
-O Docker foi validado com `health=ok` e `ready=ready`; a sessão sobreviveu ao reinício da API;
-uma pergunta real ao Groq retornou `grounded=true` com cinco fontes. A sessão de teste foi
-removida. Não fazer merge sem autorização explícita.
+Estado atual: a implementação backend 0.6.0 está integrada na `main` local, com 149 testes
+aprovados, Docker validado e provider Groq testado. A branch atual contém apenas a especificação
+0.7.0-A e a configuração multiagente versionada. Não fazer pull, merge, push, rebase, reset,
+clean ou descarte de mudanças; aguardar autorização antes de retomar código.
 
 Ao final de cada avanço relevante, atualize `docs/CONTEXTO_CONTINUIDADE.md`; registre decisões em `docs/decisoes-tecnicas.md` e falhas reais em `docs/dificuldades-tcc.md`.

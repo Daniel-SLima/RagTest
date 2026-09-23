@@ -70,6 +70,23 @@ Todos tiveram HitRate@5=1.000 nas duas suites.
 **Motivo:** reduzir o risco de avaliar apenas nas mesmas perguntas que orientaram os ajustes do sistema.  
 **Impacto:** mudanças futuras não devem ser ajustadas no holdout e depois apresentadas como validação independente sobre o mesmo conjunto.
 
+## D009 — Configuração multiagente por papel, sem fixar o orquestrador
+
+**Data:** 2026-09-22
+**Mudança:** foi criada a infraestrutura local `AGENTS.md` + `.codex/config.toml` +
+`.codex/agents/*.toml`, com modelos e esforços explícitos por papel. O nível do projeto não define
+`model` nem `model_reasoning_effort`; o modelo principal permanece determinado pela sessão do Codex.
+O QA usa `gpt-5.6-luna`/`high` com `workspace-write` controlado por instrução explícita de não
+alterar produção, testes ou documentação.
+**Motivo:** separar custo e profundidade por tarefa, preservar qualidade em revisões complexas e
+permitir que ferramentas de teste criem artefatos transitórios sem permitir correções silenciosas.
+Uma sondagem read-only não concluiu dentro do intervalo de observação; não houve erro de permissão
+diagnosticável, então `workspace-write` é mantido como sandbox mínimo para o QA.
+**Impacto:** todos os subagentes usam exclusivamente `gpt-5.6-luna`: reviewer usa `high`
+read-only; developer usa `high` workspace-write; QA usa `high` workspace-write; documenter usa
+`medium` workspace-write; security/privacy usa `xhigh` read-only. A configuração está validada e
+versionada nesta branch.
+
 ---
 
 ## Quando adicionar uma nova decisão
