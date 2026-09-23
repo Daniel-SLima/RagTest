@@ -6,6 +6,7 @@ import { RoadmapScreen } from "./roadmap-screen"
 import { DemoThemeProvider } from "../components/demo-shell-theme"
 import { roadmap } from "../data/roadmap"
 import type { DemoRunState } from "../types/run-state"
+import { AnswerPresentation } from "../../components/answer-presentation"
 
 const renderDemo = (element: React.ReactElement) => render(<DemoThemeProvider>{element}</DemoThemeProvider>)
 const liveState: DemoRunState = { question: "TEST DATA", response: { answer: "Resposta TEST DATA **segura**.", model: "TEST DATA", grounded: true, citation_ids: [1], sources: [{ public_id: "public-1", document: "public/doc.pdf", page: 2, order: 1, excerpt: "Trecho TEST DATA", scores: { dense_score: 0.9, sparse_score: null, rank_score: null, fusion_score: null } }], timings: { retrieval_ms: 2, generation_ms: null, total_ms: 3 } }, diagnostics: null, runtime: null, runtimeStatus: "success", runtimeError: null, status: "success", error: null }
@@ -78,5 +79,12 @@ describe("M2 screens", () => {
     await renderDemo(<DemoChatScreen value="TEST DATA" onChange={jest.fn()} onExamplePress={jest.fn()} state={state} onSubmit={jest.fn()} onRetry={jest.fn()} />)
     expect(screen.getByText("Sem base documental suficiente")).toBeTruthy()
     expect(screen.getByText(/não há cobertura estrutural suficiente/i)).toBeTruthy()
+  })
+
+  it("passes dark theme colors through the demo answer presentation", async () => {
+    await renderDemo(<AnswerPresentation model={{ answer: "TEST DATA", grounded: true, palette: { text: "#F3F7FA", textMuted: "#C5D1D9", surface: "#1C2730", surfaceMuted: "#293640", border: "#8EA2B0", accent: "#8DD5FF" }, sourcesTitle: "Fontes consultadas", showCitationId: true, sources: [{ key: "test", citationLabel: "[1]", document: "public/doc.pdf", page: 1, excerpt: "Trecho TEST DATA", scores: { Dense: null } }] }} />)
+    expect(JSON.stringify(screen.getByText("Citações verificadas").props.style)).toContain("#F3F7FA")
+    expect(JSON.stringify(screen.getByText("Trecho TEST DATA").props.style)).toContain("#F3F7FA")
+    expect(JSON.stringify(screen.getByText("Fontes consultadas").props.style)).toContain("#F3F7FA")
   })
 })
