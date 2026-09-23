@@ -25,37 +25,50 @@ uma captura histórica.
 
 ### 0:00–1:00 — enquadramento
 
-1. Explique que o RagTest é um módulo RAG portável com cliente Expo demonstrativo.
-2. Diga explicitamente: “Esta apresentação mostra a superfície demonstrativa e a rastreabilidade
+1. **FORMA SIMPLES:** Explique que o RagTest é um módulo RAG portável com cliente Expo
+   demonstrativo.
+2. **SE O PROFESSOR QUISER DETALHES:** Diga explicitamente: “Esta apresentação mostra a
+   superfície demonstrativa e a rastreabilidade
    da entrega; não é uma demonstração de produção, atendimento clínico ou integração oficial ao
    Se Cuida Mulher.”
-3. Mostre a identificação da versão/branch no catálogo, marcando como **AO VIVO** somente o que
-   estiver visível no build atual.
+3. **FORMA SIMPLES:** Mostre a identificação da versão/branch no catálogo, marcando como **AO
+   VIVO** somente o que estiver visível no build atual.
+4. **SE O PROFESSOR QUISER DETALHES:** Explique que o build atual é `0213d80`, enquanto a
+   fotografia de validação M5 é `75c924c`; são referências diferentes.
 
 ### 1:00–3:00 — arquitetura e limites
 
-1. Abra `Como funciona` e percorra as etapas sem executar uma pergunta.
-2. Mostre o fluxo conceitual: Demo/Expo → FastAPI → RAG/retrieval/grounding → Qdrant + provider.
-3. Explique que etapas com “aguardando execução”, itens Planejados e itens Em estudo são estados
+1. **FORMA SIMPLES:** Abra `Como funciona` e percorra as etapas sem executar uma pergunta.
+2. **SE O PROFESSOR QUISER DETALHES:** Mostre o fluxo conceitual: Demo/Expo → FastAPI →
+   RAG/retrieval/grounding → Qdrant + provider.
+3. **FORMA SIMPLES:** Explique que “aguardando execução”, Planejado e Em estudo são estados
    honestos do roadmap, não resultados fabricados.
-4. Aponte que `grounded=true`, quando mencionado em evidência anterior, significa apenas cobertura
-   estrutural de citações; não é prova de verdade factual, clínica ou entailment semântico.
+4. **SE O PROFESSOR QUISER DETALHES:** Aponte que `grounded=true`, quando mencionado em
+   evidência anterior, significa apenas cobertura estrutural de citações; não é prova de verdade
+   factual, clínica ou entailment semântico.
 
 ### 3:00–5:30 — visão rastreável M5
 
-1. Abra `O que ainda falta` (**AO VIVO**).
-2. Mostre `VISÃO GERAL`, as contagens e os filtros por status/área.
-3. Abra um accordion e mostre texto simples, detalhe técnico, limitações, dependências e
-   referências relativas. Não improvise uma evidência que não esteja no catálogo.
-4. Explique que a validação M5 registrou 12 itens em 12 áreas: 6 Implementados, 2 Parciais / em
-   desenvolvimento, 3 Planejados e 1 Em estudo (**VALIDAÇÃO M5**).
-5. Se usar uma tela gravada ou screenshot de execução anterior, anuncie-a como **CAPTURA
-   HISTÓRICA** e informe que ela pertence ao snapshot `75c924c`, não necessariamente ao build
-   `0213d80`.
+1. **FORMA SIMPLES:** Abra `O que ainda falta` (**AO VIVO**).
+2. **SE O PROFESSOR QUISER DETALHES:** Mostre `VISÃO GERAL`, as contagens e os filtros por
+   status/área.
+3. **FORMA SIMPLES:** Abra um accordion e mostre limitações e referências; não improvise uma
+   evidência que não esteja no catálogo.
+4. **SE O PROFESSOR QUISER DETALHES:** Mostre também detalhe técnico, dependências e a origem
+   relativa do item.
+5. **FORMA SIMPLES:** Explique que a validação M5 registrou 12 itens em 12 áreas: 6
+   Implementados, 2 Parciais / em desenvolvimento, 3 Planejados e 1 Em estudo (**VALIDAÇÃO M5**).
+6. **SE O PROFESSOR QUISER DETALHES:** Se usar uma tela gravada ou screenshot anterior, anuncie-a
+   como **CAPTURA HISTÓRICA** e informe que pertence ao snapshot `75c924c`, não necessariamente ao
+   build `0213d80`.
 
 ### 5:30–7:00 — o que foi verificado e o que não foi
 
-Apresente a tabela verbalmente ou em uma captura sanitizada:
+**FORMA SIMPLES:** Diga o que foi observado e o que continua bloqueado.
+
+**SE O PROFESSOR QUISER DETALHES:** Apresente a tabela abaixo, verbalmente ou em uma captura
+sanitizada:
+
 
 | Classificação | Pode ser afirmado | Não pode ser afirmado |
 |---|---|---|
@@ -69,6 +82,31 @@ Se a interface não abrir, não tente “consertar” durante a reunião nem fa�
 próprio roteiro e `docs/demo-m1.md`; use a seção M5 e as classificações acima como apresentação
 documental. Se houver capturas, use somente as previamente sanitizadas. Registre a falha como
 pendência, sem convertê-la em validação.
+
+## Caminho AO VIVO opcional e preflight
+
+Este caminho só deve ser usado se a reunião tiver autorização explícita para um ambiente
+local/controlado. Ele não é replay e não transforma uma execução local em evidência de produção.
+
+**FORMA SIMPLES:** confirme que a API local responde, que o armazenamento preservado está
+disponível e que a interface aponta para a mesma API; se qualquer item falhar, aborte o caminho
+AO VIVO e use o fallback documental.
+
+**SE O PROFESSOR QUISER DETALHES:** faça, antes de abrir a tela, os checks somente de leitura:
+
+1. API habilitada para a demo, com allowlist pública já revisada; não alterar `.env` durante a
+   reunião.
+2. `/health` e `/ready` respondendo pela API local configurada.
+3. Qdrant local preservando os 767 pontos; não recriar collection, corpus ou embeddings.
+4. Provider local Ollama disponível com o baseline `qwen3:8b`; nenhuma chave ou conteúdo privado.
+5. Frontend apontando para a base URL correta da API. No cenário local/controlado previamente
+   validado, use `EXPO_PUBLIC_RAG_API_BASE_URL=http://127.0.0.1:8001`; não confundir com uma
+   composição local que exponha a API em outra porta.
+
+Critério de abortar: qualquer falha em `/health`, `/ready`, contagem preservada, provider local,
+allowlist, base URL, privacidade ou sanitização encerra o caminho AO VIVO. Não corrigir em tempo
+de reunião, não trocar provider, não usar dados reais e não chamar replay; registrar “aguardando
+validação” e seguir para capturas/roteiro.
 
 Para uma apresentação local sem backend, os comandos existentes são suficientes:
 
@@ -89,6 +127,12 @@ os 767 pontos preservados. Não habilitar provider externo, não usar dados pess
 - [ ] Manter a distinção visível entre build atual e snapshot M5 `75c924c`.
 - [ ] Abrir somente telas e textos sanitizados; preparar `docs/demo-m1.md` como fallback.
 - [ ] Testar a navegação local sem depender de provider, Qdrant ou rede externa.
+- [ ] **Opcional — AO VIVO:** confirmar API demo habilitada e allowlist pública revisada.
+- [ ] **Opcional — AO VIVO:** verificar `/health` e `/ready` na base URL local configurada.
+- [ ] **Opcional — AO VIVO:** confirmar Qdrant local com os 767 pontos preservados, sem recriação.
+- [ ] **Opcional — AO VIVO:** confirmar Ollama local com `qwen3:8b`, sem expor chaves ou conteúdo.
+- [ ] **Opcional — AO VIVO:** confirmar `EXPO_PUBLIC_RAG_API_BASE_URL` apontando para a API
+      correta (cenário validado: `http://127.0.0.1:8001`); abortar se qualquer check falhar.
 - [ ] Deixar exemplos públicos/sintéticos prontos; não usar `CHATSCM`, documentos privados ou
       perguntas de saúde reais.
 - [ ] Conferir que nenhum terminal, variável, arquivo `.env`, token, path pessoal, log cru ou
