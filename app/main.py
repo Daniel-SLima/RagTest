@@ -10,13 +10,13 @@ from app.api.routes.search import router as search_router
 from app.api.routes.sessions import router as sessions_router
 from app.conversation.service import ConversationService
 from app.conversation.sqlite_store import SQLiteSessionStore
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.services.qdrant_service import QdrantService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    settings = get_settings()
+    settings = getattr(app.state, "settings", None) or get_settings()
     app.state.qdrant = QdrantService(settings)
     app.state.session_store = SQLiteSessionStore(settings.session_db_path)
     await app.state.session_store.initialize()
@@ -31,14 +31,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await app.state.qdrant.close()
 
 
-def create_app() -> FastAPI:
-    settings = get_settings()
+def create_app(settings: Settings | None = None) -> FastAPI:
+    settings = settings or get_settings()
     application = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
         description="API REST portável para o módulo RAG do RagTest.",
         lifespan=lifespan,
     )
+    application.state.settings = settings
+    application.dependency_overrides[get_settings] = lambda: settings
     allowed_origins = [
         origin.strip()
         for origin in settings.cors_allowed_origins.split(",")
@@ -55,6 +57,11 @@ def create_app() -> FastAPI:
     application.include_router(search_router)
     application.include_router(chat_router)
     application.include_router(sessions_router)
+
+    if settings.demo_enabled:
+        from app.api.routes.demo import router as demo_router
+
+        application.include_router(demo_router)
 
     @application.get("/", include_in_schema=False)
     async def root() -> dict[str, str]:

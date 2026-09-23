@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     session_context_max_chars: int = Field(default=12000, ge=1000, le=50000)
     session_lease_seconds: int = Field(default=600, ge=30, le=3600)
 
+    demo_enabled: bool = False
+    demo_allowed_source_prefixes: str = ""
+
     llm_provider: str = "gemini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.6-flash"

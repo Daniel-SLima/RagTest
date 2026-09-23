@@ -1,8 +1,10 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from app.llm.base import LLMProvider
 from app.rag.citations import extract_citation_ids, normalize_citation_markup
 from app.rag.decomposition import decompose_question
+from app.rag.diagnostics import DiagnosticsCollector
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.grounding import (
     CitationCoverage,
@@ -207,7 +209,11 @@ async def answer_with_rag(
     max_subqueries: int = 3,
     retrieval_question: str | None = None,
     conversation_context: str | None = None,
+    source_policy: Callable[[SearchHit], bool] | None = None,
+    diagnostics: DiagnosticsCollector | None = None,
 ) -> ChatResult:
+    if diagnostics is not None:
+        diagnostics.start()
     search_question = retrieval_question or question
     decomposition = await decompose_question(
         search_question,
@@ -258,6 +264,11 @@ async def answer_with_rag(
             hybrid_sparse_weight=hybrid_sparse_weight,
         )
 
+    if diagnostics is not None:
+        diagnostics.mark_retrieval()
+    if source_policy is not None:
+        hits = [hit for hit in hits if source_policy(hit)]
+
     if not hits:
         return ChatResult(
             answer=(
@@ -273,6 +284,8 @@ async def answer_with_rag(
             decomposition_status=decomposition.status,
         )
 
+    if diagnostics is not None:
+        diagnostics.mark_generation()
     (
         answer,
         grounded,
