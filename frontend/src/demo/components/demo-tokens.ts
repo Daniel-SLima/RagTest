@@ -13,7 +13,7 @@ export const demoTokens = {
     focusOutline: "#C2410C",
     success: "#166534",
     warning: "#854D0E",
-    disabled: "#66737D",
+    disabled: "#4B5563",
   },
   dark: {
     background: "#111820",

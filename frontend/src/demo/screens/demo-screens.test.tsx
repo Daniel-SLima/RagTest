@@ -16,6 +16,14 @@ describe("M2 screens", () => {
     expect(onExamplePress).toHaveBeenCalledWith(demoExamples[0])
     expect(screen.queryByText(/resposta é gerada/)).toBeTruthy()
   })
+
+  it("applies the visible focus outline to public example controls", async () => {
+    await renderDemo(<DemoChatScreen value="" onChange={jest.fn()} onExamplePress={jest.fn()} />)
+    const example = screen.getAllByRole("button", { name: /Usar exemplo/ })[0]
+    await fireEvent(example, "focus")
+    const style = example.props.style
+    expect(JSON.stringify(style)).toContain("#C2410C")
+  })
   it("shows all four neutral screen areas without fabricated results", async () => {
     await renderDemo(<HowItWorksScreen />); expect(screen.getAllByText("awaiting-execution")).toHaveLength(4)
     await renderDemo(<LaboratoryScreen />); expect(screen.getAllByText("Disponível no M3")).toHaveLength(3)

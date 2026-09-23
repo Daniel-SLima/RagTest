@@ -28,6 +28,7 @@ describe("demo tokens and layout", () => {
 
   it("keeps disabled status text at normal-text contrast in both themes", () => {
     expect(contrastRatio(demoTokens.light.disabled, demoTokens.light.surface)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(demoTokens.light.disabled, demoTokens.light.surfaceMuted)).toBeGreaterThanOrEqual(4.5)
     expect(contrastRatio(demoTokens.dark.disabled, demoTokens.dark.surface)).toBeGreaterThanOrEqual(4.5)
   })
 })
