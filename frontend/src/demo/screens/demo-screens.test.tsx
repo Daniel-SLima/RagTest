@@ -87,4 +87,13 @@ describe("M2 screens", () => {
     expect(JSON.stringify(screen.getByText("Trecho TEST DATA").props.style)).toContain("#F3F7FA")
     expect(JSON.stringify(screen.getByText("Fontes consultadas").props.style)).toContain("#F3F7FA")
   })
+
+  it("contains long source filenames in a controlled two-line title", async () => {
+    const filename = "caderneta_saude_pessoa_idosa_5ed_1re_documento_complementar_2026.pdf"
+    await renderDemo(<AnswerPresentation model={{ answer: "TEST DATA", grounded: true, sourcesTitle: "Fontes consultadas", showCitationId: true, sources: [{ key: "long-title", citationLabel: "[1]", document: `public/${filename}`, page: 1, excerpt: "Trecho TEST DATA" }] }} />)
+    const title = screen.getByText(filename)
+    expect(title.props.numberOfLines).toBe(2)
+    expect(title.props.ellipsizeMode).toBe("tail")
+    expect(title.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ flexShrink: 1, minWidth: 0 })]))
+  })
 })
