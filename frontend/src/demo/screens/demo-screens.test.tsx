@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react-native"
 import { DemoChatScreen, demoExamples } from "./demo-chat-screen"
-import { HowItWorksScreen } from "./how-it-works-screen"
+import { HowItWorksScreen, stages } from "./how-it-works-screen"
 import { LaboratoryScreen } from "./laboratory-screen"
 import { RoadmapScreen } from "./roadmap-screen"
 import { DemoThemeProvider } from "../components/demo-shell-theme"
@@ -15,6 +15,7 @@ describe("M2 screens", () => {
     await fireEvent.press(screen.getAllByRole("button", { name: /Usar exemplo/ })[0])
     expect(onExamplePress).toHaveBeenCalledWith(demoExamples[0])
     expect(screen.queryByText(/resposta é gerada/)).toBeTruthy()
+    expect(screen.getByRole("button", { name: /Ver como essa resposta foi construída/ }).props.accessibilityState).toEqual({ disabled: true })
   })
 
   it("applies the visible focus outline to public example controls", async () => {
@@ -25,10 +26,24 @@ describe("M2 screens", () => {
     expect(JSON.stringify(style)).toContain("#C2410C")
   })
   it("shows all four neutral screen areas without fabricated results", async () => {
-    await renderDemo(<HowItWorksScreen />); expect(screen.getAllByText("awaiting-execution")).toHaveLength(4)
-    await renderDemo(<LaboratoryScreen />); expect(screen.getAllByText("Disponível no M3")).toHaveLength(3)
+    await renderDemo(<HowItWorksScreen />)
+    expect(screen.getAllByText("awaiting-execution")).toHaveLength(11)
+    for (const [index, [, title, , technicalDetails]] of stages.entries()) {
+      const stage = screen.getByRole("button", { name: title })
+      expect(stage.props.accessibilityState).toEqual({ expanded: false })
+      await fireEvent.press(stage)
+      expect(screen.getByText(technicalDetails)).toBeTruthy()
+      expect(screen.getByRole("button", { name: title }).props.accessibilityState).toEqual({ expanded: true })
+      if (index < stages.length - 1) await fireEvent.press(stage)
+    }
+    await renderDemo(<LaboratoryScreen />); expect(screen.getAllByText("Disponível no M3")).toHaveLength(8)
+    expect(screen.getAllByRole("button")).toHaveLength(8)
+    for (const control of screen.getAllByRole("button")) expect(control.props.accessibilityState).toEqual({ disabled: true })
     await renderDemo(<RoadmapScreen />); expect(roadmap.length).toBeGreaterThan(0)
     expect(screen.getByText("O que ainda falta")).toBeTruthy()
+    expect(screen.getAllByText("Implementado").length).toBeGreaterThan(0)
+    expect(screen.getByText("Planejado")).toBeTruthy()
+    expect(screen.queryByText("implemented")).toBeNull()
   })
   it("keeps catalog statuses and evidence references closed", () => {
     for (const item of roadmap) { expect(["implemented", "partial", "planned", "research"]).toContain(item.status); expect(item.evidence.length).toBeGreaterThan(0); expect(item.snapshotVersion).toMatch(/^M[12]$/) }

@@ -13,5 +13,7 @@ describe("demo shell", () => {
     await fireEvent.press(screen.getByRole("tab", { name: "Laboratório" }))
     expect(onTabChange).toHaveBeenCalledWith("laboratory")
     expect(screen.getByText(/Modo local/)).toBeTruthy()
+    expect(screen.getByText(/não é a versão final do produto Se Cuida Mulher/)).toBeTruthy()
+    expect(screen.getByText("RagTest — Demo Técnica")).toBeTruthy()
   })
 })
