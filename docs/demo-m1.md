@@ -121,3 +121,57 @@ M4 continua planejado como um Laboratório experimental para controles de Dense,
 Hybrid, Top K, Multi-query e comparação, condicionado a contrato de runtime, privacidade,
 autenticação, rate limiting e logs sanitizados. Replay e qualquer ampliação de backend são
 futuros e não fazem parte desta implementação.
+
+### M3.5 — validação de runtime local controlado
+
+Status: **RUNTIME VALIDATED somente em ambiente local/controlado**, no HEAD funcional
+`7015db8` (`fix: theme demo answer presentation`). Esta validação não transforma a demo em
+serviço operacional externo e não autoriza M4. Os commits documentais anteriores permanecem
+`c90822b` e `824cbc0`.
+
+#### Ambiente e controle negativo
+
+O cenário validado usou FastAPI em `127.0.0.1:8001`, sem alterar `.env`, com
+`DEMO_ENABLED=true`, allowlist pública, Qdrant local em `localhost:6333` contendo os 767 pontos
+preservados, Ollama local com `qwen3:8b` e CORS restrito ao cliente local. Nenhuma transmissão
+externa foi realizada e nenhum conteúdo `CHATSCM` ou dado pessoal foi usado.
+
+Como controle negativo, a composição na porta 8000 com `DEMO_ENABLED=false` manteve o runtime
+demo indisponível: `GET /v1/demo/runtime` respondeu `404`, como esperado quando as rotas demo não
+são registradas.
+
+#### Evidências observadas
+
+- `GET /health`, `GET /ready` e `GET /v1/demo/runtime`: `200` no cenário habilitado;
+- `POST /v1/demo/retrieval`: `200`, uma fonte pública da página 34 e scores retornados;
+- `POST /v1/demo/run`: `200`, `grounded=true`, uma citação correlacionada à fonte e timings
+  monotônicos;
+- Expo Web em `8082`: runtime disponível, resposta Markdown renderizada, fontes e grounding
+  visíveis, com navegação observada entre `Chat` e `Como funciona`;
+- o tema escuro foi corrigido no `7015db8` e a apresentação observada permaneceu legível.
+
+Essas evidências comprovam somente o cenário local descrito. Não comprovam disponibilidade
+externa, segurança de produção, entailment clínico ou operação com provider remoto.
+
+#### Comportamento de requisições e estados
+
+Foi observado loading durante a execução; o runtime é consultado uma vez por montagem e uma
+execução `POST` ocorre mediante ação explícita. Não foram observados novos runs ao trocar abas,
+abrir o pipeline, alternar `Automático`, `Apresentação`, `Próximo` ou `Anterior`. No controle
+negativo, o erro `404` foi apresentado de forma amigável e o retry manual foi observado.
+
+#### Pendências importantes
+
+- os quatro viewports (`1366x768`, `1024x600`, `390x844`, `360x800`) não foram observados
+  individualmente;
+- o tema claro não foi validado manualmente;
+- retry live independente não foi demonstrado fora do controle observado;
+- inspeção direta de Network/console do DevTools permanece pendente.
+
+#### Segurança e fronteira de autorização
+
+A validação de segurança é **PASS local** e **BLOCKED para uso externo/produção**: permanecem
+logs crus preexistentes de Groq/Ollama, ausência de autenticação e rate limiting e risco
+residual de prompt injection. Manter `DEMO_ENABLED=false` fora de ambiente local controlado e
+nunca usar dados pessoais ou `CHATSCM`. M4 não está autorizado; o Laboratório, seus controles e
+qualquer expansão de backend continuam apenas planejados.

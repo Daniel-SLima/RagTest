@@ -248,6 +248,63 @@ e logs sanitizados. Replay e demais diagnósticos de backend ficam para uma etap
 85 Jest/9 suites, typecheck, Ruff e diff-check aprovados pelo orquestrador, com bundle Expo Web
 offline registrado; runtime live e quatro viewports permanecem pendentes conforme acima.
 
+## Atualização de continuidade — gate M3.5 da sidequest Demo (2026-09-23)
+
+Esta seção complementa o handoff M3 sem reclassificar evidência automatizada como validação
+operacional. O gate M3.5 foi executado no HEAD funcional `7015db8` (`fix: theme demo answer
+presentation`); os commits documentais anteriores são `c90822b` e `824cbc0`.
+
+### Classificação do gate
+
+- **RUNTIME VALIDATED:** somente no ambiente local/controlado descrito abaixo.
+- **Não verificado:** operação externa/produção, quatro viewports individualmente, tema claro
+  manual, retry live independente e inspeção direta de Network/console.
+- **Não autorizado:** M4. O Laboratório, seus controles e qualquer expansão de backend continuam
+  planejados.
+
+### Ambiente validado e controle negativo
+
+- FastAPI em `127.0.0.1:8001`, sem alteração de `.env`;
+- `DEMO_ENABLED=true`, allowlist pública e CORS local;
+- Qdrant em `localhost:6333`, com os 767 pontos preservados;
+- Ollama local com `qwen3:8b`;
+- nenhuma transmissão externa, nenhum dado pessoal e nenhum conteúdo `CHATSCM`.
+
+O controle negativo usou a composição na porta 8000 com `DEMO_ENABLED=false`: o endpoint
+`GET /v1/demo/runtime` respondeu `404`, confirmando que o runtime demo permanece fechado quando
+o backend não está habilitado.
+
+### Evidências sanitizadas
+
+- `/health`, `/ready` e `/v1/demo/runtime`: `200` no cenário habilitado;
+- `/v1/demo/retrieval`: `200`, com uma fonte pública da página 34 e scores;
+- `/v1/demo/run`: `200`, `grounded=true`, uma citação/fonte e timings monotônicos;
+- Expo Web em `8082`: runtime, resposta Markdown, fontes, grounding e navegação `Chat` ↔
+  `Como funciona` observados;
+- correção do tema escuro registrada no `7015db8`, com apresentação legível na observação
+  visual.
+
+Esses fatos sustentam apenas a classificação local/controlada. Não sustentam disponibilidade
+externa, segurança de produção, entailment semântico ou garantia clínica.
+
+### Requisições, loading e retry
+
+O runtime foi consultado uma vez por montagem; uma execução `POST` ocorreu por ação explícita.
+Não houve novos runs ao trocar abas, abrir o pipeline ou alternar `Automático`, `Apresentação`,
+`Próximo` ou `Anterior`. Loading foi observado durante a execução. No controle negativo, o erro
+`404` recebeu apresentação amigável e o retry manual foi observado.
+
+### Segurança, riscos e pendências
+
+A revisão é **PASS local**, porém **BLOCKED para uso externo/produção** por logs crus
+preexistentes de Groq/Ollama, ausência de autenticação/rate limiting e risco residual de prompt
+injection. Manter `DEMO_ENABLED=false` fora de ambiente local controlado e não usar dados pessoais
+ou `CHATSCM`.
+
+Pendências importantes: observar individualmente `1366x768`, `1024x600`, `390x844` e `360x800`;
+validar manualmente o tema claro; demonstrar retry live independente; e inspecionar diretamente
+Network/console no DevTools. O gate M3.5 não altera corpus, embeddings, Qdrant ou providers.
+
 ---
 
 ## 1. Objetivo final do projeto
