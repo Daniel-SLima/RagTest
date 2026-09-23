@@ -36,9 +36,29 @@ describe("RagTest demo app", () => {
     await fireEvent.press(screen.getByRole("tab", { name: "Laboratório" }))
     await fireEvent.press(screen.getByRole("tab", { name: "O que ainda falta" }))
     expect(sendChat).not.toHaveBeenCalled()
-    expect(demoApi.getRuntime).not.toHaveBeenCalled()
+    expect(demoApi.getRuntime).toHaveBeenCalledTimes(1)
     expect(demoApi.run).not.toHaveBeenCalled()
     expect(demoApi.retrieve).not.toHaveBeenCalled()
+  })
+
+  it("runs the live demo only on explicit submit, retries manually and preserves state across tabs", async () => {
+    process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = "true"
+    const demoApi = {
+      getRuntime: jest.fn().mockResolvedValue({ version: "M1", provider: "TEST DATA", model: "TEST DATA", embedding: "TEST DATA", retrieval: "dense", collection: "public", demo_enabled: true, policy_id: "local", policy_status: "configured" }),
+      run: jest.fn().mockResolvedValue({ answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [], sources: [], timings: { retrieval_ms: 1, generation_ms: null, total_ms: 1 } }),
+      retrieve: jest.fn(),
+    }
+    await render(<App demoApi={demoApi as never} />)
+    expect(demoApi.getRuntime).toHaveBeenCalledTimes(1)
+    expect(demoApi.run).not.toHaveBeenCalled()
+    await fireEvent.changeText(screen.getByLabelText("Pergunta da demonstração"), "TEST DATA")
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar pergunta" }))
+    await waitFor(() => expect(demoApi.run).toHaveBeenCalledWith({ query: "TEST DATA" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Ver como essa resposta foi construída" }))
+    expect(screen.getAllByText("Como funciona").length).toBeGreaterThan(0)
+    await fireEvent.press(screen.getByRole("tab", { name: "Chat" }))
+    expect(screen.getAllByText("TEST DATA").length).toBeGreaterThan(0)
+    expect(demoApi.run).toHaveBeenCalledTimes(1)
   })
 
   it("renders the initial chat surface", async () => {

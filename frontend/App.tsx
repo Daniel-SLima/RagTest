@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useReducer, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Pressable,
@@ -23,6 +23,8 @@ import { HowItWorksScreen } from "./src/demo/screens/how-it-works-screen"
 import { LaboratoryScreen } from "./src/demo/screens/laboratory-screen"
 import { RoadmapScreen } from "./src/demo/screens/roadmap-screen"
 import type { DemoTabId } from "./src/demo/types/navigation"
+import { getAllowedHttpsOrigins } from "./src/demo/api/demo-api-validation"
+import { demoRunReducer, initialDemoRunState, sanitizeDemoError } from "./src/demo/state/demo-run-state"
 
 type SendChat = typeof sendChatMessage
 
@@ -194,19 +196,49 @@ export function DemoApp({
 }: Pick<AppProps, "apiBaseUrl"> & { demoApi?: DemoApi }) {
   const [activeTab, setActiveTab] = useState<DemoTabId>("chat")
   const [draft, setDraft] = useState("")
-  // Construction is intentionally pure: methods are called only by a future M3 integration.
-  void (demoApi ?? createDemoApi(apiBaseUrl))
+  const [pipelineMode, setPipelineMode] = useState<"auto" | "presentation">("auto")
+  const [presentationIndex, setPresentationIndex] = useState(0)
+  const [state, dispatch] = useReducer(demoRunReducer, initialDemoRunState)
+  const apiResult = useMemo(() => {
+    if (demoApi) return { api: demoApi, error: null }
+    try { return { api: createDemoApi(apiBaseUrl, undefined, getAllowedHttpsOrigins(process.env.EXPO_PUBLIC_RAG_ALLOWED_HTTPS_ORIGINS)), error: null } }
+    catch (error) { return { api: null, error: sanitizeDemoError(error) } }
+  }, [apiBaseUrl, demoApi])
+  const api = apiResult.api
+  const configError = apiResult.error
+  const runtimeRequested = useRef(false)
+  useEffect(() => {
+    if (!api || runtimeRequested.current) return
+    runtimeRequested.current = true
+    let active = true
+    dispatch({ type: "runtime-loading" })
+    void Promise.resolve(api.getRuntime()).then((runtime) => { if (active && runtime) dispatch({ type: "runtime-success", runtime }) }).catch((error) => { if (active) dispatch({ type: "runtime-error", error: sanitizeDemoError(error) }) })
+    return () => { active = false }
+  }, [api])
+  const submit = (question: string) => {
+    const query = question.trim()
+    if (!api || query.length < 2 || state.status === "loading") return
+    dispatch({ type: "run-loading", question: query })
+    void api.run({ query }).then((response) => dispatch({ type: "run-success", response })).catch((error) => dispatch({ type: "run-error", error: sanitizeDemoError(error) }))
+  }
+  const retry = () => { if (state.question && state.status !== "loading") submit(state.question) }
+  const viewPipeline = () => { setActiveTab("how-it-works"); setPipelineMode("presentation"); setPresentationIndex(0) }
+  const runtimeLabel = configError ? "Configuração da demo indisponível" : state.runtimeStatus === "loading" ? "Runtime consultando..." : state.runtimeStatus === "error" ? "Runtime indisponível" : state.runtime ? `Runtime ${state.runtime.provider} · ${state.runtime.model}` : "Runtime aguardando validação"
 
   return (
-    <DemoShell activeTab={activeTab} onTabChange={setActiveTab}>
+    <DemoShell activeTab={activeTab} onTabChange={setActiveTab} runtimeState={runtimeLabel}>
       {activeTab === "chat" ? (
         <DemoChatScreen
           value={draft}
           onChange={setDraft}
           onExamplePress={(example) => setDraft(example.query)}
+          state={configError ? { ...state, status: "error", error: configError } : state}
+          onSubmit={submit}
+          onRetry={retry}
+          onViewPipeline={viewPipeline}
         />
       ) : null}
-      {activeTab === "how-it-works" ? <HowItWorksScreen /> : null}
+      {activeTab === "how-it-works" ? <HowItWorksScreen state={state} mode={pipelineMode} presentationIndex={presentationIndex} onModeChange={setPipelineMode} onPresentationIndexChange={setPresentationIndex} /> : null}
       {activeTab === "laboratory" ? <LaboratoryScreen /> : null}
       {activeTab === "roadmap" ? <RoadmapScreen /> : null}
     </DemoShell>
