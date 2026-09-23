@@ -111,6 +111,36 @@
 
 ---
 
+## Atualização de continuidade — sidequest Demo M1 (2026-09-23)
+
+Esta seção registra a fotografia específica da sidequest M1 e não substitui o handoff
+autoritativo histórico acima.
+
+- **Implementado/verificado no workspace:** a branch `sidequest/ragtest-demo` está no HEAD
+  `94a5822` (`5ecd3c2` endpoints demo, `ecb977c` hardening, `94a5822` redaction final). Os
+  endpoints opt-in são `POST /v1/demo/run`, `POST /v1/demo/retrieval` e `GET /v1/demo/runtime`;
+  com `DEMO_ENABLED=false` (padrão), não são registrados nem aparecem no OpenAPI. A configuração
+  de allowlist positiva em `DEMO_ALLOWED_SOURCE_PREFIXES` falha fechada quando vazia e rejeita
+  sempre `chatscm`/fontes privadas.
+- **Implementado/verificado por testes:** os schemas demo aceitam `query` e `retrieval_mode`
+  limitado a `dense`, `dense-rerank` ou `hybrid`, sem alterar `Settings.retrieval_mode`. DTOs
+  fechados expõem somente IDs determinísticos, documentos públicos, excerpts sanitizados, scores
+  disponíveis e `retrieval_ms`, `generation_ms` e `total_ms` monotônicos (`generation_ms=null`
+  no retrieval-only). Metadata arbitrária, paths pessoais, prompts, tokens, segredos, `.env` e
+  exceções cruas ficam fora do contrato. Evidências: `tests/test_demo.py` (37 testes demo), suíte
+  backend com 186 testes e Ruff 0.16.8; `git diff --check` é o gate documental desta atualização.
+- **Aguardando validação real:** ainda não há execução com provider externo ou Qdrant real para
+  esta demo; portanto os tempos, respostas e comportamento em runtime real permanecem não
+  verificados. A documentação pública da sidequest está em `docs/demo-m1.md`.
+- **Fora de escopo M1:** frontend/UI, replay, corpus, embeddings, ingestão, mutações de Qdrant,
+  configuração de providers e qualquer M2+.
+- **Segurança operacional:** uma execução anterior de `docker compose config` materializou
+  credenciais na saída. Os valores não foram repetidos nem lidos no fluxo atual; rotação de
+  credenciais é pendência antes de compartilhar ou publicar qualquer transcript. Esta nota não
+  classifica aquela execução como validação bem-sucedida.
+
+---
+
 ## 1. Objetivo final do projeto
 
 Este projeto é o módulo conversacional baseado em RAG do TCC:

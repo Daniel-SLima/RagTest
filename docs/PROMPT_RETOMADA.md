@@ -28,6 +28,10 @@ No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
+Para a sidequest Demo M1, consulte também a seção **Atualização de continuidade — sidequest Demo
+M1 (2026-09-23)** no mesmo documento; ela registra o estado local, evidências e limites sem
+substituir o handoff histórico.
+
 ## Estado atual que deve ser confirmado no GitHub
 
 - `main` contém a versão **0.5.24** validada e mesclada.
