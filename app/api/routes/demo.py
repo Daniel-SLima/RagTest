@@ -66,7 +66,7 @@ async def _search(
     sparse_embeddings: SparseEmbeddingProvider,
     vector_store: QdrantVectorStore,
     settings: Settings,
-) -> tuple[list[SearchHit], str, dict[str, float]]:
+) -> tuple[list[SearchHit], str, dict[str, float | None]]:
     profile = _profile(settings, request.retrieval_mode)
     collector = DiagnosticsCollector()
     collector.start()
@@ -172,7 +172,7 @@ async def demo_run(
                 user_prompt=user_prompt,
             )
 
-    timings: dict[str, float]
+    timings: dict[str, float | None]
     try:
         result = await answer_with_rag(
             request.query,
@@ -225,7 +225,7 @@ async def demo_run(
         )
     return DemoRunResponse(
         answer=result.answer,
-        model=result.model,
+        model=sanitize_runtime_label(result.model),
         grounded=result.grounded,
         citation_ids=result.citation_ids,
         sources=_sources(result.sources, fusion_available=profile.use_sparse),

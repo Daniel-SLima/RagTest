@@ -25,7 +25,7 @@ class DemoSource(DemoModel):
 
 class DemoTimings(DemoModel):
     retrieval_ms: float = Field(ge=0)
-    generation_ms: float = Field(ge=0)
+    generation_ms: float | None = Field(default=None, ge=0)
     total_ms: float = Field(ge=0)
 
 

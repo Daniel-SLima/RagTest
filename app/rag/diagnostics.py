@@ -7,10 +7,10 @@ from time import monotonic
 @dataclass(frozen=True, slots=True)
 class DiagnosticsTimings:
     retrieval_ms: float
-    generation_ms: float
+    generation_ms: float | None
     total_ms: float
 
-    def as_dict(self) -> dict[str, float]:
+    def as_dict(self) -> dict[str, float | None]:
         return {
             "retrieval_ms": self.retrieval_ms,
             "generation_ms": self.generation_ms,
@@ -26,7 +26,7 @@ class DiagnosticsCollector:
         self._retrieval_at: float | None = None
         self._generation_at: float | None = None
         self._finished_at: float | None = None
-        self._timings: dict[str, float] | None = None
+        self._timings: dict[str, float | None] | None = None
 
     def start(self) -> None:
         self._started_at = monotonic()
@@ -37,16 +37,20 @@ class DiagnosticsCollector:
     def mark_generation(self) -> None:
         self._generation_at = monotonic()
 
-    def finish(self) -> dict[str, float]:
+    def finish(self) -> dict[str, float | None]:
         if self._timings is not None:
             return dict(self._timings)
         self._finished_at = monotonic()
         started = self._started_at or self._finished_at
         retrieval = self._retrieval_at or self._finished_at
-        generation = self._generation_at or self._finished_at
+        generation = self._generation_at
         self._timings = DiagnosticsTimings(
             retrieval_ms=max(0.0, (retrieval - started) * 1000),
-            generation_ms=max(0.0, (self._finished_at - generation) * 1000),
+            generation_ms=(
+                max(0.0, (self._finished_at - generation) * 1000)
+                if generation is not None
+                else None
+            ),
             total_ms=max(0.0, (self._finished_at - started) * 1000),
         ).as_dict()
         return dict(self._timings)

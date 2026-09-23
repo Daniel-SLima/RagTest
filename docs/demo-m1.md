@@ -18,7 +18,8 @@ configuração global.
 
 As respostas demo expõem somente DTOs fechados, IDs determinísticos, documentos públicos,
 excerpts sanitizados, scores disponíveis e os tempos monotônicos `retrieval_ms`,
-`generation_ms` e `total_ms`. Metadata arbitrária, paths pessoais, prompts, tokens, segredos,
+`generation_ms` e `total_ms`; em retrieval-only, `generation_ms` é `null` porque não houve
+geração. Metadata arbitrária, paths pessoais, prompts, tokens, segredos,
 `.env` e detalhes crus de exceções ficam fora do contrato. A configuração e os testes não usam
 providers externos nem Qdrant real.
 

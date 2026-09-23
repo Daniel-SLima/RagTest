@@ -12,7 +12,12 @@ from app.core.config import Settings
 from app.llm.base import LLMServiceUnavailableError
 from app.main import create_app
 from app.rag.chat import answer_with_rag
-from app.rag.demo_policy import DemoSourcePolicy, public_source_from_hit
+from app.rag.demo_policy import (
+    DemoSourcePolicy,
+    public_source_from_hit,
+    sanitize_excerpt,
+    sanitize_runtime_label,
+)
 from app.rag.diagnostics import DiagnosticsCollector
 from app.rag.vector_store import SearchHit
 from app.schemas.demo import DemoRetrievalRequest, DemoScore
@@ -87,6 +92,49 @@ def test_demo_source_policy_is_positive_fail_closed_and_blocks_chatscm() -> None
     assert policy.allows("privado/guia.pdf") is False
     assert policy.allows("desconhecido/guia.pdf") is False
     assert DemoSourcePolicy("").allows("vacinacao/guia.pdf") is False
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    ["/", ".", "..", "/vacinacao", "C:\\docs\\vacinacao", "\\\\server\\share"],
+)
+def test_demo_source_policy_rejects_unsafe_prefixes(prefix: str) -> None:
+    assert DemoSourcePolicy(prefix).allows("vacinacao/guia.pdf") is False
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "vacinacao/../outro.pdf",
+        "./vacinacao/guia.pdf",
+        "/data/source/vacinacao/guia.pdf",
+        "C:\\data\\vacinacao\\guia.pdf",
+        "\\\\server\\share\\vacinacao\\guia.pdf",
+        "vacinacao-secrets/guia.pdf",
+    ],
+)
+def test_demo_source_policy_rejects_traversal_absolute_and_boundary_sources(source: str) -> None:
+    assert DemoSourcePolicy("vacinacao/").allows(source) is False
+
+
+def test_demo_sanitizers_redact_credentials_paths_and_urls() -> None:
+    value = (
+        "Authorization: Bearer abc123 Basic dXNlcjpwYXNz token abc123 "
+        "password=pass secret: value /Users/Ana/file.txt C:\\Users\\Ana\\file.txt "
+        "\\\\server\\share\\file.txt https://example.test/private"
+    )
+
+    sanitized = sanitize_excerpt(value)
+    runtime = sanitize_runtime_label(value)
+
+    for secret in ("abc123", "dXNlcjpwYXNz", "pass", "value", "/Users/Ana", "C:\\Users", "example.test"):
+        assert secret not in sanitized
+    assert runtime == "configured"
+
+
+@pytest.mark.parametrize("value", ["/var/lib/model", "C:/Users/Ana/model", "https://example.test/model"])
+def test_runtime_labels_redact_absolute_paths_and_urls(value: str) -> None:
+    assert sanitize_runtime_label(value) == "configured"
 
 
 def test_public_source_sanitizes_metadata_and_excerpt() -> None:
@@ -282,6 +330,79 @@ def test_demo_runtime_is_sanitized_and_retrieval_has_no_provider_dependency() ->
     assert "http" not in str(runtime_body)
     assert retrieval.status_code == 200
     assert retrieval.json()["sources"][0]["document"] == "guia.pdf"
+    assert retrieval.json()["timings"]["generation_ms"] is None
+
+
+def test_demo_run_model_is_sanitized() -> None:
+    class UnsafeModelLLM(_FakeLLM):
+        model_name = "C:\\Users\\Ana\\secret-model"
+
+    application = create_app(
+        Settings(
+            _env_file=None,
+            demo_enabled=True,
+            demo_allowed_source_prefixes="vacinacao/",
+        )
+    )
+    application.dependency_overrides[get_embedding_provider] = lambda: _FakeEmbeddings()
+    application.dependency_overrides[get_sparse_embedding_provider] = lambda: _FakeEmbeddings()
+    application.dependency_overrides[get_vector_store] = lambda: _AllowedStore()
+    application.dependency_overrides[get_llm_provider] = lambda: UnsafeModelLLM()
+
+    client = TestClient(application)
+    try:
+        response = client.post("/v1/demo/run", json={"query": "pergunta"})
+    finally:
+        client.close()
+
+    assert response.status_code == 200
+    assert response.json()["model"] == "configured"
+    assert "Users" not in response.text
+
+
+def test_demo_validation_error_does_not_echo_extra_secret() -> None:
+    application = create_app(
+        Settings(
+            _env_file=None,
+            demo_enabled=True,
+            demo_allowed_source_prefixes="vacinacao/",
+        )
+    )
+    application.dependency_overrides[get_embedding_provider] = lambda: _FakeEmbeddings()
+    application.dependency_overrides[get_sparse_embedding_provider] = lambda: _FakeEmbeddings()
+    application.dependency_overrides[get_vector_store] = lambda: _AllowedStore()
+    client = TestClient(application)
+    try:
+        response = client.post(
+            "/v1/demo/retrieval",
+            json={"query": "pergunta", "token": "super-secret"},
+        )
+    finally:
+        client.close()
+
+    assert response.status_code == 422
+    assert "super-secret" not in response.text
+    assert "input" not in response.text
+    assert response.json()["detail"]["code"] == "invalid_demo_request"
+
+
+def test_normal_route_validation_contract_remains_default() -> None:
+    application = create_app(Settings(_env_file=None, demo_enabled=True))
+    application.dependency_overrides[get_embedding_provider] = lambda: _FakeEmbeddings()
+    application.dependency_overrides[get_sparse_embedding_provider] = lambda: _FakeEmbeddings()
+    application.dependency_overrides[get_vector_store] = lambda: _AllowedStore()
+    client = TestClient(application)
+    try:
+        response = client.post(
+            "/v1/search",
+            json={"query": "pergunta", "token": "secret"},
+        )
+    finally:
+        client.close()
+
+    assert response.status_code == 200
+    assert "token" not in response.text
+    assert "invalid_demo_request" not in response.text
 
 
 def test_demo_retrieval_error_has_stable_sanitized_code() -> None:

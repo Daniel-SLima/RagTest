@@ -1,8 +1,11 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes.chat import router as chat_router
 from app.api.routes.health import router as health_router
@@ -39,6 +42,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description="API REST portável para o módulo RAG do RagTest.",
         lifespan=lifespan,
     )
+
+    @application.exception_handler(RequestValidationError)
+    async def validation_error_handler(
+        request: Request,
+        exc: RequestValidationError,
+    ) -> JSONResponse:
+        if request.url.path.startswith("/v1/demo/"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": {
+                        "code": "invalid_demo_request",
+                        "message": "Invalid demo request.",
+                    }
+                },
+            )
+        return await request_validation_exception_handler(request, exc)
+
     application.state.settings = settings
     application.dependency_overrides[get_settings] = lambda: settings
     allowed_origins = [
