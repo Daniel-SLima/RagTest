@@ -222,7 +222,7 @@ e os três perfis já existentes (`dense`, `dense-rerank` e `hybrid`); não cham
 execução: uma estratégia faz uma requisição e `Comparar todas` faz exatamente três requisições
 sequenciais, na ordem Dense, Dense + rerank e Hybrid.
 
-O estado da interface foi classificado como **implementado**. O contrato do cliente também
+O estado da interface foi classificado como **implementado e validado em LOCAL/CONTROLADO**. O contrato do cliente também
 rejeita resposta com mais de 10 fontes, consulta ou modo divergentes e ordenação inválida;
 campos nulos, inclusive scores e `generation_ms` no retrieval-only, são apresentados como
 `Não disponível`. Exemplos apenas preenchem a pergunta. Multi-query/decomposição aparece como

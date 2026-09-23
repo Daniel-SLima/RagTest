@@ -2825,7 +2825,7 @@ como validação de produção.
   sem observação manual nesta sessão. Não se deve inferir comportamento do tema claro a partir
   dos testes ou da captura em tema escuro.
 
-**Próxima pendência:** o orquestrador deve consolidar a decisão `M4 VALIDATED` apenas para
-`LOCAL/CONTROLADO`, ou `M4 BLOCKED` se outra evidência obrigatória permanecer ausente. O tema
-claro e a inspeção direta de Network/console permanecem limitações observacionais. M5 continua
-fora do escopo e não deve ser iniciado nesta sidequest.
+**Decisão:** `M4 VALIDATED — LOCAL/CONTROLADO`. O tema claro e a inspeção direta de
+Network/console permanecem limitações observacionais; elas não alteram a validação controlada
+registrada acima. Uso externo/produção continua bloqueado, e M5 permanece fora do escopo desta
+sidequest.
