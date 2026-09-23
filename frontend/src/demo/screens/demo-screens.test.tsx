@@ -5,8 +5,10 @@ import { LaboratoryScreen } from "./laboratory-screen"
 import { RoadmapScreen } from "./roadmap-screen"
 import { DemoThemeProvider } from "../components/demo-shell-theme"
 import { roadmap } from "../data/roadmap"
+import type { DemoRunState } from "../types/run-state"
 
 const renderDemo = (element: React.ReactElement) => render(<DemoThemeProvider>{element}</DemoThemeProvider>)
+const liveState: DemoRunState = { question: "TEST DATA", response: { answer: "Resposta TEST DATA **segura**.", model: "TEST DATA", grounded: true, citation_ids: [1], sources: [{ public_id: "public-1", document: "public/doc.pdf", page: 2, order: 1, excerpt: "Trecho TEST DATA", scores: { dense_score: 0.9, sparse_score: null, rank_score: null, fusion_score: null } }], timings: { retrieval_ms: 2, generation_ms: null, total_ms: 3 } }, diagnostics: null, runtime: null, runtimeStatus: "success", runtimeError: null, status: "success", error: null }
 
 describe("M2 screens", () => {
   it("fills only the question when a public example is selected", async () => {
@@ -48,5 +50,26 @@ describe("M2 screens", () => {
   it("keeps catalog statuses and evidence references closed", () => {
     for (const item of roadmap) { expect(["implemented", "partial", "planned", "research"]).toContain(item.status); expect(item.evidence.length).toBeGreaterThan(0); expect(item.snapshotVersion).toMatch(/^M[12]$/) }
     expect(JSON.stringify(roadmap)).not.toMatch(/CHATSCM|\.env|[A-Za-z]:\\|\/Users\//)
+  })
+
+  it("renders live success with structural grounding and nullable scores", async () => {
+    const onViewPipeline = jest.fn()
+    await renderDemo(<DemoChatScreen value="TEST DATA" onChange={jest.fn()} onExamplePress={jest.fn()} state={liveState} onSubmit={jest.fn()} onRetry={jest.fn()} onViewPipeline={onViewPipeline} />)
+    expect(screen.getByText("Resposta TEST DATA segura.")).toBeTruthy()
+    expect(screen.getByText("Citações verificadas")).toBeTruthy()
+    expect(screen.getByText("Trecho TEST DATA")).toBeTruthy()
+    expect(screen.getByText("Página 2")).toBeTruthy()
+    expect(screen.getByText("Sparse: Não disponível")).toBeTruthy()
+    await fireEvent.press(screen.getByRole("button", { name: "Ver como essa resposta foi construída" }))
+    expect(onViewPipeline).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps examples as fill-only actions and shows honest loading", async () => {
+    const onSubmit = jest.fn()
+    const loading = { ...liveState, question: null, response: null, status: "loading" as const }
+    await renderDemo(<DemoChatScreen value="TEST DATA" onChange={jest.fn()} onExamplePress={jest.fn()} state={loading} onSubmit={onSubmit} onRetry={jest.fn()} />)
+    expect(screen.getByText("Executando o RagTest...")).toBeTruthy()
+    expect(screen.queryByText("Resposta TEST DATA segura.")).toBeNull()
+    expect(screen.getByRole("button", { name: "Enviar pergunta" }).props.accessibilityState).toEqual({ disabled: true })
   })
 })
