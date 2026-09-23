@@ -27,7 +27,7 @@ describe("M2 screens", () => {
   })
   it("shows all four neutral screen areas without fabricated results", async () => {
     await renderDemo(<HowItWorksScreen />)
-    expect(screen.getAllByText("awaiting-execution")).toHaveLength(11)
+    expect(screen.getAllByText("aguardando execução")).toHaveLength(11)
     for (const [index, [, title, , technicalDetails]] of stages.entries()) {
       const stage = screen.getByRole("button", { name: title })
       expect(stage.props.accessibilityState).toEqual({ expanded: false })
@@ -36,7 +36,7 @@ describe("M2 screens", () => {
       expect(screen.getByRole("button", { name: title }).props.accessibilityState).toEqual({ expanded: true })
       if (index < stages.length - 1) await fireEvent.press(stage)
     }
-    await renderDemo(<LaboratoryScreen />); expect(screen.getAllByText("Disponível no M3")).toHaveLength(8)
+    await renderDemo(<LaboratoryScreen />); expect(screen.getAllByText("Disponível no M4")).toHaveLength(8)
     expect(screen.getAllByRole("button")).toHaveLength(8)
     for (const control of screen.getAllByRole("button")) expect(control.props.accessibilityState).toEqual({ disabled: true })
     await renderDemo(<RoadmapScreen />); expect(roadmap.length).toBeGreaterThan(0)
