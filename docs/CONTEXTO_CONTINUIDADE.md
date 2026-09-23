@@ -225,10 +225,11 @@ Esta seção registra o handoff do recorte M3 e complementa, sem apagar, os regi
 
 ### Evidências, validação e riscos
 
-- **Verificado pelo QA:** 84 testes Jest, `npm run typecheck`, `git diff --check` e bundle Expo
-  Web offline. O bundle confirma a inicialização da demo sem backend; não comprova operação live.
-  Ruff ficou **não executado** no ambiente do QA por indisponibilidade do executável e deve ser
-  verificado pelo orquestrador.
+- **Verificado pelos gates finais do orquestrador:** 85 testes Jest em 9 suites, `npm run
+  typecheck`, Ruff via `.venv\\Scripts\\ruff.exe`, `git diff --check` e bundle Expo Web offline.
+  O bundle confirma a inicialização da demo sem backend; não comprova operação live. O QA
+  anterior registrou 84 testes e Ruff **não executado** por indisponibilidade do executável naquele
+  ambiente; a verificação posterior do orquestrador fechou essa pendência.
 - **Aguardando validação:** runtime real com provider, Qdrant e POST live; validação manual dos
   viewports `1366x768`, `1024x600`, `390x844` e `360x800`; e qualquer uso com dados reais. Não há
   evidência para classificar esses itens como verificados.
@@ -244,8 +245,8 @@ Multi-query e comparação, sujeito a contrato explícito, privacidade, autentic
 e logs sanitizados. Replay e demais diagnósticos de backend ficam para uma etapa futura autorizada.
 
 **Última atualização desta sidequest:** 2026-09-23 — M3 frontend implementado no HEAD `c7925d7`;
-gates Jest/typecheck/diff-check e bundle Expo Web offline registrados; runtime live, Ruff e quatro
-viewports permanecem pendentes conforme acima.
+85 Jest/9 suites, typecheck, Ruff e diff-check aprovados pelo orquestrador, com bundle Expo Web
+offline registrado; runtime live e quatro viewports permanecem pendentes conforme acima.
 
 ---
 

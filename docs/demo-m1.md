@@ -105,8 +105,9 @@ A interface cobre vazio, loading, erro sanitizado, retry manual, fontes e ground
 modos de apresentação automático, `Anterior`, `Próximo` e `Ver tudo`. A troca de abas e esses
 modos não fazem novas requisições. O Laboratório permanece uma superfície futura do M4.
 
-Evidências registradas pelo QA: 84 testes Jest, `npm run typecheck`, `git diff --check` e bundle
-Expo Web offline aprovados; Ruff não foi executado pelo QA porque o executável não estava
+Evidências do fechamento pelo orquestrador: 85 testes Jest em 9 suites, `npm run typecheck`,
+Ruff via `.venv\\Scripts\\ruff.exe` e `git diff --check` aprovados, além do bundle Expo Web
+offline. O QA anterior registrou 84 testes e não executou Ruff porque o executável não estava
 disponível naquele ambiente. Não foram executados runtime real com provider/Qdrant, POST live,
 nem validação manual dos quatro viewports (`1366x768`, `1024x600`, `390x844`, `360x800`); esses
 itens permanecem **aguardando validação**. A revisão de segurança aprovou o frontend de forma
