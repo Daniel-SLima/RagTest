@@ -39,6 +39,10 @@ export function getDemoTheme(scheme: ColorSchemeName): DemoTheme {
   return scheme === "dark" ? demoTokens.dark : demoTokens.light
 }
 
+export function getDemoFocusOutline(theme: DemoTheme, focused: boolean) {
+  return focused ? { borderColor: theme.focusOutline, borderWidth: 3 } : null
+}
+
 export function getDemoLayout(
   viewportWidth: number,
   viewportHeight: number,

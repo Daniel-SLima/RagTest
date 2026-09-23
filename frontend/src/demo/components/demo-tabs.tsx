@@ -1,12 +1,15 @@
+import { useState } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { DEMO_TABS, type DemoTabId } from "../types/navigation"
 import { useDemoTheme } from "./demo-shell-theme"
+import { getDemoFocusOutline } from "./demo-tokens"
 
 export function DemoTabs({ activeTab, onTabChange }: { activeTab: DemoTabId; onTabChange: (tab: DemoTabId) => void }) {
   const theme = useDemoTheme()
+  const [focusedTab, setFocusedTab] = useState<DemoTabId | null>(null)
   return <View accessibilityRole="tablist" testID="demo-tablist" style={styles.tabs}>{DEMO_TABS.map((tab) => {
     const selected = tab.id === activeTab
-    return <Pressable key={tab.id} accessibilityHint={`Abre a seção ${tab.label}`} accessibilityLabel={tab.label} accessibilityRole="tab" accessibilityState={{ selected }} onPress={() => onTabChange(tab.id)} style={({ pressed }) => [styles.tab, { borderColor: selected ? theme.action : theme.border, backgroundColor: selected ? theme.surfaceMuted : theme.surface }, pressed && styles.pressed]}><Text style={[styles.tabText, { color: selected ? theme.action : theme.textMuted }]}>{tab.label}</Text></Pressable>
+    return <Pressable key={tab.id} accessibilityHint={`Abre a seção ${tab.label}`} accessibilityLabel={tab.label} accessibilityRole="tab" accessibilityState={{ selected }} onFocus={() => setFocusedTab(tab.id)} onBlur={() => setFocusedTab(null)} onPress={() => onTabChange(tab.id)} style={({ pressed }) => [styles.tab, { borderColor: selected ? theme.action : theme.border, backgroundColor: selected ? theme.surfaceMuted : theme.surface }, pressed && styles.pressed, getDemoFocusOutline(theme, focusedTab === tab.id)]}><Text style={[styles.tabText, { color: selected ? theme.action : theme.textMuted }]}>{tab.label}</Text></Pressable>
   })}</View>
 }
 

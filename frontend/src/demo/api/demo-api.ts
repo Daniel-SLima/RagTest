@@ -14,8 +14,13 @@ export type DemoFetcher = (
 
 const FALLBACK_ERROR = "demo_api_error"
 const PUBLIC_ERROR_CODES = new Set([
+  "invalid_retrieval_mode",
+  "retrieval_failed",
+  "source_policy_blocked",
   "retrieval_unavailable",
+  "generation_failed",
   "generation_unavailable",
+  "invalid_demo_request",
   "demo_disabled",
   "validation_error",
 ])
