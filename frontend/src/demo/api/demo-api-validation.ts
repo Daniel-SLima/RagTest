@@ -39,7 +39,7 @@ function exact(value: Record<string, unknown>, keys: readonly string[]): void {
 
 function stringValue(value: unknown, maxLength = MAX_LABEL_LENGTH): string {
   if (typeof value !== "string") fail()
-  if (value.length > maxLength || SENSITIVE_CONTENT.test(value)) fail()
+  if (value.trim().length === 0 || value.length > maxLength || SENSITIVE_CONTENT.test(value)) fail()
   return value
 }
 
@@ -127,10 +127,8 @@ export function parseDemoRunResponse(value: unknown): DemoRunResponse {
   if (typeof data.grounded !== "boolean" || !Array.isArray(data.sources)) fail()
   const sources = data.sources.map(parseDemoSource)
   const ids = citationIds(data.citation_ids)
-  if (data.grounded) {
-    const orders = new Set(sources.map((source) => source.order))
-    if (ids.length === 0 || ids.some((id) => !orders.has(id))) fail()
-  }
+  const orders = new Set(sources.map((source) => source.order))
+  if (ids.some((id) => !orders.has(id)) || (data.grounded && ids.length === 0) || (!data.grounded && ids.length > 0 && sources.length === 0)) fail()
   return { answer: stringValue(data.answer, MAX_ANSWER_LENGTH), model: stringValue(data.model), grounded: data.grounded, citation_ids: ids, sources, timings: parseDemoTimings(data.timings) }
 }
 

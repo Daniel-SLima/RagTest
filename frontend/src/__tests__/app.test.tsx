@@ -73,6 +73,31 @@ describe("RagTest demo app", () => {
     expect(screen.getByRole("button", { name: "Enviar pergunta" }).props.accessibilityState).toEqual({ disabled: false })
   })
 
+  it("retries exactly once only after the explicit retry click and never on navigation", async () => {
+    process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = "true"
+    const response = { answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [], sources: [], timings: { retrieval_ms: 1, generation_ms: null, total_ms: 1 } }
+    const demoApi = {
+      getRuntime: jest.fn().mockResolvedValue({ version: "M1", provider: "TEST DATA", model: "TEST DATA", embedding: "TEST DATA", retrieval: "dense", collection: "public", demo_enabled: true, policy_id: "local", policy_status: "configured" }),
+      run: jest.fn().mockRejectedValueOnce({ code: "generation_unavailable", status: 503, message: "private provider detail" }).mockResolvedValueOnce(response),
+      retrieve: jest.fn(),
+    }
+    await render(<App demoApi={demoApi as never} />)
+    await fireEvent.changeText(screen.getByLabelText("Pergunta da demonstração"), "TEST DATA")
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar pergunta" }))
+    expect(demoApi.run).toHaveBeenCalledTimes(1)
+    const retry = await screen.findByRole("button", { name: "Tentar novamente" })
+    await fireEvent.press(retry)
+    await waitFor(() => expect(demoApi.run).toHaveBeenCalledTimes(2))
+    expect(demoApi.run).toHaveBeenLastCalledWith({ query: "TEST DATA" })
+    await fireEvent.press(screen.getByRole("tab", { name: "Como funciona" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Apresentação" }))
+    await fireEvent.press(screen.getByRole("button", { name: "Próximo" }))
+    await fireEvent.press(screen.getByRole("tab", { name: "Laboratório" }))
+    await fireEvent.press(screen.getByRole("tab", { name: "Chat" }))
+    expect(demoApi.run).toHaveBeenCalledTimes(2)
+    expect(screen.getAllByText("TEST DATA").length).toBeGreaterThan(0)
+  })
+
   it("performs exactly one runtime request in StrictMode", async () => {
     process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = "true"
     const demoApi = { getRuntime: jest.fn().mockResolvedValue({ version: "M1", provider: "TEST DATA", model: "TEST DATA", embedding: "TEST DATA", retrieval: "dense", collection: "public", demo_enabled: true, policy_id: "local", policy_status: "configured" }), run: jest.fn(), retrieve: jest.fn() }

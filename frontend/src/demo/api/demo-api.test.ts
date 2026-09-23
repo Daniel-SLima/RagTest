@@ -48,7 +48,7 @@ describe("demo configuration and client", () => {
   it("exposes the three typed endpoints without requests during construction", async () => {
     const fetcher = jest.fn()
       .mockResolvedValueOnce(response(runtime))
-      .mockResolvedValueOnce(response({ answer: "", model: "none", grounded: false, citation_ids: [], sources: [], timings }))
+      .mockResolvedValueOnce(response({ answer: "TEST DATA", model: "none", grounded: false, citation_ids: [], sources: [], timings }))
       .mockResolvedValueOnce(response({ query: "qq", retrieval_mode: "hybrid", sources: [], timings }))
     const api = createDemoApi("http://127.0.0.1:8000", fetcher)
     expect(fetcher).not.toHaveBeenCalled()
@@ -101,6 +101,17 @@ describe("demo configuration and client", () => {
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [], sources: [], timings: { retrieval_ms: 4, generation_ms: 2, total_ms: 3 } })).toThrow()
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [2], sources: [source], timings })).toThrow()
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [], sources: [], timings })).toThrow()
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [1], sources: [], timings })).toThrow()
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [2], sources: [source], timings })).toThrow()
+    expect(parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [], sources: [], timings }).sources).toEqual([])
+  })
+
+  it("rejects blank required text fields while accepting public TEST DATA", () => {
+    const validResponse = { answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [], sources: [source], timings }
+    for (const field of ["answer", "model"]) expect(() => parseDemoRunResponse({ ...validResponse, [field]: "   " })).toThrow()
+    for (const field of ["public_id", "document", "excerpt"]) expect(() => parseDemoRunResponse({ ...validResponse, sources: [{ ...source, [field]: "\t" }] })).toThrow()
+    for (const field of ["version", "provider", "model", "embedding", "collection", "policy_id"]) expect(() => parseDemoRuntime({ ...runtime, [field]: " " })).toThrow()
+    expect(parseDemoRunResponse({ ...validResponse, answer: "TEST DATA" }).answer).toBe("TEST DATA")
   })
 
   it("maps arbitrary error messages to fixed public text and preserves the closed error shape", () => {
