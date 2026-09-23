@@ -21,4 +21,12 @@ describe("buildDemoPipeline", () => {
     expect(pipeline.every((stage) => stage.id === "analysis" || stage.value === undefined || stage.value === "Não disponível")).toBe(true)
     expect(pipeline.find((stage) => stage.id === "question")?.technicalDetails).toContain("Execute uma pergunta")
   })
+  it("reflects the runtime retrieval profile without inventing measurements", () => {
+    const denseRerank = buildDemoPipeline({ ...base, runtime: { ...base.runtime!, retrieval: "dense-rerank" } })
+    expect(denseRerank[4].value).toContain("dense-rerank")
+    expect(denseRerank[5]).toMatchObject({ state: "available", value: "dense-rerank" })
+    expect(denseRerank[5].technicalDetails).toContain("comparação pré/pós")
+    const dense = buildDemoPipeline(base)
+    expect(dense[5]).toMatchObject({ state: "not-required", value: "não requerido pelo perfil" })
+  })
 })

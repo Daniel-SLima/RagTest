@@ -92,7 +92,7 @@ export function parseDemoTimings(value: unknown): DemoTimings {
   const retrieval = finite(data.retrieval_ms)
   const generation = nullableNumber(data.generation_ms)
   const total = finite(data.total_ms)
-  if (retrieval < 0 || (generation !== null && generation < 0) || total < 0) fail()
+  if (retrieval < 0 || (generation !== null && generation < 0) || total < 0 || total < retrieval || (generation !== null && total < generation)) fail()
   return { retrieval_ms: retrieval, generation_ms: generation, total_ms: total }
 }
 
@@ -125,7 +125,13 @@ export function parseDemoRunResponse(value: unknown): DemoRunResponse {
   const data = object(value)
   exact(data, ["answer", "model", "grounded", "citation_ids", "sources", "timings"])
   if (typeof data.grounded !== "boolean" || !Array.isArray(data.sources)) fail()
-  return { answer: stringValue(data.answer, MAX_ANSWER_LENGTH), model: stringValue(data.model), grounded: data.grounded, citation_ids: citationIds(data.citation_ids), sources: data.sources.map(parseDemoSource), timings: parseDemoTimings(data.timings) }
+  const sources = data.sources.map(parseDemoSource)
+  const ids = citationIds(data.citation_ids)
+  if (data.grounded) {
+    const orders = new Set(sources.map((source) => source.order))
+    if (ids.length === 0 || ids.some((id) => !orders.has(id))) fail()
+  }
+  return { answer: stringValue(data.answer, MAX_ANSWER_LENGTH), model: stringValue(data.model), grounded: data.grounded, citation_ids: ids, sources, timings: parseDemoTimings(data.timings) }
 }
 
 export function parseDemoRetrievalResponse(value: unknown): DemoRetrievalResponse {

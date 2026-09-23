@@ -23,7 +23,7 @@ import { HowItWorksScreen } from "./src/demo/screens/how-it-works-screen"
 import { LaboratoryScreen } from "./src/demo/screens/laboratory-screen"
 import { RoadmapScreen } from "./src/demo/screens/roadmap-screen"
 import type { DemoTabId } from "./src/demo/types/navigation"
-import { getAllowedHttpsOrigins } from "./src/demo/api/demo-api-validation"
+import { getAllowedHttpsOrigins, validateDemoRequest } from "./src/demo/api/demo-api-validation"
 import { demoRunReducer, initialDemoRunState, sanitizeDemoError } from "./src/demo/state/demo-run-state"
 
 type SendChat = typeof sendChatMessage
@@ -206,20 +206,26 @@ export function DemoApp({
   }, [apiBaseUrl, demoApi])
   const api = apiResult.api
   const configError = apiResult.error
-  const runtimeRequested = useRef(false)
+  const runtimePromise = useRef<Promise<Awaited<ReturnType<DemoApi["getRuntime"]>>> | null>(null)
+  const runtimeApi = useRef<DemoApi | null>(null)
   useEffect(() => {
-    if (!api || runtimeRequested.current) return
-    runtimeRequested.current = true
+    if (!api) return
+    if (!runtimePromise.current || runtimeApi.current !== api) {
+      runtimeApi.current = api
+      dispatch({ type: "runtime-loading" })
+      runtimePromise.current = Promise.resolve().then(() => api.getRuntime())
+    }
     let active = true
-    dispatch({ type: "runtime-loading" })
-    void Promise.resolve(api.getRuntime()).then((runtime) => { if (active && runtime) dispatch({ type: "runtime-success", runtime }) }).catch((error) => { if (active) dispatch({ type: "runtime-error", error: sanitizeDemoError(error) }) })
+    void runtimePromise.current.then((runtime) => { if (active) dispatch({ type: "runtime-success", runtime }) }).catch((error) => { if (active) dispatch({ type: "runtime-error", error: sanitizeDemoError(error) }) })
     return () => { active = false }
   }, [api])
   const submit = (question: string) => {
     const query = question.trim()
     if (!api || query.length < 2 || state.status === "loading") return
-    dispatch({ type: "run-loading", question: query })
-    void api.run({ query }).then((response) => dispatch({ type: "run-success", response })).catch((error) => dispatch({ type: "run-error", error: sanitizeDemoError(error) }))
+    let request: ReturnType<typeof validateDemoRequest>
+    try { request = validateDemoRequest({ query }) } catch (error) { dispatch({ type: "run-invalid", question: query, error: sanitizeDemoError(error) }); return }
+    dispatch({ type: "run-loading", question: request.query })
+    void api.run(request).then((response) => dispatch({ type: "run-success", response })).catch((error) => dispatch({ type: "run-error", error: sanitizeDemoError(error) }))
   }
   const retry = () => { if (state.question && state.status !== "loading") submit(state.question) }
   const viewPipeline = () => { setActiveTab("how-it-works"); setPipelineMode("presentation"); setPresentationIndex(0) }

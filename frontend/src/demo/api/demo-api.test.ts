@@ -97,6 +97,12 @@ describe("demo configuration and client", () => {
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [], sources: [], timings: { ...timings, total_ms: -1 } })).toThrow()
   })
 
+  it("rejects non-monotonic timings and grounded citation/source mismatches", () => {
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: false, citation_ids: [], sources: [], timings: { retrieval_ms: 4, generation_ms: 2, total_ms: 3 } })).toThrow()
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [2], sources: [source], timings })).toThrow()
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [], sources: [], timings })).toThrow()
+  })
+
   it("maps arbitrary error messages to fixed public text and preserves the closed error shape", () => {
     const error = sanitizeDemoApiError({ code: "retrieval_failed", status: 503, message: "secret/path/traceback" })
     expect(error).toEqual({ code: "retrieval_failed", status: 503, message: "Não foi possível concluir a busca documental." })

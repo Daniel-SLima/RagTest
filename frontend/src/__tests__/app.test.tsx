@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native"
+import { StrictMode } from "react"
 
 import App from "../../App"
 import { ChatApiError } from "../lib/chat-api"
@@ -59,6 +60,25 @@ describe("RagTest demo app", () => {
     await fireEvent.press(screen.getByRole("tab", { name: "Chat" }))
     expect(screen.getAllByText("TEST DATA").length).toBeGreaterThan(0)
     expect(demoApi.run).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not get stuck loading when submit exceeds the DTO query limit", async () => {
+    process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = "true"
+    const demoApi = { getRuntime: jest.fn().mockResolvedValue(undefined), run: jest.fn(), retrieve: jest.fn() }
+    await render(<App demoApi={demoApi as never} />)
+    await fireEvent.changeText(screen.getByLabelText("Pergunta da demonstração"), "x".repeat(2001))
+    await fireEvent.press(screen.getByRole("button", { name: "Enviar pergunta" }))
+    expect(demoApi.run).not.toHaveBeenCalled()
+    expect(screen.getByText("Pergunta inválida para a demonstração.")).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Enviar pergunta" }).props.accessibilityState).toEqual({ disabled: false })
+  })
+
+  it("performs exactly one runtime request in StrictMode", async () => {
+    process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = "true"
+    const demoApi = { getRuntime: jest.fn().mockResolvedValue({ version: "M1", provider: "TEST DATA", model: "TEST DATA", embedding: "TEST DATA", retrieval: "dense", collection: "public", demo_enabled: true, policy_id: "local", policy_status: "configured" }), run: jest.fn(), retrieve: jest.fn() }
+    await render(<StrictMode><App demoApi={demoApi as never} /></StrictMode>)
+    await waitFor(() => expect(screen.getByText("Runtime TEST DATA · TEST DATA")).toBeTruthy())
+    expect(demoApi.getRuntime).toHaveBeenCalledTimes(1)
   })
 
   it("renders the initial chat surface", async () => {

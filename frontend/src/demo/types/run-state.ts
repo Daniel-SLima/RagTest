@@ -23,5 +23,6 @@ export type DemoRunAction =
   | { type: "runtime-success"; runtime: DemoRuntime }
   | { type: "runtime-error"; error: DemoApiError }
   | { type: "run-loading"; question: string }
+  | { type: "run-invalid"; question: string; error: DemoApiError }
   | { type: "run-success"; response: DemoRunResponse }
   | { type: "run-error"; error: DemoApiError }

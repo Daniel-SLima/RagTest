@@ -22,6 +22,7 @@ export function demoRunReducer(state: DemoRunState, action: DemoRunAction): Demo
     case "runtime-success": return projection({ ...state, runtimeStatus: "success", runtimeError: null }, state.response, action.runtime)
     case "runtime-error": return { ...state, runtimeStatus: "error", runtimeError: sanitizeDemoError(action.error) }
     case "run-loading": return { ...state, question: action.question, response: null, diagnostics: null, status: "loading", error: null }
+    case "run-invalid": return { ...state, question: action.question, response: null, diagnostics: null, status: "error", error: sanitizeDemoError(action.error) }
     case "run-success": return projection({ ...state, response: action.response, status: "success", error: null }, action.response, state.runtime)
     case "run-error": return { ...state, status: "error", error: sanitizeDemoError(action.error) }
     default: return state

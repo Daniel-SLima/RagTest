@@ -72,4 +72,11 @@ describe("M2 screens", () => {
     expect(screen.queryByText("Resposta TEST DATA segura.")).toBeNull()
     expect(screen.getByRole("button", { name: "Enviar pergunta" }).props.accessibilityState).toEqual({ disabled: true })
   })
+
+  it("explains an ungrounded response with no sources", async () => {
+    const state = { ...liveState, response: { ...liveState.response!, grounded: false, citation_ids: [], sources: [] } }
+    await renderDemo(<DemoChatScreen value="TEST DATA" onChange={jest.fn()} onExamplePress={jest.fn()} state={state} onSubmit={jest.fn()} onRetry={jest.fn()} />)
+    expect(screen.getByText("Sem base documental suficiente")).toBeTruthy()
+    expect(screen.getByText(/não há cobertura estrutural suficiente/i)).toBeTruthy()
+  })
 })
