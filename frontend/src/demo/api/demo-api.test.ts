@@ -1,6 +1,7 @@
 import { createDemoApi } from "./demo-api"
 import { isDemoEnabled } from "../config"
-import { getAllowedHttpsOrigins, parseDemoRunResponse, validateDemoBaseUrl } from "./demo-api-validation"
+import { getAllowedHttpsOrigins, parseDemoRunResponse, parseDemoRuntime, validateDemoBaseUrl } from "./demo-api-validation"
+import { sanitizeDemoApiError } from "./demo-api"
 
 // TEST DATA: minimal public-shaped fixtures, never sent to an external provider.
 const runtime = { version: "M1", provider: "none", model: "none", embedding: "none", retrieval: "dense", collection: "public", demo_enabled: true, policy_id: "local", policy_status: "configured" as const }
@@ -94,5 +95,23 @@ describe("demo configuration and client", () => {
     expect(() => parseDemoRunResponse({ ...response("TEST DATA"), extra: "secret" })).toThrow()
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [Number.NaN], sources: [], timings })).toThrow()
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [], sources: [], timings: { ...timings, total_ms: -1 } })).toThrow()
+  })
+
+  it("maps arbitrary error messages to fixed public text and preserves the closed error shape", () => {
+    const error = sanitizeDemoApiError({ code: "retrieval_failed", status: 503, message: "secret/path/traceback" })
+    expect(error).toEqual({ code: "retrieval_failed", status: 503, message: "Não foi possível concluir a busca documental." })
+    expect(Object.keys(error).sort()).toEqual(["code", "message", "status"])
+    expect(JSON.stringify(error)).not.toMatch(/secret|path|traceback/i)
+  })
+
+  it("rejects sensitive response content while accepting ordinary Markdown", () => {
+    const safe = { answer: "## **Saúde pública** [1]", model: "TEST DATA", grounded: true, citation_ids: [1], sources: [source], timings }
+    expect(parseDemoRunResponse(safe).answer).toContain("Saúde pública")
+    for (const field of ["answer", "model"]) {
+      expect(() => parseDemoRunResponse({ ...safe, [field]: "secret/path/traceback" })).toThrow()
+    }
+    expect(() => parseDemoRunResponse({ ...safe, sources: [{ ...source, document: "C:\\Users\\Usuario\\secret.pdf" }] })).toThrow()
+    expect(() => parseDemoRunResponse({ ...safe, sources: [{ ...source, excerpt: "Bearer TEST_DATA" }] })).toThrow()
+    expect(() => parseDemoRuntime({ ...runtime, provider: "http://127.0.0.1:8000" })).toThrow()
   })
 })

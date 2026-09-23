@@ -12,6 +12,11 @@ import type {
 
 const MODES = new Set<DemoRetrievalMode>(["dense", "dense-rerank", "hybrid"])
 const ERROR_MESSAGE = "Resposta do serviço de demonstração inválida."
+const MAX_ANSWER_LENGTH = 20_000
+const MAX_EXCERPT_LENGTH = 10_000
+const MAX_LABEL_LENGTH = 500
+const MAX_NUMERIC_MAGNITUDE = 1_000_000_000_000
+const SENSITIVE_CONTENT = /(?:\.env\b|\bbearer\s+\S+|\b(?:api[_ -]?key|secret|password|token)\b|\b(?:system|user|developer)[_ -]?prompt\b|\bprompt\b|\btraceback\b|\bCHATSCM\b|[A-Za-z]:[\\/]|\\\\[A-Za-z]|\/(?:Users|home|root|private|tmp|var|etc)\/|(?:^|[\s("'])\/(?:[^\/\s]+\/)+[^\/\s]+|https?:\/\/(?:localhost|127\.0\.0\.1|10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.))/i
 
 export function invalidDemoResponse(): DemoApiError {
   return { code: "invalid_demo_response", status: null, message: ERROR_MESSAGE }
@@ -32,13 +37,14 @@ function exact(value: Record<string, unknown>, keys: readonly string[]): void {
   if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) fail()
 }
 
-function stringValue(value: unknown): string {
+function stringValue(value: unknown, maxLength = MAX_LABEL_LENGTH): string {
   if (typeof value !== "string") fail()
+  if (value.length > maxLength || SENSITIVE_CONTENT.test(value)) fail()
   return value
 }
 
 function finite(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) fail()
+  if (typeof value !== "number" || !Number.isFinite(value) || Math.abs(value) > MAX_NUMERIC_MAGNITUDE) fail()
   return value
 }
 
@@ -75,7 +81,7 @@ export function parseDemoSource(value: unknown): DemoSource {
     document: stringValue(data.document),
     page,
     order,
-    excerpt: stringValue(data.excerpt),
+    excerpt: stringValue(data.excerpt, MAX_EXCERPT_LENGTH),
     scores: parseDemoScore(data.scores),
   }
 }
@@ -119,14 +125,14 @@ export function parseDemoRunResponse(value: unknown): DemoRunResponse {
   const data = object(value)
   exact(data, ["answer", "model", "grounded", "citation_ids", "sources", "timings"])
   if (typeof data.grounded !== "boolean" || !Array.isArray(data.sources)) fail()
-  return { answer: stringValue(data.answer), model: stringValue(data.model), grounded: data.grounded, citation_ids: citationIds(data.citation_ids), sources: data.sources.map(parseDemoSource), timings: parseDemoTimings(data.timings) }
+  return { answer: stringValue(data.answer, MAX_ANSWER_LENGTH), model: stringValue(data.model), grounded: data.grounded, citation_ids: citationIds(data.citation_ids), sources: data.sources.map(parseDemoSource), timings: parseDemoTimings(data.timings) }
 }
 
 export function parseDemoRetrievalResponse(value: unknown): DemoRetrievalResponse {
   const data = object(value)
   exact(data, ["query", "retrieval_mode", "sources", "timings"])
   if (!Array.isArray(data.sources)) fail()
-  return { query: stringValue(data.query), retrieval_mode: mode(data.retrieval_mode), sources: data.sources.map(parseDemoSource), timings: data.timings === null ? null : parseDemoTimings(data.timings) }
+  return { query: stringValue(data.query, 2_000), retrieval_mode: mode(data.retrieval_mode), sources: data.sources.map(parseDemoSource), timings: data.timings === null ? null : parseDemoTimings(data.timings) }
 }
 
 function optionalString(value: unknown, max: number): string | null | undefined {
