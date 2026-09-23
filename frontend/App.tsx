@@ -15,18 +15,27 @@ import {
   type ChatApiResponse,
   sendChatMessage,
 } from "./src/lib/chat-api"
+import { isDemoEnabled } from "./src/demo/config"
+import { createDemoApi, type DemoApi } from "./src/demo/api/demo-api"
+import { DemoShell } from "./src/demo/components/demo-shell"
+import { DemoChatScreen } from "./src/demo/screens/demo-chat-screen"
+import { HowItWorksScreen } from "./src/demo/screens/how-it-works-screen"
+import { LaboratoryScreen } from "./src/demo/screens/laboratory-screen"
+import { RoadmapScreen } from "./src/demo/screens/roadmap-screen"
+import type { DemoTabId } from "./src/demo/types/navigation"
 
 type SendChat = typeof sendChatMessage
 
 type AppProps = {
   apiBaseUrl?: string
   sendChat?: SendChat
+  demoApi?: DemoApi
 }
 
 const DEFAULT_API_BASE_URL =
   process.env.EXPO_PUBLIC_RAG_API_BASE_URL ?? "http://localhost:8000"
 
-export default function App({
+export function NormalApp({
   apiBaseUrl = DEFAULT_API_BASE_URL,
   sendChat = sendChatMessage,
 }: AppProps) {
@@ -177,6 +186,35 @@ export default function App({
       </View>
     </View>
   )
+}
+
+export function DemoApp({
+  apiBaseUrl = DEFAULT_API_BASE_URL,
+  demoApi,
+}: Pick<AppProps, "apiBaseUrl"> & { demoApi?: DemoApi }) {
+  const [activeTab, setActiveTab] = useState<DemoTabId>("chat")
+  const [draft, setDraft] = useState("")
+  // Construction is intentionally pure: methods are called only by a future M3 integration.
+  void (demoApi ?? createDemoApi(apiBaseUrl))
+
+  return (
+    <DemoShell activeTab={activeTab} onTabChange={setActiveTab}>
+      {activeTab === "chat" ? (
+        <DemoChatScreen
+          value={draft}
+          onChange={setDraft}
+          onExamplePress={(example) => setDraft(example.query)}
+        />
+      ) : null}
+      {activeTab === "how-it-works" ? <HowItWorksScreen /> : null}
+      {activeTab === "laboratory" ? <LaboratoryScreen /> : null}
+      {activeTab === "roadmap" ? <RoadmapScreen /> : null}
+    </DemoShell>
+  )
+}
+
+export default function App(props: AppProps) {
+  return isDemoEnabled() ? <DemoApp {...props} /> : <NormalApp {...props} />
 }
 
 const styles = StyleSheet.create({

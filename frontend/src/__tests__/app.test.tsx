@@ -4,6 +4,43 @@ import App from "../../App"
 import { ChatApiError } from "../lib/chat-api"
 
 describe("RagTest demo app", () => {
+  const previousDemoFlag = process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED
+
+  afterEach(() => {
+    if (previousDemoFlag === undefined) delete process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED
+    else process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = previousDemoFlag
+  })
+
+  it.each([undefined, "", "false", "1", "yes"]) (
+    "preserves the normal app when demo flag is %p",
+    async (flag) => {
+      if (flag === undefined) delete process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED
+      else process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = flag
+      await render(<App />)
+      expect(screen.getByText("Assistente de Saúde")).toBeTruthy()
+      expect(screen.queryByText("Fundação visual do módulo RAG")).toBeNull()
+    },
+  )
+
+  it("renders the demo only for an explicit true flag and never sends normal chat", async () => {
+    process.env.EXPO_PUBLIC_RAG_DEMO_ENABLED = " true "
+    const sendChat = jest.fn()
+    const demoApi = {
+      getRuntime: jest.fn(),
+      run: jest.fn(),
+      retrieve: jest.fn(),
+    }
+    await render(<App sendChat={sendChat} demoApi={demoApi as never} />)
+    expect(screen.getByText("Fundação visual do módulo RAG")).toBeTruthy()
+    expect(screen.getAllByRole("tab")).toHaveLength(4)
+    await fireEvent.press(screen.getByRole("tab", { name: "Laboratório" }))
+    await fireEvent.press(screen.getByRole("tab", { name: "O que ainda falta" }))
+    expect(sendChat).not.toHaveBeenCalled()
+    expect(demoApi.getRuntime).not.toHaveBeenCalled()
+    expect(demoApi.run).not.toHaveBeenCalled()
+    expect(demoApi.retrieve).not.toHaveBeenCalled()
+  })
+
   it("renders the initial chat surface", async () => {
     await render(<App />)
 
