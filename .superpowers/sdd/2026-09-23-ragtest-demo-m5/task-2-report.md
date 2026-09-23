@@ -67,10 +67,13 @@ M2 obsoletas: restringia `snapshotVersion` a M1/M2 embora o catálogo tenha evid
 ORCHESTRATOR atualizou somente essas asserções no commit `884d265`, preservando statuses,
 evidências e sanitização; a suíte completa passou após a correção.
 
-Validação visual manual dos quatro viewports e tema claro/escuro continua pendente para a Task 3;
-os gates automatizados não substituem essa observação.
+No momento deste relatório do Task 2, a validação visual manual dos quatro viewports ainda estava
+pendente para a Task 3. Ela foi concluída posteriormente pelo ORCHESTRATOR sem backend: os quatro
+viewports mantiveram `scrollWidth == viewport`, com reflow móvel e accordion observado. Tema claro,
+Dynamic Type, leitor de tela nativo e Network/Console do DevTools continuam limitações não
+observadas.
 
 ## Próxima etapa recomendada
 
-QA deve confirmar a suíte verde e executar a validação visual dos viewports `1366x768`,
-`1024x600`, `390x844` e `360x800` sem backend/provider.
+A documentação de continuidade registra a validação visual concluída nos viewports `1366x768`,
+`1024x600`, `390x844` e `360x800` sem backend/provider; os gates finais ficaram verdes.
