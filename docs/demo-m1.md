@@ -30,13 +30,18 @@ estão fora do escopo M1.
 
 ## M2 — fundação visual opt-in no Expo
 
-Status: implementado no commit `ea14f8c` e verificado após QA pelos gates registrados no
+Status: implementado no commit `f675243` e verificado após QA pelos gates registrados no
 handoff desta sidequest. Esta etapa adiciona somente a fundação visual da Demo Técnica no
 frontend Expo: quatro abas (`Chat`, `Como funciona`, `Laboratório` e `O que ainda falta`),
 estados vazios/neutros, catálogo de roadmap com referências verificáveis e contratos TypeScript
 preparados para uso futuro. A narrativa `Como funciona` expõe 11 etapas, a aba Chat mantém
 uma ação futura desabilitada e a identidade visual informa que esta não é a versão final do
-produto Se Cuida Mulher. O Laboratório apresenta oito controles futuros desabilitados.
+produto Se Cuida Mulher. O Laboratório apresenta oito controles futuros desabilitados e é
+explicitamente uma superfície reservada ao M4, não ao M3.
+
+As etapas públicas do pipeline mostram o estado **aguardando execução**; internamente, o
+enum estável `awaiting-execution` identifica esse estado sem simular uma execução ou fabricar
+resposta, ranking, fonte ou timing.
 
 O catálogo público usa apenas os statuses `Implementado`, `Parcial / em desenvolvimento`,
 `Planejado` e `Em estudo`, sem converter intenção em evidência.

@@ -148,12 +148,16 @@ fonte específica da sidequest.
 ### Estado e evidências
 
 - **Implementado:** a fundação visual opt-in do Expo foi integrada na branch
-  `sidequest/ragtest-demo`, com HEAD `ea14f8c` (`fix: complete M2 demo narrative states`). O M2
+  `sidequest/ragtest-demo`, com HEAD `f675243` (`fix: align M2 future boundaries and labels`). O M2
   contém as abas `Chat`, `Como funciona`, `Laboratório` e `O que ainda falta`, componentes
   responsivos, estados vazios/neutros, catálogo de roadmap e contratos TypeScript para uso
   futuro. Após o QA final, a narrativa registra 11 etapas, a aba Chat mantém a ação futura
   desabilitada, a identidade informa que a demo não é a versão final do produto Se Cuida Mulher,
-  e o Laboratório apresenta oito controles futuros desabilitados.
+  e o Laboratório apresenta oito controles futuros desabilitados. O Laboratório é uma superfície
+  explicitamente reservada ao M4, não ao M3.
+- **Verificado:** as etapas públicas do pipeline exibem **aguardando execução**; o enum interno
+  estável `awaiting-execution` preserva o contrato sem simular execução, resposta, ranking, fonte
+  ou timing.
 - **Verificado:** os statuses públicos do roadmap permanecem fechados em `Implementado`,
   `Parcial / em desenvolvimento`, `Planejado` e `Em estudo`; cada item mantém referência de
   evidência e não transforma intenção em resultado.
@@ -188,7 +192,7 @@ valor é repetido aqui; a rotação deve ocorrer antes de compartilhar qualquer 
 contenha aquela saída. Este incidente não é evidência de validação de runtime e não autoriza
 alteração de secrets, providers, Docker ou Qdrant.
 
-**Última atualização desta sidequest:** 2026-09-23 — M2 implementado no commit `ea14f8c`,
+**Última atualização desta sidequest:** 2026-09-23 — M2 implementado no commit `f675243`,
 QA final concluído, gates automatizados e bundle Expo Web sem backend verificados; M3 aguardando
 validação e revisão.
 
