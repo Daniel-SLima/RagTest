@@ -22,9 +22,9 @@ describe("demo configuration and client", () => {
 
   it("normalizes one trailing slash and preserves nullable schema values", async () => {
     const fetcher = jest.fn().mockResolvedValue(response({ query: "q", retrieval_mode: "dense", sources: [source], timings: null }))
-    const api = createDemoApi("http://demo/", fetcher)
-    const result = await api.retrieve({ query: "q", retrieval_mode: null, category: null, audience: null, min_score: null })
-    expect(fetcher).toHaveBeenCalledWith("http://demo/v1/demo/retrieval", expect.any(Object))
+    const api = createDemoApi("http://127.0.0.1:8000/", fetcher)
+    const result = await api.retrieve({ query: "qq", retrieval_mode: null, category: null, audience: null, min_score: null })
+    expect(fetcher).toHaveBeenCalledWith("http://127.0.0.1:8000/v1/demo/retrieval", expect.any(Object))
     expect(result.timings).toBeNull()
     expect(result.sources[0].scores.dense_score).toBeNull()
   })
@@ -33,18 +33,18 @@ describe("demo configuration and client", () => {
     const fetcher = jest.fn()
       .mockResolvedValueOnce(response(runtime))
       .mockResolvedValueOnce(response({ answer: "", model: "none", grounded: false, citation_ids: [], sources: [], timings }))
-      .mockResolvedValueOnce(response({ query: "q", retrieval_mode: "hybrid", sources: [], timings }))
-    const api = createDemoApi("http://demo", fetcher)
+      .mockResolvedValueOnce(response({ query: "qq", retrieval_mode: "hybrid", sources: [], timings }))
+    const api = createDemoApi("http://127.0.0.1:8000", fetcher)
     expect(fetcher).not.toHaveBeenCalled()
-    await api.getRuntime(); await api.run({ query: "q" }); await api.retrieve({ query: "q" })
+    await api.getRuntime(); await api.run({ query: "qq" }); await api.retrieve({ query: "qq" })
     expect(fetcher).toHaveBeenCalledTimes(3)
   })
 
   it("sanitizes HTTP, network and invalid JSON failures", async () => {
     const cases = [
-      () => createDemoApi("http://demo", jest.fn().mockResolvedValue(response({ detail: { code: "retrieval_unavailable", testData: TEST_DATA } }, false, 503))).getRuntime(),
-      () => createDemoApi("http://demo", jest.fn().mockRejectedValue(new Error("private transport detail"))).getRuntime(),
-      () => createDemoApi("http://demo", jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => { throw new Error("malformed") } } as unknown as Response)).getRuntime(),
+      () => createDemoApi("http://127.0.0.1:8000", jest.fn().mockResolvedValue(response({ detail: { code: "retrieval_unavailable", testData: TEST_DATA } }, false, 503))).getRuntime(),
+      () => createDemoApi("http://127.0.0.1:8000", jest.fn().mockRejectedValue(new Error("private transport detail"))).getRuntime(),
+      () => createDemoApi("http://127.0.0.1:8000", jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => { throw new Error("malformed") } } as unknown as Response)).getRuntime(),
     ]
     for (const makePending of cases) {
       const pending = makePending()
@@ -62,14 +62,14 @@ describe("demo configuration and client", () => {
     "generation_unavailable",
     "invalid_demo_request",
   ])("preserves the public M1 error code %s", async (code) => {
-    const api = createDemoApi("http://demo", jest.fn().mockResolvedValue(response({ detail: { code, testData: TEST_DATA } }, false, 422)))
+    const api = createDemoApi("http://127.0.0.1:8000", jest.fn().mockResolvedValue(response({ detail: { code, testData: TEST_DATA } }, false, 422)))
     const pending = api.getRuntime()
     await expect(pending).rejects.toMatchObject({ code, status: 422 })
     await expect(pending).rejects.not.toHaveProperty("testData")
   })
 
   it("falls back for unknown error codes without exposing the body", async () => {
-    const api = createDemoApi("http://demo", jest.fn().mockResolvedValue(response({ code: "unknown_internal_code", testData: TEST_DATA }, false, 500)))
+    const api = createDemoApi("http://127.0.0.1:8000", jest.fn().mockResolvedValue(response({ code: "unknown_internal_code", testData: TEST_DATA }, false, 500)))
     const pending = api.getRuntime()
     await expect(pending).rejects.toMatchObject({ code: "demo_api_error", status: 500 })
     await expect(pending).rejects.not.toHaveProperty("testData")

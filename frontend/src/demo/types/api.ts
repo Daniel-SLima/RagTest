@@ -68,3 +68,9 @@ export type DemoApiError = {
   status: number | null
   message: string
 }
+
+export type DemoApi = {
+  getRuntime: () => Promise<DemoRuntime>
+  run: (request: DemoRunRequest) => Promise<DemoRunResponse>
+  retrieve: (request: DemoRetrievalRequest) => Promise<DemoRetrievalResponse>
+}
