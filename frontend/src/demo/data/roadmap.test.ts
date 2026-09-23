@@ -67,6 +67,13 @@ describe("M5 roadmap catalog", () => {
     expect(Object.values(counts.byStatus).reduce((total, value) => total + value, 0)).toBe(ROADMAP_ITEMS.length)
   })
 
+  it("keeps item evidence versions distinct from the global M5 snapshot commit", () => {
+    const laboratory = ROADMAP_ITEMS.find((item) => item.id === "laboratory-m4")
+    expect(laboratory?.snapshotVersion).toBe("M4")
+    expect(laboratory?.snapshotCommit).toBe(ROADMAP_SNAPSHOT.commit)
+    expect(ROADMAP_SNAPSHOT.version).toBe("M5")
+  })
+
   it("filters by status and area without mutating the catalog", () => {
     const original = [...ROADMAP_ITEMS]
     expect(filterRoadmapItems(ROADMAP_ITEMS, { status: "all", area: "all" })).toEqual(ROADMAP_ITEMS)

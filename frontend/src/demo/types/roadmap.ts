@@ -18,7 +18,9 @@ export type RoadmapItem = {
   dependencies: readonly string[]
   evidence: readonly RoadmapEvidence[]
   origin: string
+  /** Historical source version that supports this item's evidence (for example, M4). */
   snapshotVersion: string
+  /** Commit of the global M5 catalog snapshot, shared by every item. */
   snapshotCommit: string
   notes?: string
 }
