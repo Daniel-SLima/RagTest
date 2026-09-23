@@ -2769,3 +2769,63 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - branch criada: `feature/sessions-0.6.0`;
 - design escrito aprovado pelo usuário em 2026-09-22;
 - próximo passo: revisar o plano TDD antes de iniciar qualquer código funcional.
+
+## Atualização de continuidade — sidequest Demo M4 (2026-09-23)
+
+Esta seção registra o estado da implementação do Laboratório experimental de retrieval. Ela
+complementa M1–M3.6 e não reclassifica intenções, benchmarks históricos ou testes automatizados
+como validação de produção.
+
+### Estado implementado
+
+- O frontend da branch `sidequest/ragtest-demo` agora possui Laboratório com Dense,
+  Dense + rerank, Hybrid, seleção de Top K real (`limit` 3/5/10), pergunta livre, exemplos,
+  execução single e comparação de todos os perfis.
+- A interface usa somente `POST /v1/demo/retrieval`: uma execução single gera uma requisição;
+  comparação gera três requisições sequenciais. Não há chamada a `/v1/demo/run`, LLM, cache
+  persistente ou mutação de configuração global.
+- Respostas são validadas por consulta, modo, limite, máximo de 10 fontes e ordem contígua;
+  campos nulos são exibidos como `Não disponível`. Erros parciais preservam os cartões que
+  tiveram sucesso e oferecem retry explícito para o perfil com falha.
+- Multi-query/decomposição é explicitamente marcado como indisponível no contrato do laboratório.
+  Métricas de comparação são descritivas (contagens, documentos únicos, sobreposições,
+  exclusividades e mudanças de posição); scores não são tratados como diretamente comparáveis
+  nem usados para declarar vencedor.
+
+### Evidências verificadas
+
+- Suíte frontend: **99 testes Jest em 11 suites aprovados**; `npm run typecheck`, Ruff e
+  `git diff --check` aprovados após a implementação.
+- Runtime local/controlado: FastAPI em `127.0.0.1:8001`, CORS local e allowlist pública,
+  Qdrant local preservando **767 pontos**. A pergunta pública de vacinação de pessoas idosas
+  retornou respostas para Dense, Dense + rerank e Hybrid, sem envio de conteúdo `CHATSCM` ou
+  dados pessoais a provider externo. Os tempos observados foram aproximadamente 11,9 s, 47 ms
+  e 1,9 s respectivamente nessa execução; são evidência de funcionamento local, não de
+  superioridade de desempenho.
+- Expo Web carregou o Laboratório e exibiu a superfície de execução, descrições de perfis,
+  benchmark histórico DEV/HOLDOUT, definições de métricas e aviso de privacidade. A cobertura
+  automatizada inclui single/compare, retry e tratamento parcial. Na validação visual com
+  override real do viewport, `1366x768` e `1024x600` mantiveram `flexDirection=row`, enquanto
+  `390x844` e `360x800` usaram `flexDirection=column`; em todos os quatro casos
+  `scrollWidth == viewport`, sem overflow horizontal. As capturas confirmaram três colunas no
+  desktop e cartões empilhados no mobile. Network/console continuam não observáveis diretamente
+  no IAB.
+
+### Decisões e limites
+
+- O M4 mantém o backend M1 e as decisões D006–D008: os perfis são comparados como alternativas
+  instrumentais e os benchmarks DEV/HOLDOUT (`2026-09-20-v1`) permanecem evidência histórica,
+  não resultado da pergunta atual nem prova universal de qualidade.
+- A tela mostra apenas perguntas públicas e não autoriza nomes, prontuários ou outros dados
+  pessoais. Corpus, embeddings, collection Qdrant, providers, `.env` e configuração de agentes
+  não foram alterados.
+- Uso externo/produção continua **BLOCKED** por ausência de autenticação/rate limiting e pelos
+  riscos documentados de logs preexistentes de providers e prompt injection. Os quatro viewports
+  foram verificados visualmente e não apresentaram overflow horizontal; o tema claro continua
+  sem observação manual nesta sessão. Não se deve inferir comportamento do tema claro a partir
+  dos testes ou da captura em tema escuro.
+
+**Próxima pendência:** o orquestrador deve consolidar a decisão `M4 VALIDATED` apenas para
+`LOCAL/CONTROLADO`, ou `M4 BLOCKED` se outra evidência obrigatória permanecer ausente. O tema
+claro e a inspeção direta de Network/console permanecem limitações observacionais. M5 continua
+fora do escopo e não deve ser iniciado nesta sidequest.

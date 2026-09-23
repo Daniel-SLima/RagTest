@@ -135,7 +135,7 @@ export function parseDemoRunResponse(value: unknown): DemoRunResponse {
 export function parseDemoRetrievalResponse(value: unknown): DemoRetrievalResponse {
   const data = object(value)
   exact(data, ["query", "retrieval_mode", "sources", "timings"])
-  if (!Array.isArray(data.sources)) fail()
+  if (!Array.isArray(data.sources) || data.sources.length > 10) fail()
   return { query: stringValue(data.query, 2_000), retrieval_mode: mode(data.retrieval_mode), sources: data.sources.map(parseDemoSource), timings: data.timings === null ? null : parseDemoTimings(data.timings) }
 }
 

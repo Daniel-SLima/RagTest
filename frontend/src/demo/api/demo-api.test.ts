@@ -1,6 +1,6 @@
 import { createDemoApi } from "./demo-api"
 import { isDemoEnabled } from "../config"
-import { getAllowedHttpsOrigins, parseDemoRunResponse, parseDemoRuntime, validateDemoBaseUrl } from "./demo-api-validation"
+import { getAllowedHttpsOrigins, parseDemoRetrievalResponse, parseDemoRunResponse, parseDemoRuntime, validateDemoBaseUrl } from "./demo-api-validation"
 import { sanitizeDemoApiError } from "./demo-api"
 
 // TEST DATA: minimal public-shaped fixtures, never sent to an external provider.
@@ -95,6 +95,11 @@ describe("demo configuration and client", () => {
     expect(() => parseDemoRunResponse({ ...response("TEST DATA"), extra: "secret" })).toThrow()
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [Number.NaN], sources: [], timings })).toThrow()
     expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [], sources: [], timings: { ...timings, total_ms: -1 } })).toThrow()
+  })
+
+  it("caps retrieval-only sources at the backend limit", () => {
+    const sources = Array.from({ length: 11 }, (_, index) => ({ ...source, order: index + 1 }))
+    expect(() => parseDemoRetrievalResponse({ query: "TEST DATA", retrieval_mode: "dense", sources, timings })).toThrow()
   })
 
   it("rejects non-monotonic timings and grounded citation/source mismatches", () => {

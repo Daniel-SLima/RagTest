@@ -245,7 +245,7 @@ export function DemoApp({
         />
       ) : null}
       {activeTab === "how-it-works" ? <HowItWorksScreen state={state} mode={pipelineMode} presentationIndex={presentationIndex} onModeChange={setPipelineMode} onPresentationIndexChange={setPresentationIndex} /> : null}
-      {activeTab === "laboratory" ? <LaboratoryScreen /> : null}
+      {activeTab === "laboratory" ? <LaboratoryScreen api={api} apiError={configError} /> : null}
       {activeTab === "roadmap" ? <RoadmapScreen /> : null}
     </DemoShell>
   )

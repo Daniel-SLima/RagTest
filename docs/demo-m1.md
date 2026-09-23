@@ -209,3 +209,59 @@ A segurança para uso externo/produção continua **BLOCKED** por logs crus pree
 Groq/Ollama, ausência de autenticação/rate limiting e risco residual de prompt injection. M4
 continua não autorizado; não foram alterados código adicional, corpus, Qdrant, providers ou
 `.env` nesta etapa.
+
+## M4 — Laboratório experimental de retrieval (2026-09-23)
+
+### Escopo e classificação
+
+O M4 foi implementado na branch isolada `sidequest/ragtest-demo` como uma superfície de
+comparação de retrieval no Expo Web. A interface usa exclusivamente `POST /v1/demo/retrieval`
+e os três perfis já existentes (`dense`, `dense-rerank` e `hybrid`); não chama
+`POST /v1/demo/run`, não gera resposta por LLM e não altera o perfil global do backend.
+`Top K` é enviado como `limit` real, restrito a 3, 5 ou 10 na interface. A seleção é por
+execução: uma estratégia faz uma requisição e `Comparar todas` faz exatamente três requisições
+sequenciais, na ordem Dense, Dense + rerank e Hybrid.
+
+O estado da interface foi classificado como **implementado**. O contrato do cliente também
+rejeita resposta com mais de 10 fontes, consulta ou modo divergentes e ordenação inválida;
+campos nulos, inclusive scores e `generation_ms` no retrieval-only, são apresentados como
+`Não disponível`. Exemplos apenas preenchem a pergunta. Multi-query/decomposição aparece como
+indisponível no contrato do laboratório, sem simulação.
+
+### Evidências automatizadas e de runtime
+
+- 99 testes Jest aprovados em 11 suites, `npm run typecheck`, Ruff e `git diff --check`
+  aprovados após a implementação M4;
+- testes direcionados cobrem modelo de comparação, execução single/all, limite real, validação
+  de resposta, erro parcial e retry sem apagar resultados já bem-sucedidos;
+- no ambiente local/controlado, FastAPI em `127.0.0.1:8001` respondeu aos três modos com a
+  pergunta pública sobre vacinação de pessoas idosas, usando Qdrant local com **767 pontos**;
+  as respostas retornaram apenas fontes públicas allowlisted e nenhum conteúdo `CHATSCM`;
+- os tempos observados foram variáveis por modo (aproximadamente 11,9 s em Dense, 47 ms em
+  Dense + rerank e 1,9 s em Hybrid nessa execução), portanto não são ranking de desempenho;
+- a UI do Laboratório foi carregada no Expo Web com runtime local disponível. A superfície
+  vazia, controles single/compare, descrições dos perfis, métricas históricas e aviso de
+  privacidade foram observados. Na validação visual por override real do navegador, os viewports
+  `1366x768` e `1024x600` mantiveram três colunas (`flexDirection=row`), enquanto `390x844` e
+  `360x800` empilharam os cartões (`flexDirection=column`); `scrollWidth == viewport` em todos,
+  sem overflow horizontal. A inspeção direta de Network/console permanece limitada pelo IAB;
+  retry e comparação parcial têm evidência automatizada.
+
+As métricas históricas DEV/HOLDOUT são apresentadas separadamente como evidência de benchmark
+(`HitRate`, `MRR`, `SourceRecall` e `SourceNDCG`, dataset `2026-09-20-v1`), com as definições e
+fontes documentais indicadas na interface. Elas não são resultado da pergunta corrente, não
+produzem vencedor numérico e não autorizam afirmar superioridade universal de uma estratégia.
+Os tempos também são apenas descritivos e sujeitos à variabilidade do ambiente local.
+
+### Privacidade, limites e pendências
+
+O laboratório exibe aviso para usar somente perguntas públicas e não enviar nomes, prontuários
+ou dados pessoais. Não houve alteração de corpus, embeddings, collection Qdrant, providers,
+`.env` ou backend funcional; não há cache persistente. O cenário externo/produção continua
+**BLOCKED**: permanecem fora deste M4 autenticação, rate limiting, revisão dos logs preexistentes
+de providers e qualquer autorização para uso com dados privados ou exposição pública.
+
+Os quatro viewports-alvo foram observados e não apresentaram overflow horizontal. O tema claro
+continua sem validação manual nesta sessão; ausência dessa observação não é evidência de sucesso.
+O M4 não transforma os benchmarks em validação clínica nem transforma `grounded` ou scores de
+retrieval em prova de verdade.
