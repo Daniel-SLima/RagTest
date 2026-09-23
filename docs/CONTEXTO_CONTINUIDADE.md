@@ -148,10 +148,15 @@ fonte específica da sidequest.
 ### Estado e evidências
 
 - **Implementado:** a fundação visual opt-in do Expo foi integrada na branch
-  `sidequest/ragtest-demo`, com HEAD `8388f2e` (`fix: improve disabled contrast and example
-  focus`). O M2 contém as abas `Chat`, `Como funciona`, `Laboratório` e `O que ainda falta`,
-  componentes responsivos, estados vazios/neutros, catálogo de roadmap e contratos TypeScript
-  para uso futuro.
+  `sidequest/ragtest-demo`, com HEAD `ea14f8c` (`fix: complete M2 demo narrative states`). O M2
+  contém as abas `Chat`, `Como funciona`, `Laboratório` e `O que ainda falta`, componentes
+  responsivos, estados vazios/neutros, catálogo de roadmap e contratos TypeScript para uso
+  futuro. Após o QA final, a narrativa registra 11 etapas, a aba Chat mantém a ação futura
+  desabilitada, a identidade informa que a demo não é a versão final do produto Se Cuida Mulher,
+  e o Laboratório apresenta oito controles futuros desabilitados.
+- **Verificado:** os statuses públicos do roadmap permanecem fechados em `Implementado`,
+  `Parcial / em desenvolvimento`, `Planejado` e `Em estudo`; cada item mantém referência de
+  evidência e não transforma intenção em resultado.
 - **Verificado:** a flag `EXPO_PUBLIC_RAG_DEMO_ENABLED` só habilita o frontend para `true`
   após normalização `trim().toLowerCase()`; ela é independente de `DEMO_ENABLED` e
   `DEMO_ALLOWED_SOURCE_PREFIXES`. A matriz de valores falsy/ausentes e a separação entre
@@ -183,8 +188,9 @@ valor é repetido aqui; a rotação deve ocorrer antes de compartilhar qualquer 
 contenha aquela saída. Este incidente não é evidência de validação de runtime e não autoriza
 alteração de secrets, providers, Docker ou Qdrant.
 
-**Última atualização desta sidequest:** 2026-09-23 — M2 implementado no commit `8388f2e`,
-gates automatizados e bundle Expo Web sem backend verificados; M3 aguardando validação e revisão.
+**Última atualização desta sidequest:** 2026-09-23 — M2 implementado no commit `ea14f8c`,
+QA final concluído, gates automatizados e bundle Expo Web sem backend verificados; M3 aguardando
+validação e revisão.
 
 ---
 
