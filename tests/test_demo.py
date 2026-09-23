@@ -117,6 +117,12 @@ def test_demo_source_policy_rejects_traversal_absolute_and_boundary_sources(sour
     assert DemoSourcePolicy("vacinacao/").allows(source) is False
 
 
+@pytest.mark.parametrize("value", ["c:/docs/vacinacao", "C:/docs/vacinacao", "D:\\docs\\vacinacao"])
+def test_demo_source_policy_rejects_drive_paths_in_any_case(value: str) -> None:
+    assert DemoSourcePolicy(value).allows("vacinacao/guia.pdf") is False
+    assert DemoSourcePolicy("vacinacao/").allows(value + "/guia.pdf") is False
+
+
 def test_demo_sanitizers_redact_credentials_paths_and_urls() -> None:
     value = (
         "Authorization: Bearer abc123 Basic dXNlcjpwYXNz token abc123 "
@@ -130,6 +136,31 @@ def test_demo_sanitizers_redact_credentials_paths_and_urls() -> None:
     for secret in ("abc123", "dXNlcjpwYXNz", "pass", "value", "/Users/Ana", "C:\\Users", "example.test"):
         assert secret not in sanitized
     assert runtime == "configured"
+
+
+def test_demo_sanitizers_redact_marker_variants_and_rooted_paths() -> None:
+    value = (
+        "Bearer: bearer-value Basic: basic-value access_token=access-value "
+        "refresh_token=refresh-value client_secret=client-value .env.production=env-value "
+        "C:\\Users\\Ana\\My Secret\\file.txt \\rooted\\private file.txt "
+        "/Users/Ana/My Private/file.txt"
+    )
+
+    sanitized = sanitize_excerpt(value)
+
+    for secret in (
+        "bearer-value",
+        "basic-value",
+        "access-value",
+        "refresh-value",
+        "client-value",
+        "env-value",
+        "My Secret",
+        "private file.txt",
+        "/Users/Ana",
+    ):
+        assert secret not in sanitized
+    assert sanitize_runtime_label(value) == "configured"
 
 
 @pytest.mark.parametrize("value", ["/var/lib/model", "C:/Users/Ana/model", "https://example.test/model"])

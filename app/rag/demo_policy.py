@@ -8,14 +8,14 @@ from app.schemas.demo import DemoScore, DemoSource
 
 _CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]+")
 _AUTH_RE = re.compile(r"(?i)\bauthorization\s*:\s*\S+(?:\s+\S+)?")
-_AUTH_SCHEME_RE = re.compile(r"(?i)\b(?:bearer|basic)\s+\S+")
+_AUTH_SCHEME_RE = re.compile(r"(?i)\b(?:bearer|basic)\s*[:=]?\s*\S+")
 _SECRET_RE = re.compile(
-    r"(?i)\b(?:api[_ -]?key|token|secret|password)\s*(?:[:=]|\s)\s*\S+"
+    r"(?i)\b(?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|client[_ -]?secret|token|secret|password)\s*(?:[:=]|\s)\s*\S+"
 )
 _URL_RE = re.compile(r"(?i)https?://\S+")
-_WINDOWS_PATH_RE = re.compile(r"(?i)(?:[a-z]:[\\/]|\\\\)[^\s]+")
-_POSIX_PATH_RE = re.compile(r"(?<![\w:])/(?:[^\s/]+/)*[^\s]+")
-_DOTENV_RE = re.compile(r"(?i)\.env(?:\s*[:=]\s*\S+)?")
+_WINDOWS_PATH_RE = re.compile(r"(?i)(?:[a-z]:[\\/]|\\\\|\\)[^,;\r\n]+")
+_POSIX_PATH_RE = re.compile(r"(?<![\w:])/(?:[^\s/]+/)*[^,;\r\n]+")
+_DOTENV_RE = re.compile(r"(?i)\.env(?:[.\w-]*)\s*(?:[:=]\s*\S+)?")
 _PROMPT_RE = re.compile(r"(?i)(?:system|user|developer)[ _-]?prompt\s*[:=]\s*\S+")
 _TRACEBACK_RE = re.compile(r"(?i)traceback\s*\(most recent call last\).*")
 _UNSAFE_RUNTIME_RE = re.compile(
@@ -25,7 +25,7 @@ _UNSAFE_RUNTIME_RE = re.compile(
 
 def _relative_components(value: str, *, prefix: bool) -> tuple[str, ...] | None:
     normalized = value.strip().replace("\\", "/")
-    if not normalized or normalized.startswith("/") or re.match(r"^[a-z]:", normalized):
+    if not normalized or normalized.startswith("/") or re.match(r"^[a-z]:", normalized, re.IGNORECASE):
         return None
     if normalized.startswith("//"):
         return None
