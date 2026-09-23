@@ -5,6 +5,7 @@ import {
   ROADMAP_STATUSES,
   filterRoadmapItems,
   getRoadmapCounts,
+  validateRoadmapItems,
 } from "./roadmap"
 import type { RoadmapStatus } from "../types/roadmap"
 
@@ -15,6 +16,7 @@ describe("M5 roadmap catalog", () => {
       commit: "75c924c",
       version: "M5",
       date: "2026-09-23",
+      notes: "O item obsoleto do catálogo M2 foi removido por falta de requisito aprovado para a versão M5.",
     })
 
     const serialized = JSON.stringify({ snapshot: ROADMAP_SNAPSHOT, items: ROADMAP_ITEMS })
@@ -46,6 +48,7 @@ describe("M5 roadmap catalog", () => {
       expect(item.snapshotCommit).toBe(ROADMAP_SNAPSHOT.commit)
       expect(item.dependencies.every((dependency) => ids.has(dependency))).toBe(true)
     }
+    expect(ROADMAP_ITEMS.find((item) => item.id === "laboratory-m4")?.snapshotVersion).toBe("M4")
   })
 
   it("calculates status and area counts from the supplied list", () => {
@@ -72,5 +75,14 @@ describe("M5 roadmap catalog", () => {
     expect(filterRoadmapItems(ROADMAP_ITEMS, { status: "planned", area: ROADMAP_AREAS[0] }).every((item) => item.status === "planned" && item.area === ROADMAP_AREAS[0])).toBe(true)
     expect(filterRoadmapItems(ROADMAP_ITEMS, { status: "all", area: "missing-area" })).toEqual([])
     expect(ROADMAP_ITEMS).toEqual(original)
+  })
+
+  it("rejects duplicate IDs, orphan dependencies, empty evidence, and missing required text", () => {
+    const valid = ROADMAP_ITEMS[0]
+    expect(() => validateRoadmapItems([valid, { ...valid }])).toThrow(/duplicated/)
+    expect(() => validateRoadmapItems([{ ...valid, id: "orphan-owner", dependencies: ["missing"] }])).toThrow(/not found/)
+    expect(() => validateRoadmapItems([{ ...valid, id: "empty-evidence", evidence: [] }])).toThrow(/no evidence/)
+    expect(() => validateRoadmapItems([{ ...valid, id: "empty-title", title: "" }])).toThrow(/required/)
+    expect(() => validateRoadmapItems([{ ...valid, id: "empty-evidence-text", evidence: [{ ...valid.evidence[0], reference: "" }] }])).toThrow(/evidence field/)
   })
 })

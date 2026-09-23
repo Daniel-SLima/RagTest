@@ -11,6 +11,7 @@ export const ROADMAP_SNAPSHOT: RoadmapSnapshot = {
   commit: "75c924c",
   version: "M5",
   date: "2026-09-23",
+  notes: "O item obsoleto do catálogo M2 foi removido por falta de requisito aprovado para a versão M5.",
 }
 
 export const ROADMAP_STATUSES: readonly RoadmapStatus[] = ["implemented", "partial", "planned", "research"]
@@ -88,18 +89,18 @@ export const ROADMAP_ITEMS: readonly RoadmapItem[] = [
     id: "laboratory-m4",
     area: "Laboratório experimental",
     title: "Laboratório de comparação de retrieval",
-    status: "planned",
-    simpleExplanation: "A demo reserva uma área para comparar estratégias, mas essa execução ainda não faz parte do produto verificado.",
-    technicalExplanation: "O plano M4 descreve Dense, Dense+rerank, Hybrid, Top K e multi-query como controles futuros sujeitos a contratos e segurança próprios.",
+    status: "implemented",
+    simpleExplanation: "A demo compara estratégias de retrieval em ambiente local/controlado, sem gerar resposta por LLM.",
+    technicalExplanation: "O Laboratório usa Dense, Dense + rerank e Hybrid, envia Top K como limit real e valida respostas, comparação, erros parciais e retry; multi-query permanece indisponível.",
     whyItMatters: "Comparações reproduzíveis ajudam a explicar o efeito de estratégias de retrieval.",
-    whyMissing: "A fronteira M4 continua planejada e não autoriza novas chamadas ou expansão do backend nesta versão.",
-    dependencies: ["retrieval-evaluation", "production-security"],
+    whyMissing: "A validação é somente local/controlada: uso externo, autenticação, rate limiting, logs de providers e uso com dados privados continuam bloqueados.",
+    dependencies: ["retrieval-evaluation"],
     evidence: [
-      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:241-245", label: "Próxima fronteira M4 documentada" },
-      { kind: "document", reference: "docs/superpowers/plans/2026-09-23-ragtest-demo-m4.md:16-18", label: "Limites do plano M4" },
+      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:2773-2828", label: "M4 validado localmente/controlado" },
+      { kind: "document", reference: "docs/demo-m1.md:213-267", label: "Escopo, testes e limites do Laboratório M4" },
     ],
-    origin: "docs/CONTEXTO_CONTINUIDADE.md e docs/superpowers/plans/2026-09-23-ragtest-demo-m4.md",
-    snapshotVersion: "M2",
+    origin: "docs/CONTEXTO_CONTINUIDADE.md e docs/demo-m1.md",
+    snapshotVersion: "M4",
   }),
   item({
     id: "backend-sessions",
@@ -160,29 +161,29 @@ export const ROADMAP_ITEMS: readonly RoadmapItem[] = [
     technicalExplanation: "O projeto exige revisão manual antes de enviar conteúdo privado a providers e explicita que grounding estrutural não prova segurança clínica ou entailment.",
     whyItMatters: "O domínio de saúde exige separar evidência técnica de autorização, política clínica e proteção de dados.",
     whyMissing: "Ainda é necessária uma avaliação especializada de privacidade, LGPD, política clínica e operação com dados reais.",
-    dependencies: ["production-security", "document-base"],
+    dependencies: ["production-security"],
     evidence: [
-      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:226-239", label: "Limites de privacidade e operação local" },
-      { kind: "document", reference: "docs/decisoes-tecnicas.md:305-307", label: "Separação entre módulo e aplicativo" },
+      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:510-520", label: "Regra de privacidade do projeto" },
+      { kind: "document", reference: "docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md:166-175", label: "Limitações de autenticação e controles finais de LGPD" },
     ],
-    origin: "docs/CONTEXTO_CONTINUIDADE.md e docs/decisoes-tecnicas.md",
+    origin: "docs/CONTEXTO_CONTINUIDADE.md e docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md",
     snapshotVersion: "M2",
   }),
   item({
     id: "specialized-evaluation",
     area: "Avaliação especializada e usabilidade",
     title: "Avaliação especializada e usabilidade",
-    status: "research",
+    status: "planned",
     simpleExplanation: "Métricas técnicas existem, mas avaliação com especialistas, usuárias e cenários de uso ainda precisa ser definida.",
     technicalExplanation: "O histórico prioriza métricas de retrieval e mantém avaliação/usabilidade como etapa futura, sem transformar observação visual em evidência clínica.",
     whyItMatters: "Qualidade de busca não substitui adequação linguística, usabilidade ou revisão especializada em saúde.",
     whyMissing: "Faltam protocolo aprovado, participantes, critérios especializados e validação ética/operacional para essa frente.",
-    dependencies: ["retrieval-evaluation", "privacy-lgpd"],
+    dependencies: ["retrieval-evaluation"],
     evidence: [
-      { kind: "document", reference: "README.md:118-122", label: "Evolução das métricas de avaliação" },
-      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:2050-2058", label: "Avaliação e usabilidade como etapa futura" },
+      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:1936-1940", label: "Roadmap 0.9.x de avaliação e usabilidade" },
+      { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:2050-2058", label: "Avaliação e usabilidade classificadas como futuras" },
     ],
-    origin: "README.md e docs/CONTEXTO_CONTINUIDADE.md",
+    origin: "docs/CONTEXTO_CONTINUIDADE.md",
     snapshotVersion: "M2",
   }),
   item({
@@ -194,7 +195,7 @@ export const ROADMAP_ITEMS: readonly RoadmapItem[] = [
     technicalExplanation: "A arquitetura mantém o backend desacoplado do Expo; identidade, fluxos institucionais e ações do aplicativo dependem do sistema integrador.",
     whyItMatters: "A integração é o destino de produto documentado para o módulo do TCC.",
     whyMissing: "Não há acesso ao aplicativo final nem decisão aprovada sobre identidade, agendamento, links ou notificações.",
-    dependencies: ["rag-api", "backend-sessions", "production-security", "privacy-lgpd"],
+    dependencies: ["rag-api"],
     evidence: [
       { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:344-361", label: "Objetivo de integração documentado" },
       { kind: "document", reference: "README.md:1-24", label: "Módulo portável e cliente demonstrativo" },
@@ -211,7 +212,7 @@ export const ROADMAP_ITEMS: readonly RoadmapItem[] = [
     technicalExplanation: "O design 0.7.0-A define eventos sem perguntas, respostas, prompts ou excerpts, mantendo o sink desacoplado do fluxo principal.",
     whyItMatters: "Auditoria limitada e sanitizada favorece diagnóstico sem transformar conteúdo de saúde em log.",
     whyMissing: "A implementação e sua validação ainda aguardam retomada autorizada da versão 0.7.0-A.",
-    dependencies: ["production-security", "backend-sessions"],
+    dependencies: ["production-security"],
     evidence: [
       { kind: "document", reference: "docs/superpowers/specs/2026-09-22-auditoria-estruturada-0.7.0-a-design.md:90-148", label: "Design de auditoria estruturada" },
       { kind: "document", reference: "docs/CONTEXTO_CONTINUIDADE.md:35-38", label: "Implementação da auditoria pausada" },
@@ -229,7 +230,12 @@ export function validateRoadmapItems(items: readonly RoadmapItem[]): void {
     if (ids.has(roadmapItem.id)) throw new Error(`Roadmap item id duplicated: ${roadmapItem.id}`)
     ids.add(roadmapItem.id)
     if (!ROADMAP_STATUSES.includes(roadmapItem.status)) throw new Error(`Unknown roadmap status: ${roadmapItem.status}`)
+    const requiredText = [roadmapItem.id, roadmapItem.area, roadmapItem.title, roadmapItem.simpleExplanation, roadmapItem.technicalExplanation, roadmapItem.whyItMatters, roadmapItem.origin, roadmapItem.snapshotVersion, roadmapItem.snapshotCommit]
+    if (requiredText.some((value) => value.trim().length === 0)) throw new Error(`Roadmap item required field is empty: ${roadmapItem.id}`)
     if (roadmapItem.evidence.length === 0) throw new Error(`Roadmap item has no evidence: ${roadmapItem.id}`)
+    if (roadmapItem.evidence.some((evidence) => [evidence.kind, evidence.reference, evidence.label].some((value) => value.trim().length === 0))) {
+      throw new Error(`Roadmap evidence field is empty: ${roadmapItem.id}`)
+    }
   }
   for (const roadmapItem of items) {
     for (const dependency of roadmapItem.dependencies) {

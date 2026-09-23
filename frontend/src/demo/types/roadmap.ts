@@ -28,6 +28,7 @@ export type RoadmapSnapshot = {
   commit: string
   version: string
   date: string
+  notes: string
 }
 
 export type RoadmapCounts = {
