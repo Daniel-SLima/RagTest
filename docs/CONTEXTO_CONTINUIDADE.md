@@ -305,6 +305,40 @@ Pendências importantes: observar individualmente `1366x768`, `1024x600`, `390x8
 validar manualmente o tema claro; demonstrar retry live independente; e inspecionar diretamente
 Network/console no DevTools. O gate M3.5 não altera corpus, embeddings, Qdrant ou providers.
 
+## Atualização de continuidade — gate M3.6 da sidequest Demo (2026-09-23)
+
+O gate M3.6 complementa o registro M3.5. O ponto de partida documental foi `d24c76a`; a
+correção funcional `62a2983` tratou títulos longos no viewport de 360 px. Nenhum código fora
+dessa correção, corpus, Qdrant, provider ou `.env` foi alterado nesta validação.
+
+### Validação visual
+
+Após `62a2983`, os quatro viewports foram observados individualmente com resultado **PASS**:
+`1366x768`, `1024x600`, `390x844` e `360x800`. O tema claro não foi observável manualmente na
+sessão: o IAB/OS permaneceu em tema escuro e não havia emulação disponível. Portanto, tema claro
+continua **pendente**, não verificado.
+
+### Retry live e requisições
+
+Com a API interrompida, a interface exibiu erro amigável; depois da restauração, um único retry
+explícito gerou o segundo `POST`, obteve sucesso e não duplicou a execução. A tentativa com a API
+parada não chegou ao backend. As contagens observadas foram: um `GET /v1/demo/runtime` por
+montagem, primeiro `POST` acompanhado de preflight `OPTIONS` e segundo `POST` no retry.
+
+As 11 etapas do pipeline corresponderam ao novo run. Troca de abas, pipeline e modos de
+apresentação não produziram novos runs.
+
+### Observabilidade e segurança
+
+DevTools Network/Console não foram observáveis diretamente porque o IAB não ofereceu CDP e o
+Chrome estava indisponível. A inspeção estática do frontend e o comportamento sanitizado
+permanecem **PASS** dentro dessa limitação.
+
+O bloqueio de segurança externo/produção permanece: logs crus preexistentes de Groq/Ollama,
+ausência de autenticação/rate limiting e risco residual de prompt injection. M4 continua não
+autorizado. O tema claro e a inspeção direta de Network/Console seguem como pendências distintas,
+sem rebaixar os quatro viewports e o retry que foram observados como PASS.
+
 ---
 
 ## 1. Objetivo final do projeto

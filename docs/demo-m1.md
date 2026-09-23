@@ -175,3 +175,37 @@ logs crus preexistentes de Groq/Ollama, ausência de autenticação e rate limit
 residual de prompt injection. Manter `DEMO_ENABLED=false` fora de ambiente local controlado e
 nunca usar dados pessoais ou `CHATSCM`. M4 não está autorizado; o Laboratório, seus controles e
 qualquer expansão de backend continuam apenas planejados.
+
+### M3.6 — fechamento visual e retry live local
+
+Status: **PASS local/controlado**, com HEAD inicial documental `d24c76a` e correção funcional
+`62a2983` para títulos longos no viewport de 360 px. Esta validação não autoriza operação
+externa/produção nem M4.
+
+#### Viewports e tema
+
+Após a correção de títulos longos, foram observados como **PASS** os quatro viewports-alvo:
+`1366x768`, `1024x600`, `390x844` e `360x800`. O tema claro não foi observado manualmente nesta
+sessão: o IAB/OS permaneceu em tema escuro e não havia emulação disponível; portanto essa
+evidência continua **pendente**, sem ser convertida em sucesso.
+
+#### Retry e contagem de requests
+
+Com a API interrompida, a interface exibiu erro amigável; após a restauração, um único retry
+explícito gerou um segundo `POST`, obteve sucesso e não produziu duplicação. A tentativa feita
+com a API parada não chegou ao backend. No fluxo observado, houve um `GET /v1/demo/runtime` por
+montagem, o primeiro `POST` com preflight `OPTIONS` e o segundo `POST` do retry.
+
+O pipeline exibiu 11 etapas correspondentes ao novo run. A navegação, os modos de apresentação e
+as abas não iniciaram execuções adicionais.
+
+#### Observabilidade e segurança
+
+DevTools Network/Console não foram observáveis diretamente: o IAB não ofereceu CDP e o Chrome
+estava indisponível. A inspeção estática do frontend e o comportamento sanitizado observado
+permanecem **PASS** dentro desse limite.
+
+A segurança para uso externo/produção continua **BLOCKED** por logs crus preexistentes de
+Groq/Ollama, ausência de autenticação/rate limiting e risco residual de prompt injection. M4
+continua não autorizado; não foram alterados código adicional, corpus, Qdrant, providers ou
+`.env` nesta etapa.
