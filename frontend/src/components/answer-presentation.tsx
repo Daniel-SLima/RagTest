@@ -5,7 +5,7 @@ export type AnswerPresentationSource = { key: string; citationLabel?: string; do
 export type AnswerPresentationModel = { answer: string; grounded: boolean; sources: AnswerPresentationSource[]; sourcesTitle: string; showCitationId: boolean }
 function sourceFilename(source: string): string { return source.replaceAll("\\", "/").split("/").filter(Boolean).at(-1) ?? source }
 function GroundingStatus({ grounded, hasSources }: { grounded: boolean; hasSources: boolean }) {
-  if (grounded) return <View style={[styles.groundingCard, styles.groundingVerified]}><Text style={styles.groundingTitle}>Citações verificadas</Text><Text style={styles.groundingText}>As afirmações informativas estão acompanhadas de referências do corpus.</Text><Text style={styles.groundingText}>Isso representa cobertura estrutural de citações, não garantia clínica.</Text></View>
+  if (grounded) return <View style={[styles.groundingCard, styles.groundingVerified]}><Text style={styles.groundingTitle}>Citações verificadas</Text><Text style={styles.groundingText}>As afirmações informativas estão acompanhadas de referências do corpus.</Text></View>
   if (hasSources) return <View style={[styles.groundingCard, styles.groundingWarning]}><Text style={styles.groundingTitle}>Citações não verificadas</Text><Text style={styles.groundingText}>Não foi possível validar as citações desta resposta. Consulte as fontes recuperadas abaixo.</Text></View>
   return <View style={[styles.groundingCard, styles.groundingWarning]}><Text style={styles.groundingTitle}>Sem base documental suficiente</Text><Text style={styles.groundingText}>Não foram encontrados trechos relevantes o bastante para fundamentar uma resposta.</Text></View>
 }
