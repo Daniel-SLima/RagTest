@@ -1,5 +1,6 @@
 import { createDemoApi } from "./demo-api"
 import { isDemoEnabled } from "../config"
+import { getAllowedHttpsOrigins, parseDemoRunResponse, validateDemoBaseUrl } from "./demo-api-validation"
 
 // TEST DATA: minimal public-shaped fixtures, never sent to an external provider.
 const runtime = { version: "M1", provider: "none", model: "none", embedding: "none", retrieval: "dense", collection: "public", demo_enabled: true, policy_id: "local", policy_status: "configured" as const }
@@ -9,6 +10,20 @@ const TEST_DATA = "TEST DATA"
 const response = (body: unknown, ok = true, status = 200) => ({ ok, status, json: async () => body }) as Response
 
 describe("demo configuration and client", () => {
+  it.each(["http://localhost:8000/", "http://127.0.0.1:8000", "http://127.0.0.1:65535", "http://192.168.1.20:8000", "http://[::1]:8000"]) ("accepts safe base URL %s", (value) => {
+    expect(validateDemoBaseUrl(value)).toMatch(/^http:\/\//)
+  })
+
+  it.each(["http://8.8.8.8", "http://[2001:db8::1]:8000", "http://127.0.0.1:0", "http://127.0.0.1:65536", "file:///tmp/demo", "http://user:pass@127.0.0.1", "http://127.0.0.1?token=x", "http://127.0.0.1#fragment"]) ("rejects unsafe base URL %s", (value) => {
+    expect(() => validateDemoBaseUrl(value)).toThrow()
+  })
+
+  it("allows only explicitly listed HTTPS origins", () => {
+    expect(getAllowedHttpsOrigins("https://localhost:8443,*,https://example.com/path")).toEqual(["https://localhost:8443"])
+    expect(validateDemoBaseUrl("https://localhost:8443", { allowedHttpsOrigins: ["https://localhost:8443"] })).toBe("https://localhost:8443")
+    expect(() => validateDemoBaseUrl("https://example.com", { allowedHttpsOrigins: [] })).toThrow()
+    expect(() => validateDemoBaseUrl("https://localhost:9443", { allowedHttpsOrigins: ["https://localhost:8443"] })).toThrow()
+  })
   it.each([undefined, "", "false", "1", "yes"]) ("keeps demo disabled for %p", (value) => expect(isDemoEnabled(value)).toBe(false))
   it.each(["TRUE", " true "]) ("enables demo only for normalized true %p", (value) => expect(isDemoEnabled(value)).toBe(true))
 
@@ -73,5 +88,11 @@ describe("demo configuration and client", () => {
     const pending = api.getRuntime()
     await expect(pending).rejects.toMatchObject({ code: "demo_api_error", status: 500 })
     await expect(pending).rejects.not.toHaveProperty("testData")
+  })
+
+  it("rejects closed DTO violations and non-finite values", () => {
+    expect(() => parseDemoRunResponse({ ...response("TEST DATA"), extra: "secret" })).toThrow()
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [Number.NaN], sources: [], timings })).toThrow()
+    expect(() => parseDemoRunResponse({ answer: "TEST DATA", model: "TEST DATA", grounded: true, citation_ids: [], sources: [], timings: { ...timings, total_ms: -1 } })).toThrow()
   })
 })

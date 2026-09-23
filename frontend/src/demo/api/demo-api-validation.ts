@@ -180,7 +180,7 @@ export function validateDemoBaseUrl(value: string, options: { allowedHttpsOrigin
       if (!(options.allowedHttpsOrigins ?? []).includes(normalized)) throw new Error()
     } else {
       const host = parsed.hostname.toLowerCase()
-      if (!(host === "localhost" || host === "::1" || isPrivateIPv4(host))) throw new Error()
+      if (!(host === "localhost" || host === "::1" || host === "[::1]" || isPrivateIPv4(host))) throw new Error()
     }
     return normalized
   } catch { throw { code: "invalid_demo_base_url", status: null, message: "URL do serviço de demonstração inválida." } satisfies DemoApiError }
