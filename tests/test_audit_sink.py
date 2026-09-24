@@ -4,11 +4,11 @@ from datetime import UTC, datetime
 from unittest.mock import Mock
 from uuid import UUID
 
-from app.observability import audit
+from app.observability.audit import AuditEvent, AuditSink, JsonLogAuditSink, safe_emit
 
 
-def make_completed_event() -> audit.AuditEvent:
-    return audit.AuditEvent(
+def make_completed_event() -> AuditEvent:
+    return AuditEvent(
         event_id=UUID("00000000-0000-0000-0000-000000000002"),
         timestamp=datetime(2026, 9, 24, 12, 0, tzinfo=UTC),
         request_id=UUID("00000000-0000-0000-0000-000000000001"),
@@ -28,9 +28,7 @@ def make_completed_event() -> audit.AuditEvent:
 
 def test_json_sink_emits_one_parseable_deterministic_line(caplog) -> None:
     event = make_completed_event()
-    sink_type = getattr(audit, "JsonLogAuditSink", None)
-    assert sink_type is not None
-    sink = sink_type()
+    sink = JsonLogAuditSink()
 
     with caplog.at_level(logging.INFO, logger="ragtest.audit"):
         sink.emit(event)
@@ -44,16 +42,35 @@ def test_json_sink_emits_one_parseable_deterministic_line(caplog) -> None:
     assert "excerpt" not in record.message
 
 
-def test_sink_failure_is_swallowed_and_does_not_log_exception_text(caplog) -> None:
-    sink = Mock()
-    sink.emit.side_effect = RuntimeError("PROMPT_SECRET EXCERPT_SECRET")
+def test_safe_emit_returns_true_and_calls_compatible_sink_once() -> None:
+    sink = Mock(spec=AuditSink)
     event = make_completed_event()
 
+    assert safe_emit(sink, event) is True
+
+    sink.emit.assert_called_once_with(event)
+
+
+def test_sink_failure_is_swallowed_and_does_not_log_exception_text(caplog) -> None:
+    sink = Mock(spec=AuditSink)
+    sink.emit.side_effect = RuntimeError("PROMPT_SECRET EXCERPT_SECRET")
+    event = make_completed_event()
+    event_json = event.to_json()
+    event_repr = repr(event)
+
     with caplog.at_level(logging.WARNING, logger="ragtest.audit.internal"):
-        safe_emit = getattr(audit, "safe_emit", None)
-        assert safe_emit is not None
         assert safe_emit(sink, event) is False
 
-    assert "PROMPT_SECRET" not in caplog.text
-    assert "EXCERPT_SECRET" not in caplog.text
-    assert "RuntimeError" in caplog.text
+    internal_records = [
+        record for record in caplog.records if record.name == "ragtest.audit.internal"
+    ]
+    assert len(internal_records) == 1
+    record = internal_records[0]
+    message = record.getMessage()
+    assert record.name == "ragtest.audit.internal"
+    assert message == "audit sink emission failed: RuntimeError"
+    assert "PROMPT_SECRET" not in message
+    assert "EXCERPT_SECRET" not in message
+    assert event_json not in message
+    assert event_repr not in message
+    assert not [record for record in caplog.records if record.name == "ragtest.audit"]

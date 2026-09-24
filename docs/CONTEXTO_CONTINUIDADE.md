@@ -2562,8 +2562,18 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - `JsonLogAuditSink` envia somente `AuditEvent.to_json()` ao logger `ragtest.audit`;
 - `safe_emit` captura falhas do sink, retorna `False` e registra somente diagnóstico fixo com o
   nome do tipo da exceção no logger `ragtest.audit.internal`;
-- testes direcionados: 2 passaram; suíte backend: 185 passaram; Ruff completo aprovado;
+- após revisão de cobertura: 3 testes direcionados passaram; suíte backend: 186 passaram; Ruff
+  completo aprovado;
 - nenhum provider, segredo, rota, middleware, CORS, Qdrant, corpus, embedding, retrieval ou
   frontend foi alterado;
 - integração em app state/rotas e fallback de falhas permanecem nas Tasks seguintes;
 - próximo passo executável: Task 3, request ID/middleware e exposição CORS.
+
+#### Fix de cobertura da revisão da Task 2 — 2026-09-24
+
+- `tests/test_audit_sink.py` passou a importar diretamente `AuditSink`, `JsonLogAuditSink` e
+  `safe_emit`;
+- o caminho de sucesso verifica retorno `True` e exatamente uma chamada ao sink compatível;
+- o caminho de falha verifica logger, mensagem fixa, ausência de sentinelas, JSON, `repr(event)` e
+  qualquer registro em `ragtest.audit`;
+- nenhum arquivo de produção foi alterado.
