@@ -2577,3 +2577,18 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - o caminho de falha verifica logger, mensagem fixa, ausência de sentinelas, JSON, `repr(event)` e
   qualquer registro em `ragtest.audit`;
 - nenhum arquivo de produção foi alterado.
+
+### Task 3 da auditoria estruturada 0.7.0-A — 2026-09-24
+
+- implementado `RequestContextMiddleware` em `app/observability/middleware.py`, gerando um UUID
+  backend-owned por requisição, ignorando `X-Request-ID` recebido e instalando `request_id`, início
+  monotônico, duração e marcador mínimo de auditoria no `request.state`;
+- toda resposta recebe `X-Request-ID`, inclusive respostas de validação; o middleware não lê o
+  corpo da requisição;
+- CORS preserva as origens e métodos explícitos existentes e expõe somente `X-Request-ID` em uma
+  resposta cross-origin real; preflight continua coberto por política de origem/método;
+- testes direcionados: 8 passaram; suíte backend: 191 passaram; Ruff completo aprovado;
+- nenhum provider, segredo, retrieval, corpus, embedding, Qdrant, frontend ou evento de sessão/chat
+  foi integrado nesta task;
+- o relatório operacional da task deve ser mantido no diretório SDD; próximo passo executável:
+  Task 4, normalização segura de erros.

@@ -11,6 +11,7 @@ from app.api.routes.sessions import router as sessions_router
 from app.conversation.service import ConversationService
 from app.conversation.sqlite_store import SQLiteSessionStore
 from app.core.config import get_settings
+from app.observability.middleware import RequestContextMiddleware
 from app.services.qdrant_service import QdrantService
 
 
@@ -50,7 +51,9 @@ def create_app() -> FastAPI:
         allow_credentials=False,
         allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type"],
+        expose_headers=["X-Request-ID"],
     )
+    application.add_middleware(RequestContextMiddleware)
     application.include_router(health_router)
     application.include_router(search_router)
     application.include_router(chat_router)
