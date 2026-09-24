@@ -28,8 +28,8 @@
 - Corpus, embeddings e Qdrant: **inalterados**
 - O `origin/main` remoto permanece em `4badc96`; o workspace local está deliberadamente à frente.
 - Branch atual: `feature/audit-0.7.0`.
-- HEAD local: `eb17d28`, contendo a especificação da auditoria estruturada 0.7.0-A; a implementação
-  funcional da auditoria está pausada.
+- A branch local contém a especificação aprovada da auditoria estruturada 0.7.0-A e o contrato
+  imutável `AuditEvent` da Task 1 (commit `a8d9dd5`); as Tasks 2–8 permanecem pendentes.
 - Não existe branch remota nem PR correspondente a `feature/audit-0.7.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
@@ -2539,3 +2539,17 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - branch criada: `feature/sessions-0.6.0`;
 - design escrito aprovado pelo usuário em 2026-09-22;
 - próximo passo: revisar o plano TDD antes de iniciar qualquer código funcional.
+
+### Task 1 da auditoria estruturada 0.7.0-A — 2026-09-24
+
+- commit local: `a8d9dd5` (`feat: define minimized audit event contract`);
+- implementado `AuditEvent` imutável e fechado em runtime, com `AuditEventType`, `AuditOutcome` e
+  `AuditOperation`;
+- serialização determinística com timestamp UTC, UUIDs, omissão de nulos e somente campos
+  allowlisted; durações e contagens não negativas;
+- testes direcionados: 12 passaram; suíte backend: 161 passaram; Ruff focado: aprovado;
+- nenhuma rota, middleware, provider, CORS, Qdrant, corpus, embedding ou dependência foi alterada;
+- sink, middleware, integração de rotas, normalização de falhas e documentação pública completa
+  permanecem nas Tasks seguintes;
+- próximo passo executável: Task 2, sink JSON e emissão não bloqueante, sempre preservando o
+  contrato fechado criado aqui.
