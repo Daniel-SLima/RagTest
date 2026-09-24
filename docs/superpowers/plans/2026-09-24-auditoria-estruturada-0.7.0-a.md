@@ -18,7 +18,7 @@
 - Eventos e logs de auditoria não podem conter pergunta, resposta, prompt, histórico, excerpt, source, filename, conteúdo documental, headers de autorização, API keys, tokens, URLs com credenciais, corpo HTTP bruto ou traceback com esses valores.
 - `JsonLogAuditSink` escreve uma linha JSON parseável no logger `ragtest.audit`; falha de emissão é registrada somente como diagnóstico sanitizado no logger `ragtest.audit.internal`.
 - `chat.completed` de uma sessão só é emitido depois da persistência bem-sucedida do turno; falha de persistência produz `chat.failed` e não cria turno parcial.
-- Cada `POST /v1/chat` produz no máximo um evento de auditoria: exatamente um `chat.completed` ou `chat.failed` quando o request alcança a API, inclusive 422 e falha de dependência.
+- Cada `POST /v1/chat` produz no máximo uma tentativa de evento terminal e no máximo um registro terminal observado: `chat.completed` ou `chat.failed` quando o request alcança a API, inclusive 422 e falha de dependência. Se o sink falhar, a tentativa única é não bloqueante e nenhum registro observado é prometido.
 - A emissão de auditoria nunca chama o LLM, retrieval, embeddings, Qdrant ou fallback de provider.
 - Não usar `ragtest-ingest --recreate`, `docker compose down -v`, reindexação, alteração de parâmetros de retrieval, alteração de embeddings, alteração do corpus ou mutação da collection `ragtest_documents`.
 - Testes não usam provider externo nem conteúdo de `data/source/chatscm/*.docx`.
@@ -37,14 +37,14 @@
 
 Os pontos abaixo são decisões de contrato propostas pela revisão. Devem ser confirmados pelo usuário antes da implementação funcional; o plano já assume estes valores para evitar ambiguidade:
 
-1. `AuditEvent` será uma dataclass `frozen=True, slots=True`, sem campos extras, com `event_id`, `timestamp`, `request_id`, `event_type`, `outcome`, `operation` e `duration_ms` obrigatórios. `session_id`, `provider`, `model`, `status_code`, `error_code`, `error_type`, `grounded`, `source_count`, `citation_count`, `citation_retry_count`, `retrieval_query_count` e `turn_count` serão opcionais e omitidos do JSON quando `None`.
+1. `AuditEvent` será uma dataclass `frozen=True, slots=True`, sem campos extras, com `event_id`, `timestamp`, `request_id`, `event_type`, `outcome`, `operation` e `duration_ms` obrigatórios. `session_id`, `provider`, `model`, `status_code`, `error_code`, `error_type`, `grounded`, `source_count`, `citation_count`, `citation_retry_count`, `retrieval_query_count` e `turn_count` serão opcionais e omitidos do JSON quando `None`; os valores serão validados contra a taxonomia fechada e contagens não serão negativas.
 2. `timestamp` será timezone-aware UTC serializado em ISO-8601 com sufixo `Z`; `duration_ms` será inteiro não negativo calculado com `time.monotonic()` e arredondamento determinístico ao milissegundo.
 3. `event_type` será limitado a `session.created`, `session.read`, `session.deleted`, `chat.completed` e `chat.failed`; `outcome` será `success` ou `failure`; `operation` será limitado a `session.create`, `session.read`, `session.delete` e `chat`.
-4. A taxonomia mínima será: `404/session_not_found/session`, `409/session_busy|session_conflict/session`, `410/session_expired/session`, `422/validation_error/validation`, `502/provider_error|internal_error/provider|unhandled`, `503/provider_unavailable/provider`. O status HTTP público continuará seguro e compatível com a semântica 0.6.0; qualquer mudança adicional de status exigirá decisão separada.
+4. A taxonomia mínima será: `404/session_not_found/session`, `409/session_busy|session_conflict/session`, `410/session_expired/session`, `422/validation_error/validation`, `502/provider_error|internal_error/provider|unhandled`, `503/provider_unavailable/provider`. Os status de sessão 0.6.0 permanecem; provider/bad-gateway e falhas inesperadas de chat usam `502` com detalhe fixo, provider indisponível usa `503` com detalhe fixo. Essa decisão de contrato foi aprovada junto com o plano para eliminar o vazamento de `RuntimeError` cru.
 5. Falhas de validação e dependência antes da função da rota serão cobertas pelo middleware de auditoria como `chat.failed`, sem copiar o `detail` do FastAPI ou da exceção.
 6. `provider` será somente o rótulo configurado (`gemini`, `groq` ou `ollama`) e `model` somente o nome configurado; não serão derivados de URL, payload, headers ou resposta do provider.
 7. `JsonLogAuditSink` usará `json.dumps(..., sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)` e emitirá exatamente uma string sem quebra de linha no logger `ragtest.audit`.
-8. A sanitização dos erros/logs crus de Groq/Ollama é parte mínima da 0.7.0-A (decisão A deste pedido), porque o fluxo de `chat.failed` e o critério de ausência de conteúdo não podem coexistir com corpo HTTP bruto, `str(exc)` bruto ou traceback de provider. Governança ampla dos logs permanece em 0.7.0-B.
+8. A sanitização dos erros/logs crus de Groq/Ollama é parte mínima da 0.7.0-A (decisão A deste pedido), porque o fluxo de `chat.failed` e o critério de ausência de conteúdo não podem coexistir com corpo HTTP bruto, `str(exc)` bruto ou traceback de provider. Governança ampla dos logs, source-egress, autenticação, retenção e LGPD permanece em 0.7.0-B.
 
 ## Mapa de arquivos
 
@@ -340,7 +340,7 @@ Arquivos modificados:
 
 - [ ] **Step 3: Implement middleware and registration**
 
-  Generate `uuid4()` per request, ignore the incoming header, set `request.state.request_id`, measure elapsed time with `time.monotonic()`, set `X-Request-ID` on every response returned by the app, and add `expose_headers=["X-Request-ID"]` to CORS. Preserve the existing allowed origins and methods.
+  Generate `uuid4()` per request, ignore the incoming header, set `request.state.request_id`, measure elapsed time with `time.monotonic()`, set `X-Request-ID` on every response returned by the app, and add `expose_headers=["X-Request-ID"]` to CORS. Preserve the existing allowed origins and methods. Test exposure on a real cross-origin response; preflight tests continue to assert only origin/method policy.
 
 - [ ] **Step 4: Run the focused test to verify GREEN**
 
@@ -651,7 +651,7 @@ Arquivos modificados:
 
 - [ ] **Step 3: Add one-emission state and middleware fallback**
 
-  Route-level success/failure paths set `request.state.audit_event_emitted=True` before `safe_emit`. The middleware checks `/v1/chat` responses after `call_next`; if no event was marked and the response status is 4xx/5xx, it emits one failure using only status-to-class mapping. It must not copy response bodies or validation details.
+  Route-level success/failure paths set `request.state.audit_event_emitted=True` before `safe_emit`. The middleware checks `/v1/chat` responses after `call_next`; if no event was marked and the response status is 4xx/5xx, it emits one failure using only status-to-class mapping. If `call_next` raises before returning a response, the middleware returns a fixed safe error response for `/v1/chat`, emits the same single fallback failure and preserves the request ID. It must not copy response bodies or validation details.
 
 - [ ] **Step 4: Preserve leases and responses when the sink fails**
 
@@ -729,7 +729,7 @@ The implementation is accepted only when all conditions below are evidenced by t
 
 1. `AuditEvent` is immutable, typed, closed and serializes deterministically with UTC timestamp, UUIDs and non-negative duration.
 2. JSON events contain only the allowlisted fields and never contain question, answer, prompt, history, excerpt, source, filename, provider body, authorization, API key, token or traceback content.
-3. `JsonLogAuditSink` emits one parseable line to `ragtest.audit`; sink failure is swallowed and its internal log contains no event or exception text.
+3. `JsonLogAuditSink` emits one parseable line to `ragtest.audit`; sink failure is swallowed, not retried, and its internal log contains no event or exception text. A failed sink may result in zero observed records, while the request has at most one terminal emission attempt.
 4. Every response, including 4xx/5xx, has a backend-generated UUID in `X-Request-ID`; a client-supplied ID is ignored; Expo Web can read the response header through CORS exposure.
 5. Successful session create/read/delete operations emit the corresponding event only after success; `session.read` carries only `turn_count` and no turn content.
 6. Stateless and session chat success emit `chat.completed`; the session variant emits only after turn persistence.
@@ -761,4 +761,3 @@ Pause and ask the user before:
 - Placeholder scan: all implementation steps name files, interfaces, commands and expected outcomes; no `TBD`, `TODO` or unspecified edge-case instruction is required.
 - Type consistency: later tasks consume `AuditEvent`, `AuditSink`, `safe_emit`, `NormalizedError` and middleware state defined in earlier tasks.
 - Review focus: provider-error sentinels (Task 4), pre-route errors (Tasks 3 and 7), sink failure (Task 7), spoofed request ID (Task 3), and functional-content isolation (Tasks 1, 5 and 6) each have explicit tests.
-

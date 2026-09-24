@@ -3,7 +3,7 @@
 **Data:** 2026-09-22  
 **Branch de implementação:** `feature/audit-0.7.0`  
 **Base:** `main` após o merge da 0.6.0 (`f173a29`)  
-**Status:** proposta aprovada em conversa; aguardando revisão desta especificação antes do plano TDD
+**Status:** contrato ajustado aprovado; implementação autorizada na `feature/audit-0.7.0` após revisão e plano TDD
 
 ## 1. Objetivo
 
@@ -76,7 +76,7 @@ class AuditSink(Protocol):
     def emit(self, event: AuditEvent) -> None: ...
 ```
 
-`AuditEvent` será imutável e serializável como JSON. O evento terá somente campos tipados e
+`AuditEvent` será imutável, fechado em runtime e serializável como JSON determinístico. O evento terá somente campos tipados e
 opcionais necessários à operação:
 
 - `event_id`, `timestamp`, `request_id`;
@@ -88,6 +88,11 @@ opcionais necessários à operação:
 - `grounded`, `source_count`, `citation_count`, `citation_retry_count` e
   `retrieval_query_count` opcionais;
 - `turn_count` opcional para eventos de snapshot de sessão.
+
+Os valores de tipo, resultado, operação, erro, provider/modelo e contagens são validados contra
+allowlists estáveis; campos opcionais nulos são omitidos. `session_id` continua sendo o UUID
+opaco previsto no contrato aprovado, mas autenticação/autorização e governança do acesso ao
+histórico permanecem fora deste recorte.
 
 O `JsonLogAuditSink` emitirá uma linha JSON determinística em `ragtest.audit`. Um sink de teste
 em memória poderá capturar objetos sem interceptar ou analisar texto de log. Rotas receberão o
@@ -107,6 +112,11 @@ O evento de leitura de sessão usará uma contagem de turnos, nunca as perguntas
 Operações de saúde e busca ficam fora do primeiro recorte para manter o contrato pequeno; podem
 usar o mesmo sink em evolução posterior.
 
+Cada tentativa de `POST /v1/chat` terá no máximo uma emissão terminal (`chat.completed` ou
+`chat.failed`) e o sink não será repetido. Se o sink falhar, a resposta funcional permanece e
+zero registros observados é um resultado permitido; a falha é diagnosticada sem conteúdo do
+evento.
+
 ### 4.4 Composição com sessões
 
 O chat stateless emite `chat.completed` ou `chat.failed` como qualquer outro chat. Quando há
@@ -117,10 +127,14 @@ ou da exceção classificada, sem alterar a lease, a persistência SQLite ou a o
 ## 5. Tratamento de falhas
 
 - Falhas conhecidas (`404`, `409`, `410`, `502`, `503`) serão convertidas em `error_code` e
-  `error_type` estáveis, sem copiar `detail` bruto.
+  `error_type` estáveis, sem copiar `detail` bruto. Status de sessão 0.6.0 permanecem; falha
+  de provider/bad-gateway e falha inesperada usam resposta segura `502`, e indisponibilidade
+  usa `503`.
 - Exceções inesperadas emitirão `error_code=internal_error` e `error_type=unhandled`, sem
   traceback no evento público. O logger técnico pode registrar traceback localmente conforme a
   configuração do ambiente.
+- Exceções lançadas antes da função da rota serão tratadas pelo middleware de `/v1/chat` com
+  resposta fixa, `X-Request-ID` e um único `chat.failed`, sem ler o corpo da requisição.
 - A emissão será protegida por uma função de segurança que captura exceções do sink. O erro do
   sink não deve causar retry do LLM, rollback adicional da sessão ou mudança de status HTTP.
 - Duração será calculada monotonicamente e serializada como milissegundos não negativos.
@@ -132,13 +146,14 @@ O plano TDD deverá cobrir, no mínimo:
 1. serialização estável de `AuditEvent`, com timestamp UTC e ausência de campos proibidos;
 2. rejeição/teste de contrato que garanta que pergunta, resposta, prompt, excerpt, source,
    authorization e API key não aparecem no JSON;
-3. middleware que cria `request_id` e devolve o mesmo UUID em `X-Request-ID`;
+3. middleware que cria `request_id`, ignora o header recebido e devolve o UUID gerado em `X-Request-ID`;
 4. emissão de `session.created`, `session.read` e `session.deleted` nas rotas correspondentes;
 5. emissão de `chat.completed` para chat stateless e com sessão, preservando contagens e
    `grounded` sem conteúdo;
 6. emissão de `chat.failed` para 503 e erro inesperado com classes normalizadas;
 7. sink que falha não interrompe a resposta funcional nem a persistência do turno;
-8. suíte existente, Ruff e validação Docker sem provider adicional ou reindexação.
+8. suíte existente, Ruff e validação Docker sem provider adicional ou reindexação;
+9. resposta cross-origin real expondo `X-Request-ID`, com preflight validado separadamente.
 
 Aceitação manual: uma chamada local a `/v1/chat` deve produzir eventos legíveis como JSON,
 correlacionados pelo `X-Request-ID`, sem conter a pergunta usada no teste nem trechos do corpus.
