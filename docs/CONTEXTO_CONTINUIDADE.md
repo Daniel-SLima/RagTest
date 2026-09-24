@@ -2547,7 +2547,9 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
   `AuditOperation`;
 - serialização determinística com timestamp UTC, UUIDs, omissão de nulos e somente campos
   allowlisted; durações e contagens não negativas;
-- testes direcionados: 12 passaram; suíte backend: 161 passaram; Ruff focado: aprovado;
+- revisão de cobertura concluída: 34 testes direcionados passaram; suíte backend: 183 passaram;
+  Ruff completo aprovado; os testes agora cobrem chaves exatas, sentinelas sensíveis, repetibilidade
+  compacta, omissão de todos os opcionais, UUIDs string, contagens negativas e atributos extras;
 - nenhuma rota, middleware, provider, CORS, Qdrant, corpus, embedding ou dependência foi alterada;
 - sink, middleware, integração de rotas, normalização de falhas e documentação pública completa
   permanecem nas Tasks seguintes;

@@ -14,6 +14,41 @@ from app.observability.audit import (
 
 REQUEST_ID = UUID("00000000-0000-0000-0000-000000000001")
 EVENT_ID = UUID("00000000-0000-0000-0000-000000000002")
+REQUIRED_AUDIT_KEYS = {
+    "event_id",
+    "timestamp",
+    "request_id",
+    "event_type",
+    "outcome",
+    "operation",
+    "duration_ms",
+}
+OPTIONAL_AUDIT_KEYS = {
+    "session_id",
+    "provider",
+    "model",
+    "status_code",
+    "error_code",
+    "error_type",
+    "grounded",
+    "source_count",
+    "citation_count",
+    "citation_retry_count",
+    "retrieval_query_count",
+    "turn_count",
+}
+
+
+def _minimal_event_kwargs() -> dict[str, object]:
+    return {
+        "event_id": EVENT_ID,
+        "timestamp": datetime(2026, 9, 24, 12, 0, tzinfo=UTC),
+        "request_id": REQUEST_ID,
+        "event_type": "chat.completed",
+        "outcome": "success",
+        "operation": "chat",
+        "duration_ms": 0,
+    }
 
 
 def test_event_is_immutable_and_serializes_only_allowlisted_fields() -> None:
@@ -43,6 +78,11 @@ def test_event_is_immutable_and_serializes_only_allowlisted_fields() -> None:
     assert payload["duration_ms"] == 7
     assert payload["provider"] == "groq"
     assert payload["model"] == "openai/gpt-oss-120b"
+    serialized = event.to_json()
+    assert serialized == event.to_json()
+    assert "\n" not in serialized
+    assert ": " not in serialized
+    assert ", " not in serialized
     assert "question" not in payload
     assert "answer" not in payload
     assert "prompt" not in payload
@@ -64,7 +104,8 @@ def test_event_omits_none_and_rejects_invalid_duration() -> None:
         duration_ms=0,
     )
 
-    assert "session_id" not in event.to_dict()
+    assert set(event.to_dict()) == REQUIRED_AUDIT_KEYS
+    assert not (set(event.to_dict()) & OPTIONAL_AUDIT_KEYS)
     with pytest.raises(ValueError, match="duration_ms"):
         AuditEvent(
             event_id=event.event_id,
@@ -145,3 +186,95 @@ def test_event_rejects_naive_or_non_integer_metrics_and_extra_fields() -> None:
 
     with pytest.raises(TypeError, match="payload"):
         AuditEvent(**{**base, "payload": "sensitive content"})
+
+
+def test_event_serializes_the_exact_allowlisted_key_set_and_no_sensitive_sentinels() -> None:
+    event = AuditEvent(
+        **_minimal_event_kwargs(),
+        session_id=UUID("00000000-0000-0000-0000-000000000003"),
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        status_code=503,
+        error_code="provider_unavailable",
+        error_type="provider",
+        grounded=False,
+        source_count=2,
+        citation_count=1,
+        citation_retry_count=0,
+        retrieval_query_count=1,
+        turn_count=3,
+    )
+
+    payload = event.to_dict()
+    assert set(payload) == REQUIRED_AUDIT_KEYS | OPTIONAL_AUDIT_KEYS
+    serialized = event.to_json()
+    for sentinel in (
+        "METADATA_SENTINEL",
+        "HISTORY_SENTINEL",
+        "FILENAME_SENTINEL",
+        "AUTHORIZATION_SENTINEL",
+        "API_KEY_SENTINEL",
+        "TOKEN_SENTINEL",
+        "TRACEBACK_SENTINEL",
+    ):
+        assert sentinel not in serialized
+
+
+@pytest.mark.parametrize("field", ["event_id", "request_id", "session_id"])
+def test_event_rejects_string_uuids(field: str) -> None:
+    values = _minimal_event_kwargs()
+    values[field] = "UUID_SENTINEL"
+
+    with pytest.raises(TypeError, match=field):
+        AuditEvent(**values)
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "source_count",
+        "citation_count",
+        "citation_retry_count",
+        "retrieval_query_count",
+        "turn_count",
+    ],
+)
+def test_event_rejects_negative_optional_counts(field: str) -> None:
+    values = _minimal_event_kwargs()
+    values[field] = -1
+
+    with pytest.raises(ValueError, match=field):
+        AuditEvent(**values)
+
+
+def test_event_slots_reject_arbitrary_attributes() -> None:
+    event = AuditEvent(**_minimal_event_kwargs())
+
+    assert not hasattr(event, "__dict__")
+    with pytest.raises((AttributeError, TypeError)):
+        event.arbitrary_attribute = "ATTRIBUTE_SENTINEL"
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "question",
+        "answer",
+        "prompt",
+        "source",
+        "excerpt",
+        "metadata",
+        "history",
+        "filename",
+        "authorization",
+        "api_key",
+        "token",
+        "traceback",
+    ],
+)
+def test_event_rejects_content_and_generic_fields(field: str) -> None:
+    values = _minimal_event_kwargs()
+    values[field] = f"{field.upper()}_SENTINEL"
+
+    with pytest.raises(TypeError, match=field):
+        AuditEvent(**values)
