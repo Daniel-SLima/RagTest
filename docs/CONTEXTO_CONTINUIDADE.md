@@ -28,8 +28,9 @@
 - Corpus, embeddings e Qdrant: **inalterados**
 - O `origin/main` remoto permanece em `4badc96`; o workspace local está deliberadamente à frente.
 - Branch atual: `feature/audit-0.7.0`.
-- A branch local contém a especificação aprovada da auditoria estruturada 0.7.0-A e o contrato
-  imutável `AuditEvent` da Task 1 (commit `a8d9dd5`); as Tasks 2–8 permanecem pendentes.
+- A branch local contém a especificação aprovada da auditoria estruturada 0.7.0-A, o contrato
+  imutável `AuditEvent` da Task 1 (commit `a8d9dd5`) e os sinks da Task 2; as Tasks 3–8 permanecem
+  pendentes.
 - Não existe branch remota nem PR correspondente a `feature/audit-0.7.0`.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
@@ -2551,7 +2552,18 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
   Ruff completo aprovado; os testes agora cobrem chaves exatas, sentinelas sensíveis, repetibilidade
   compacta, omissão de todos os opcionais, UUIDs string, contagens negativas e atributos extras;
 - nenhuma rota, middleware, provider, CORS, Qdrant, corpus, embedding ou dependência foi alterada;
-- sink, middleware, integração de rotas, normalização de falhas e documentação pública completa
-  permanecem nas Tasks seguintes;
-- próximo passo executável: Task 2, sink JSON e emissão não bloqueante, sempre preservando o
-  contrato fechado criado aqui.
+- a fronteira de sink, middleware, integração de rotas, normalização de falhas e documentação
+  pública completa permaneceu para as Tasks seguintes; a Task 2 abaixo implementa somente a
+  fronteira de sink.
+
+### Task 2 da auditoria estruturada 0.7.0-A — 2026-09-24
+
+- implementados `AuditSink`, `JsonLogAuditSink` e `safe_emit` em `app/observability/audit.py`;
+- `JsonLogAuditSink` envia somente `AuditEvent.to_json()` ao logger `ragtest.audit`;
+- `safe_emit` captura falhas do sink, retorna `False` e registra somente diagnóstico fixo com o
+  nome do tipo da exceção no logger `ragtest.audit.internal`;
+- testes direcionados: 2 passaram; suíte backend: 185 passaram; Ruff completo aprovado;
+- nenhum provider, segredo, rota, middleware, CORS, Qdrant, corpus, embedding, retrieval ou
+  frontend foi alterado;
+- integração em app state/rotas e fallback de falhas permanecem nas Tasks seguintes;
+- próximo passo executável: Task 3, request ID/middleware e exposição CORS.

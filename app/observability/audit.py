@@ -1,10 +1,11 @@
-"""Closed, content-free audit event contract."""
+"""Closed, content-free audit event contract and interchangeable sinks."""
 
 import json
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Final
+from typing import Final, Protocol
 from uuid import UUID
 
 
@@ -32,6 +33,12 @@ class AuditOperation(str, Enum):
     SESSION_READ = "session.read"
     SESSION_DELETE = "session.delete"
     CHAT = "chat"
+
+
+class AuditSink(Protocol):
+    """Destination for one structured audit event."""
+
+    def emit(self, event: "AuditEvent") -> None: ...
 
 
 _ALLOWED_PROVIDERS: Final = frozenset({"gemini", "groq", "ollama"})
@@ -252,3 +259,23 @@ class AuditEvent:
             ensure_ascii=False,
             allow_nan=False,
         )
+
+
+class JsonLogAuditSink:
+    """Emit the event's deterministic JSON on the structured audit logger."""
+
+    def emit(self, event: AuditEvent) -> None:
+        logging.getLogger("ragtest.audit").info(event.to_json())
+
+
+def safe_emit(sink: AuditSink, event: AuditEvent) -> bool:
+    """Emit an event without allowing sink failures to affect application behavior."""
+
+    try:
+        sink.emit(event)
+    except Exception as exc:  # noqa: BLE001 - sink failures must never escape
+        logging.getLogger("ragtest.audit.internal").warning(
+            "audit sink emission failed: %s", type(exc).__name__
+        )
+        return False
+    return True
