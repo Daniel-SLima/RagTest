@@ -1,8 +1,8 @@
 # Design da 0.7.0-A — Auditoria estruturada segura
 
-**Data:** 2026-09-22  
-**Branch de implementação:** `feature/audit-0.7.0`  
-**Base:** `main` após o merge da 0.6.0 (`f173a29`)  
+**Data:** 2026-09-22
+**Branch de implementação:** `feature/audit-0.7.0`
+**Base:** `main` após o merge da 0.6.0 (`f173a29`)
 **Status:** contrato ajustado aprovado; implementação autorizada na `feature/audit-0.7.0` após revisão e plano TDD
 
 ## 1. Objetivo

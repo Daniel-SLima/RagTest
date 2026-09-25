@@ -28,7 +28,22 @@ No `CONTEXTO_CONTINUIDADE.md`, a seção:
 
 prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
-## Estado atual que deve ser confirmado no GitHub
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-25
+
+Antes de continuar, confirme o workspace local: branch `feature/audit-0.7.0`, HEAD `d43873b` e
+15 commits à frente de `origin/feature/audit-0.7.0`. Não houve push, merge ou rebase nesta etapa.
+PR #21 está draft no fluxo de trabalho informado. A sidequest `sidequest/ragtest-demo` permanece
+isolada.
+
+Tasks 1–7 da auditoria estruturada 0.7.0-A, o fix de revisão e a documentação/gates da Task 8 estão
+verificados localmente pelos relatórios do SDD e pelos comandos registrados no ledger. O próximo passo é
+QA final e revisão de segurança/privacidade;
+não retomar código funcional sem nova autorização. A 0.7.0-B está adiada: autenticação e acesso,
+egress de fontes/CHATSCM, retenção/WAL/backups, criptografia/TLS/rate limits/headers/Qdrant,
+auditoria durável, governança de dependências/CLI e política LGPD continuam pendentes. Não afirmar
+conformidade LGPD. Corpus, embeddings, retrieval e Qdrant permanecem inalterados.
+
+### Histórico do checkpoint anterior
 
 - `main` contém a versão **0.5.24** validada e mesclada.
 - PR #19 foi **merged**.
@@ -40,8 +55,8 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 - Corpus, embeddings e Qdrant permaneceram inalterados.
 - O `origin/main` remoto permanece em `0.5.24` (`4badc96`), enquanto a `main` local contém a
   0.6.0 validada (`f173a29`). O workspace local é a fonte mais avançada e não deve ser sobrescrito.
-- Branch atual: `feature/audit-0.7.0`, HEAD `eb17d28`.
-- A especificação da auditoria estruturada 0.7.0-A foi escrita; a implementação funcional está pausada.
+- O checkpoint anterior registrava a branch em `eb17d28` e a implementação funcional pausada; essa
+  informação é histórica e foi reconciliada pelo handoff atual acima.
 - A configuração multiagente local está criada, revisada e versionada nesta branch: `AGENTS.md`,
   `.codex/config.toml` e `.codex/agents/*.toml`.
 - O projeto não fixa modelo do orquestrador; modelos/esforços são explícitos nos agentes. O QA real
@@ -239,9 +254,9 @@ depois  integração no Se Cuida Mulher ...... posterior
 
 Não me peça para repetir informações que estejam nesses arquivos. Leia-os e continue do estado real do repositório.
 
-Estado atual: a implementação backend 0.6.0 está integrada na `main` local, com 149 testes
-aprovados, Docker validado e provider Groq testado. A branch atual contém apenas a especificação
-0.7.0-A e a configuração multiagente versionada. Não fazer pull, merge, push, rebase, reset,
-clean ou descarte de mudanças; aguardar autorização antes de retomar código.
+Estado atual: a implementação backend 0.6.0 está integrada na `main` local. A branch atual contém
+a implementação local da auditoria 0.7.0-A até `d43873b`, sua documentação em consolidação e a
+configuração multiagente versionada. Não fazer pull, merge, push, rebase, reset, clean ou descarte
+de mudanças; aguardar autorização antes de integrar ou iniciar a 0.7.0-B.
 
 Ao final de cada avanço relevante, atualize `docs/CONTEXTO_CONTINUIDADE.md`; registre decisões em `docs/decisoes-tecnicas.md` e falhas reais em `docs/dificuldades-tcc.md`.

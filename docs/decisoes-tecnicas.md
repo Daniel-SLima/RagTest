@@ -351,3 +351,21 @@ classificação ampla confundia falhas internas com falhas do provider.
 status internos continuam disponíveis para decidir retries sem alterar sua política. Os contratos
 `404/409/410`, `503 provider_unavailable`, payload, seleção, retrieval e fallback automático
 permanecem inalterados.
+
+
+## D037 — Manter auditoria estruturada minimizada e sanitização de provider com escopo limitado
+
+**Data:** 2026-09-25
+**Decisão:** a 0.7.0-A registra somente eventos operacionais com campos allowlisted e usa
+`JsonLogAuditSink` como destino inicial intercambiável. A sanitização de erros é bounded aos
+fluxos de Groq/Ollama, decomposição, seleção de provider e normalização do chat; corpos HTTP,
+mensagens brutas e tracebacks não entram no contrato de auditoria nem nos detalhes públicos.
+**Motivo:** correlação por requisição, ciclo de vida de sessão/chat e classes de falha podem ser
+verificados sem transformar logs em cópia de perguntas, respostas, histórico ou material do
+corpus. Limitar a sanitização evita declarar uma cobertura de privacidade que não foi auditada em
+todo o sistema.
+**Impacto:** falhas do sink permanecem não bloqueantes, o histórico funcional continua no SQLite
+e o `grounded=true` mantém significado estrutural. Ficam explicitamente fora desta decisão:
+autenticação/autorização, egress de CHATSCM, retenção/WAL/backups, criptografia/TLS, rate limits,
+headers de segurança, exposição do Qdrant, auditoria durável, governança de dependências/CLI e
+política LGPD. Não há alegação de conformidade LGPD.

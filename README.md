@@ -809,3 +809,39 @@ Quando o backend responde HTTP 503, o cliente mostra uma mensagem específica de
 Após qualquer falha, a usuária pode acionar `Tentar novamente` para reenviar explicitamente a última pergunta. Não existe retry automático: novas chamadas ao backend e ao provider dependem de ação da usuária.
 
 Essas mudanças são de apresentação e não alteram o contrato `POST /v1/chat`, o backend RAG ou a collection Qdrant.
+
+
+## Auditoria estruturada — 0.7.0-A (implementada e verificada localmente)
+
+A 0.7.0-A adiciona correlação operacional e auditoria minimizada ao backend. O middleware gera
+um UUID no backend para cada requisição e o devolve em `X-Request-ID`; o CORS expõe esse header
+para origens permitidas. Um `AuditEvent` imutável, tipado e fechado serializa somente metadados
+allowlisted. O `JsonLogAuditSink` escreve uma linha JSON no logger `ragtest.audit`, e falhas do
+sink são não bloqueantes: não alteram a resposta funcional, a persistência ou o fluxo do provider.
+
+Os eventos implementados são:
+
+- `session.created`, `session.read` e `session.deleted`; `session.read` registra somente
+  `turn_count` e identificadores/metadados operacionais;
+- `chat.completed` para chat stateless e com sessão, após o resultado conhecido e, quando
+  aplicável, após a persistência do turno;
+- `chat.failed` para falhas de rota, validação, dependência, provider e erro inesperado, com
+  classes e status normalizados.
+
+O histórico funcional continua sendo dado do SQLite e permanece distinto dos eventos de auditoria.
+Os eventos não registram perguntas, respostas, prompts, histórico, excerpts, fontes, nomes de
+arquivos, corpos brutos de providers, headers de autorização, chaves, tokens ou tracebacks.
+Erros públicos usam classes estáveis: `404/session_not_found`, `409/session_busy` ou
+`session_conflict`, `410/session_expired`, `422/validation_error`, `503/provider_unavailable`,
+`502/provider_error` e `502/internal_error`; detalhes brutos não são expostos nem registrados
+pela auditoria. O `grounded=true` continua significando cobertura estrutural de citações, não prova
+de verdade clínica.
+
+Este recorte é uma base técnica, não uma alegação de conformidade com a LGPD. A 0.7.0-B está
+explicitamente adiada e deverá tratar autenticação/controle de acesso; política técnica de
+egress de fontes, inclusive CHATSCM; retenção, WAL e backups; criptografia e TLS; rate limits,
+headers de segurança e exposição do Qdrant; auditoria durável; governança de dependências e CLI;
+e política LGPD. Também não há armazenamento, consulta, dashboard ou exportação duráveis de
+auditoria nesta versão.
+
+Corpus, embeddings, parâmetros de retrieval e collection/pontos do Qdrant não foram alterados.

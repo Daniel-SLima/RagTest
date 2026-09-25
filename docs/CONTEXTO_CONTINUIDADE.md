@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-22 ESTADO LOCAL E INFRAESTRUTURA MULTIAGENTE
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-25 TASK 8 DA AUDITORIA 0.7.0-A
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -27,16 +27,23 @@
 - Runtime local Expo Web da 0.5.24: **verificado para grounding e retry manual**
 - Corpus, embeddings e Qdrant: **inalterados**
 - O `origin/main` remoto permanece em `4badc96`; o workspace local está deliberadamente à frente.
-- Branch atual: `feature/audit-0.7.0`.
-- A branch local contém a especificação aprovada da auditoria estruturada 0.7.0-A, o contrato
-  imutável `AuditEvent` da Task 1 (commit `a8d9dd5`) e os sinks da Task 2; as Tasks 3–8 permanecem
-  pendentes.
-- Não existe branch remota nem PR correspondente a `feature/audit-0.7.0`.
+- Branch atual: `feature/audit-0.7.0`; HEAD local: `d43873b` (`fix: close audit middleware review blockers`).
+- A branch está 15 commits à frente de `origin/feature/audit-0.7.0`; não houve push, merge ou rebase.
+- PR #21 permanece draft no fluxo de trabalho informado; o estado remoto não foi alterado nesta sessão.
+- Tasks 1–7 da auditoria 0.7.0-A e o fix de revisão em `d43873b` estão implementados; Task 8 foi
+  consolidada documentalmente e os gates locais passaram nesta sessão.
+- O `AuditEvent`, o `JsonLogAuditSink`, o request ID backend-owned, CORS, eventos de sessão/chat,
+  normalização de falhas e fallback pré-rota estão implementados. Os relatórios e testes locais
+  classificam esses itens como **implementados/verificados localmente**; isto não é validação de
+  produção nem alegação de conformidade LGPD.
+- Sidequest `sidequest/ragtest-demo` permanece isolada e não é ancestral desta branch; não foi
+  incorporada.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
 - O plano TDD foi executado de forma nativa nesta branch.
-- As Tasks 1–7 da 0.6.0 estão implementadas e integradas na `main` local; a coleta atual contém
-  149 testes e a suíte local passa integralmente.
+- As Tasks 1–7 da 0.6.0 estão implementadas e integradas na `main` local; a coleta anterior
+  continha 149 testes. A auditoria 0.7.0-A acrescentou a cobertura registrada nos relatórios,
+  culminando em 233 testes backend no gate do fix de revisão.
 - A configuração multiagente foi criada, tecnicamente revisada e versionada nesta branch por este
   commit: `AGENTS.md`, `.codex/config.toml` e `.codex/agents/*.toml`.
 - `.codex/config.toml` não define `model` nem `model_reasoning_effort` no nível do projeto: o modelo
@@ -82,14 +89,12 @@
 
 ### Próximo passo exato
 
-1. **Fase A:** sincronizar a `main` local 0.6.0 (`f173a29`) com `origin/main` 0.5.24 (`4badc96`),
-   preferencialmente por fast-forward; se houver proteção de branch, abrir uma branch/PR exclusiva
-   para essa sincronização;
-2. **Fase B:** publicar `feature/audit-0.7.0` em sua branch remota e abrir PR contra `origin/main`
-   já atualizado para 0.6.0;
-3. só depois retomar a implementação funcional da auditoria 0.7.0-A, seguindo REVIEWER → DEVELOPER
-   → QA → REVIEWER → DOCUMENTER;
-4. não fazer merge, push ou sincronização sem autorização explícita.
+1. Executar o QA final independente e a revisão de segurança/privacidade sobre o estado documental
+   e funcional já verificado;
+2. manter as pendências da 0.7.0-B registradas sem iniciar autenticação, egress, retenção,
+   criptografia, governança ou política LGPD;
+3. submeter o estado local para revisão/orquestração antes de qualquer push ou merge;
+4. não fazer merge, push, rebase ou sincronização sem autorização explícita.
 
 ### Regras críticas preservadas
 
@@ -104,11 +109,11 @@
 
 ---
 
-**Última atualização:** 2026-09-22 — revisão técnica multiagente, QA real e commit de infraestrutura concluídos.
+**Última atualização:** 2026-09-25 — Task 7, correção de revisão e gates documentais da Task 8 verificados localmente.
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** configuração multiagente versionada na branch `feature/audit-0.7.0`; a implementação funcional da auditoria 0.7.0-A permanece pausada até nova autorização.
+**Trabalho em andamento:** QA final e revisão de segurança/privacidade da 0.7.0-A na branch `feature/audit-0.7.0`; implementação funcional está concluída localmente até o fix `d43873b`, aguardando integração autorizada.
 
 ---
 
