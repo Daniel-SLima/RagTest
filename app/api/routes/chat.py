@@ -1,8 +1,12 @@
+from datetime import UTC, datetime
+from time import monotonic
 from typing import Annotated
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api.dependencies import (
+    get_audit_sink,
     get_conversation_service,
     get_embedding_provider,
     get_llm_provider,
@@ -12,14 +16,58 @@ from app.api.dependencies import (
 from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
+from app.observability.audit import AuditEvent, AuditSink, safe_emit
 from app.observability.errors import normalize_exception
-from app.rag.chat import answer_with_rag
+from app.rag.chat import ChatResult, answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
 from app.rag.vector_store import QdrantVectorStore
 from app.schemas.chat import ChatRequest, ChatResponse, ChatSource
 
 router = APIRouter(prefix="/v1", tags=["chat"])
+
+_AUDIT_PROVIDERS = frozenset({"gemini", "groq", "ollama"})
+_AUDIT_MODELS = frozenset(
+    {
+        "gemini-3.6-flash",
+        "openai/gpt-oss-120b",
+        "qwen3:8b",
+    }
+)
+
+
+def _allowlisted_label(value: object, allowed: frozenset[str]) -> str | None:
+    return value if isinstance(value, str) and value in allowed else None
+
+
+def _emit_completed_event(
+    request: Request,
+    sink: AuditSink,
+    settings: Settings,
+    result: ChatResult,
+    *,
+    session_id,
+    started_at: float,
+) -> None:
+    event = AuditEvent(
+        event_id=uuid4(),
+        timestamp=datetime.now(UTC),
+        request_id=request.state.request_id,
+        event_type="chat.completed",
+        outcome="success",
+        operation="chat",
+        duration_ms=max(0, round((monotonic() - started_at) * 1000)),
+        session_id=session_id,
+        provider=_allowlisted_label(settings.llm_provider, _AUDIT_PROVIDERS),
+        model=_allowlisted_label(result.model, _AUDIT_MODELS),
+        grounded=result.grounded,
+        source_count=len(result.sources),
+        citation_count=len(result.citation_ids),
+        citation_retry_count=result.citation_retry_count,
+        retrieval_query_count=len(result.retrieval_queries or ()),
+    )
+    request.state.audit_event_emitted = True
+    safe_emit(sink, event)
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -36,7 +84,10 @@ async def chat(
     conversation_service: Annotated[
         ConversationService, Depends(get_conversation_service)
     ],
+    http_request: Request = None,
+    audit_sink: Annotated[AuditSink | None, Depends(get_audit_sink)] = None,
 ) -> ChatResponse:
+    started_at = monotonic()
     profile = get_profile(settings.retrieval_mode)
     auto_decompose = (
         settings.retrieval_auto_decompose
@@ -87,6 +138,16 @@ async def chat(
             status_code=normalized.status_code,
             detail=normalized.public_detail,
         ) from None
+
+    if http_request is not None and audit_sink is not None:
+        _emit_completed_event(
+            http_request,
+            audit_sink,
+            settings,
+            result,
+            session_id=response_session_id,
+            started_at=started_at,
+        )
 
     return ChatResponse(
         session_id=response_session_id,

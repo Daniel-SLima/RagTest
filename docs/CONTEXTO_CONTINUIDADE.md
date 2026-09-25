@@ -2644,3 +2644,21 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou
   frontend foi acessado/alterado; relatório operacional:
   `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-5-report.md`.
+
+### Task 6 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- `POST /v1/chat` stateless e com sessão emite `chat.completed` após o resultado RAG conhecido;
+  no caminho persistido, a emissão ocorre somente depois de `ConversationService.run_turn` retornar;
+- o evento usa somente `request.state.request_id`, duração monotônica, provider/modelo allowlisted
+  quando disponíveis, `grounded` e contagens de fontes, citações, retries e queries; pergunta,
+  resposta, prompt, histórico, source/path/page/excerpt e `ChatResponse` não são serializados;
+- `request.state.audit_event_emitted` é marcado antes de `safe_emit`, reservando ownership terminal
+  para o fallback de falhas da Task 7; labels fora da allowlist são omitidos sem alterar a resposta;
+- `tests/test_audit_chat.py` cobre os dois modos, sentinelas de conteúdo, correlação por request ID,
+  ordenação pós-persistência e uma única chamada ao pipeline RAG;
+- validação local: testes direcionados `13 passed`, suíte backend `213 passed`, Ruff completo
+  `All checks passed!`; warnings ambientais de AnyIO, `.pytest_cache` e compatibilidade Qdrant
+  permanecem não bloqueantes;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-6-report.md`.
