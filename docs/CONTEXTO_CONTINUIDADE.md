@@ -2665,18 +2665,22 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 
 ### Task 7 da auditoria estruturada 0.7.0-A — 2026-09-25
 
-- implementado `chat.failed` para falhas normalizadas de rota, cobrindo sessões, provider e falha
-  inesperada, com `request_id`, duração e somente classificação estável;
-- `RequestContextMiddleware` agora audita 422, falhas de dependência e exceções pré-rota de
-  `POST /v1/chat`, devolvendo detalhe fixo, preservando `X-Request-ID` e sem ler o body;
-- respostas de erro de chat são sanitizadas sem copiar detalhes HTTP crus; o marcador
-  `request.state.audit_event_emitted` garante no máximo um terminal, inclusive após sink falho ou
-  falha de serialização posterior a `chat.completed`;
-- testes adicionais cobrem sink não bloqueante nas três rotas de sessão, chat persistido após
-  `run_turn`, `retrieval_queries=None` e labels de provider/modelo fora da allowlist;
-- validação local: testes direcionados ampliados `40 passed`, suíte backend `230 passed` e Ruff
-  `All checks passed!`; warnings ambientais permanecem não bloqueantes;
+- implementado fallback do `RequestContextMiddleware` para `POST /v1/chat`: respostas 4xx/5xx sem
+  ownership recebem classificação por status, detalhe público fixo, `X-Request-ID` e uma única
+  emissão `chat.failed`; exceções escapando sem resposta recebem `502` seguro;
+- falhas dentro da rota agora emitem `chat.failed` normalizado antes de converter a exceção em
+  resposta HTTP, preservando `404`, `409`/`session_busy`, `410`, `503` e `502` da 0.6.0;
+- ownership é reservado antes de `safe_emit`, evitando `chat.completed` + `chat.failed`,
+  duplicatas ou alteração funcional quando o sink falha; as três rotas de sessão também foram
+  exercitadas com sink falho;
+- testes cobrem 422 pré-rota, dependências 503/inesperada, exceção sem resposta, body não lido pelo
+  middleware, IDs/status/duração, sentinelas de privacidade, `retrieval_queries=None`, labels
+  desconhecidos e paridade stateless/sessão;
+- validação local: focused de auditoria `33 passed`, regressão chat/sessões/request ID/CORS
+  `35 passed`, suíte backend `230 passed`, Ruff completo aprovado, `docker compose config --quiet`
+  aprovado e `git diff --check` limpo; warnings ambientais permanecem não bloqueantes;
 - nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
   foi acessado/alterado; relatório operacional:
   `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-7-report.md`;
-- Task 8 permanece pendente para documentação pública final e revisão consolidada da versão.
+- pendente: Task 8, revisão final e documentação pública consolidada; a reconciliação do checkpoint
+  histórico em `docs/PROMPT_RETOMADA.md` deve ser feita nessa etapa.
