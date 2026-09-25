@@ -122,8 +122,17 @@ class RequestContextMiddleware:
         try:
             await self.app(scope, receive, send_with_context)
         except Exception as exc:  # noqa: BLE001 - chat errors receive a safe fallback
-            if not _is_chat_request(scope) or response_started:
+            if response_started:
                 raise
+            if not _is_chat_request(scope):
+                request.state.request_duration_ms = _elapsed_milliseconds(started_at)
+                await _send_safe_error(
+                    send,
+                    request_id,
+                    500,
+                    "Internal server error.",
+                )
+                return
             normalized = normalize_exception(exc)
             request.state.request_duration_ms = _elapsed_milliseconds(started_at)
             _emit_chat_failure(request, normalized, started_at)
@@ -148,7 +157,7 @@ class RequestContextMiddleware:
             await _send_safe_error(
                 send,
                 request_id,
-                response_status_code,
+                normalized.status_code,
                 normalized.public_detail,
                 deferred_response_start,
             )

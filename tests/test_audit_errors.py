@@ -360,6 +360,38 @@ def test_http_exception_dependency_is_a_single_pre_route_failure(pre_route_conte
     assert "DETAIL_SECRET" not in event.to_json()
 
 
+@pytest.mark.parametrize("status", [418, 500])
+def test_unrecognized_http_exception_uses_normalized_status_and_detail(
+    pre_route_context,
+    status: int,
+) -> None:
+    client, sink = pre_route_context
+    app.dependency_overrides.update(
+        {
+            get_embedding_provider: lambda: object(),
+            get_sparse_embedding_provider: lambda: object(),
+            get_vector_store: lambda: object(),
+            get_settings: lambda: Settings(_env_file=None),
+            get_conversation_service: lambda: object(),
+            get_llm_provider: lambda: _raise_unrecognized_http_exception(status),
+        }
+    )
+    try:
+        response = client.post("/v1/chat", json={"message": "QUESTION_SECRET"})
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 502
+    assert response.json() == {"detail": "LLM provider request failed."}
+    event = only_failure_event(sink)
+    assert (event.status_code, event.error_code, event.error_type) == (
+        502,
+        "provider_error",
+        "provider",
+    )
+    assert event.request_id == UUID(response.headers["X-Request-ID"])
+
+
 def test_unexpected_dependency_error_is_fixed_and_audited(pre_route_context) -> None:
     client, sink = pre_route_context
     app.dependency_overrides.update(
@@ -391,6 +423,10 @@ def test_unexpected_dependency_error_is_fixed_and_audited(pre_route_context) -> 
 
 def _raise_http_503() -> object:
     raise HTTPException(status_code=503, detail="DETAIL_SECRET")
+
+
+def _raise_unrecognized_http_exception(status: int) -> object:
+    raise HTTPException(status_code=status, detail="DETAIL_SECRET")
 
 
 def _raise_unexpected_dependency() -> object:

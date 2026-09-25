@@ -37,6 +37,22 @@ def test_request_id_exists_on_validation_error() -> None:
     assert response.status_code == 422
 
 
+def test_unexpected_non_chat_error_returns_500_with_request_id() -> None:
+    context_app = FastAPI()
+    context_app.add_middleware(RequestContextMiddleware)
+
+    @context_app.get("/boom")
+    async def boom() -> None:
+        raise RuntimeError("TRACEBACK_SECRET")
+
+    with TestClient(context_app, raise_server_exceptions=False) as client:
+        response = client.get("/boom")
+
+    assert response.status_code == 500
+    UUID(response.headers["X-Request-ID"])
+    assert response.json() == {"detail": "Internal server error."}
+
+
 def test_request_context_keeps_id_and_monotonic_start_time_in_state() -> None:
     context_app = FastAPI()
     context_app.add_middleware(RequestContextMiddleware)

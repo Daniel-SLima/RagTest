@@ -2684,3 +2684,20 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
   `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-7-report.md`;
 - pendente: Task 8, revisão final e documentação pública consolidada; a reconciliação do checkpoint
   histórico em `docs/PROMPT_RETOMADA.md` deve ser feita nessa etapa.
+
+### Correção dos blockers da revisão da Task 7 — 2026-09-25
+
+- o fallback pré-rota agora envia o status normalizado, e não o status HTTP não reconhecido
+  originalmente observado; `418` e `500` passam a responder `502` com detalhe fixo
+  `LLM provider request failed.`, alinhado ao evento `502/provider_error/provider`;
+- exceções inesperadas antes da resposta em rotas não-chat recebem resposta real `500` com detalhe
+  fixo `Internal server error.` e `X-Request-ID`; o caminho de `POST /v1/chat`, a leitura de body e
+  a emissão terminal de auditoria permanecem preservados;
+- testes RED reproduziram os dois gaps; os testes direcionados em GREEN passaram `3/3`, e a
+  regressão concentrada de auditoria/chat/sessões/request ID/CORS passou `51/51`;
+- suíte backend: `233 passed`, com warnings ambientais conhecidos; Ruff: `All checks passed!`;
+  Docker: `docker compose config --quiet` com código 0; `git diff --check` limpo;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-7-review-fix-report.md`;
+- Task 8, revisão final e documentação pública consolidada continuam pendentes.
