@@ -27,8 +27,8 @@
 - Runtime local Expo Web da 0.5.24: **verificado para grounding e retry manual**
 - Corpus, embeddings e Qdrant: **inalterados**
 - O `origin/main` remoto permanece em `4badc96`; o workspace local está deliberadamente à frente.
-- Branch atual: `feature/audit-0.7.0`; HEAD local: `d43873b` (`fix: close audit middleware review blockers`).
-- A branch está 15 commits à frente de `origin/feature/audit-0.7.0`; não houve push, merge ou rebase.
+- Branch atual: `feature/audit-0.7.0`; HEAD local: `ccc7f4c` (`docs: record verified structured audit contract`).
+- A branch está 16 commits à frente de `origin/feature/audit-0.7.0`; não houve push, merge ou rebase.
 - PR #21 permanece draft no fluxo de trabalho informado; o estado remoto não foi alterado nesta sessão.
 - Tasks 1–7 da auditoria 0.7.0-A e o fix de revisão em `d43873b` estão implementados; Task 8 foi
   consolidada documentalmente e os gates locais passaram nesta sessão.
@@ -113,7 +113,7 @@
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** QA final e revisão de segurança/privacidade da 0.7.0-A na branch `feature/audit-0.7.0`; implementação funcional está concluída localmente até o fix `d43873b`, aguardando integração autorizada.
+**Trabalho em andamento:** revisão final de segurança/privacidade da 0.7.0-A na branch `feature/audit-0.7.0`; implementação funcional e documentação estão concluídas localmente até `ccc7f4c`, aguardando integração autorizada.
 
 ---
 

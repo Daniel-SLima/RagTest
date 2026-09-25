@@ -30,8 +30,8 @@ prevalece sobre qualquer trecho histórico conflitante abaixo dela.
 
 ## HANDOFF AUTORITATIVO ATUAL — 2026-09-25
 
-Antes de continuar, confirme o workspace local: branch `feature/audit-0.7.0`, HEAD `d43873b` e
-15 commits à frente de `origin/feature/audit-0.7.0`. Não houve push, merge ou rebase nesta etapa.
+Antes de continuar, confirme o workspace local: branch `feature/audit-0.7.0`, HEAD `ccc7f4c` e
+16 commits à frente de `origin/feature/audit-0.7.0`. Não houve push, merge ou rebase nesta etapa.
 PR #21 está draft no fluxo de trabalho informado. A sidequest `sidequest/ragtest-demo` permanece
 isolada.
 
@@ -255,7 +255,7 @@ depois  integração no Se Cuida Mulher ...... posterior
 Não me peça para repetir informações que estejam nesses arquivos. Leia-os e continue do estado real do repositório.
 
 Estado atual: a implementação backend 0.6.0 está integrada na `main` local. A branch atual contém
-a implementação local da auditoria 0.7.0-A até `d43873b`, sua documentação em consolidação e a
+a implementação local da auditoria 0.7.0-A até `ccc7f4c`, com sua documentação consolidada e a
 configuração multiagente versionada. Não fazer pull, merge, push, rebase, reset, clean ou descarte
 de mudanças; aguardar autorização antes de integrar ou iniciar a 0.7.0-B.
 
