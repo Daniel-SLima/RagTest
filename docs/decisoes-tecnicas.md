@@ -335,3 +335,19 @@ inesperado de chat usam `502` seguro. Logs de retry registram apenas provider, m
 índice e delay. O fallback pré-rota e a classificação de respostas antes da rota permanecem
 responsabilidade da Task 7; governança ampla de logs, egress, retenção e LGPD segue fora deste
 recorte.
+
+
+## D036 — Marcar explicitamente falhas de provider antes da normalização
+
+**Data:** 2026-09-25
+**Mudança:** `LLMProviderRequestError` passou a transportar somente o rótulo do provider e o
+`status_code`, sem copiar a mensagem original. Groq e Ollama usam esse marcador para erros HTTP
+não transitórios e respostas inválidas; `RuntimeError` genérico não é mais inferido como falha de
+provider.
+**Motivo:** `RuntimeError(str(exc))` podia propagar texto arbitrário de um `_RequestError`, e a
+classificação ampla confundia falhas internas com falhas do provider.
+**Impacto:** a rota mantém detalhes públicos fixos, erros de provider continuam em
+`502/provider_error/provider`, falhas internas passam a `502/internal_error/unhandled`, e os
+status internos continuam disponíveis para decidir retries sem alterar sua política. Os contratos
+`404/409/410`, `503 provider_unavailable`, payload, seleção, retrieval e fallback automático
+permanecem inalterados.

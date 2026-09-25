@@ -5,7 +5,7 @@ from urllib.error import HTTPError, URLError
 
 import pytest
 
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 from app.llm.groq_provider import GroqProvider, _GroqRequestError
 from app.llm.ollama_provider import OllamaProvider, _OllamaRequestError
 from app.rag.decomposition import decompose_question
@@ -106,6 +106,60 @@ async def test_http_200_error_field_does_not_expose_provider_body() -> None:
 
     assert "PROMPT_SECRET" not in str(groq_raised.value)
     assert "EXCERPT_SECRET" not in str(ollama_raised.value)
+
+
+@pytest.mark.asyncio
+async def test_non_transient_request_errors_are_structured_without_raw_text() -> None:
+    cases = (
+        (_groq_provider(), _GroqRequestError("PROMPT_SECRET", status_code=401)),
+        (_ollama_provider(), _OllamaRequestError("EXCERPT_SECRET", status_code=404)),
+    )
+
+    for provider, error in cases:
+        provider._post_json = AsyncMock(side_effect=error)
+
+        with pytest.raises(LLMProviderRequestError) as raised:
+            await provider.generate(system_prompt="p", user_prompt="q")
+
+        assert raised.value.status_code == error.status_code
+        assert "PROMPT_SECRET" not in str(raised.value)
+        assert "EXCERPT_SECRET" not in str(raised.value)
+
+
+@pytest.mark.asyncio
+async def test_non_transient_http_errors_are_structured_without_body(
+    monkeypatch,
+) -> None:
+    cases = (
+        (
+            "app.llm.groq_provider.urlopen",
+            _groq_provider(),
+            "https://provider.invalid/chat",
+        ),
+        (
+            "app.llm.ollama_provider.urlopen",
+            _ollama_provider(),
+            "http://provider.invalid/api/chat",
+        ),
+    )
+
+    for target, provider, url in cases:
+        error = HTTPError(
+            url=url,
+            code=401,
+            msg="Unauthorized",
+            hdrs={},
+            fp=BytesIO(b"PROMPT_SECRET EXCERPT_SECRET ANSWER_SECRET"),
+        )
+        monkeypatch.setattr(target, lambda *args, _error=error, **kwargs: (_ for _ in ()).throw(_error))
+
+        with pytest.raises(LLMProviderRequestError) as raised:
+            await provider.generate(system_prompt="p", user_prompt="q")
+
+        assert raised.value.status_code == 401
+        assert "PROMPT_SECRET" not in str(raised.value)
+        assert "EXCERPT_SECRET" not in str(raised.value)
+        assert "ANSWER_SECRET" not in str(raised.value)
 
 
 @pytest.mark.asyncio

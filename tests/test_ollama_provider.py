@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 from app.llm.ollama_provider import OllamaProvider, _OllamaRequestError
 
 
@@ -145,12 +145,13 @@ async def test_ollama_does_not_retry_non_transient_http_error(monkeypatch) -> No
     request = AsyncMock(side_effect=_OllamaRequestError("model not found", status_code=404))
     monkeypatch.setattr(provider, "_post_json", request)
 
-    with pytest.raises(RuntimeError, match="model not found"):
+    with pytest.raises(LLMProviderRequestError) as raised:
         await provider.generate(
             system_prompt="system",
             user_prompt="user",
         )
 
+    assert raised.value.status_code == 404
     assert request.await_count == 1
 
 
@@ -167,8 +168,10 @@ async def test_ollama_rejects_thinking_leak_when_disabled(monkeypatch) -> None:
     )
     monkeypatch.setattr(provider, "_post_json", request)
 
-    with pytest.raises(RuntimeError, match="reasoning"):
+    with pytest.raises(LLMProviderRequestError) as raised:
         await provider.generate(
             system_prompt="system",
             user_prompt="user",
         )
+
+    assert raised.value.status_code is None

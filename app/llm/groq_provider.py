@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 
 logger = logging.getLogger(__name__)
 
@@ -170,17 +170,17 @@ class GroqProvider:
                 message,
                 status_code=exc.code,
                 retry_after_seconds=self._retry_after_seconds(exc),
-            ) from exc
-        except (URLError, TimeoutError, OSError) as exc:
-            raise _GroqRequestError("Groq request failed.") from exc
+            ) from None
+        except (URLError, TimeoutError, OSError):
+            raise _GroqRequestError("Groq request failed.") from None
 
         try:
             body = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError("Groq retornou JSON inválido.") from exc
+        except json.JSONDecodeError:
+            raise LLMProviderRequestError(provider="groq") from None
 
         if not isinstance(body, dict):
-            raise RuntimeError("Groq retornou uma resposta inesperada.")
+            raise LLMProviderRequestError(provider="groq")
         return body
 
     async def _post_json(self, payload: dict[str, object]) -> dict[str, object]:
@@ -201,7 +201,10 @@ class GroqProvider:
                 retries_exhausted = retry_index >= self._service_retry_attempts
 
                 if not is_transient:
-                    raise RuntimeError(str(exc)) from exc
+                    raise LLMProviderRequestError(
+                        provider="groq",
+                        status_code=exc.status_code,
+                    ) from None
 
                 if retries_exhausted:
                     raise LLMServiceUnavailableError(
@@ -272,20 +275,20 @@ class GroqProvider:
 
         provider_error = body.get("error")
         if provider_error:
-            raise RuntimeError("Groq returned an error response.")
+            raise LLMProviderRequestError(provider="groq")
 
         choices = body.get("choices")
         if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-            raise RuntimeError("Groq não retornou choices no formato esperado.")
+            raise LLMProviderRequestError(provider="groq")
 
         choice = choices[0]
         message = choice.get("message")
         if not isinstance(message, dict):
-            raise RuntimeError("Groq não retornou o campo message esperado.")
+            raise LLMProviderRequestError(provider="groq")
 
         content = message.get("content")
         if not isinstance(content, str):
-            raise RuntimeError("Groq não retornou conteúdo textual.")
+            raise LLMProviderRequestError(provider="groq")
 
         finish_reason = choice.get("finish_reason")
         finish_reason_text = finish_reason if isinstance(finish_reason, str) else None

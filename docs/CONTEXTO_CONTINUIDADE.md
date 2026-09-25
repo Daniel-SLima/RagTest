@@ -2611,3 +2611,17 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
   foi acessado/alterado; o fallback pré-rota continua reservado à Task 7;
 - relatório operacional: `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-4-report.md`;
 - próximo passo executável: Task 5, eventos de ciclo de vida de sessão após sucesso.
+
+#### Fix da revisão da Task 4 — 2026-09-25
+
+- providers Groq/Ollama agora levantam `LLMProviderRequestError` sanitizado para falhas de
+  provider, preservando `status_code` sem propagar `str(_RequestError)`; o status continua sendo
+  usado para manter a elegibilidade de retry e falhas não transitórias não são repetidas;
+- respostas de provider inválidas, campo `error` em HTTP 200 e vazamento de reasoning do Ollama
+  também usam o marcador explícito de provider; `RuntimeError` genérico passou a ser
+  `502/internal_error/unhandled`;
+- adicionados testes de `_RequestError`/`HTTPError` não transitórios com sentinelas, distinção
+  provider/interno, resposta pública fixa e falha de fábrica em `get_llm_provider`;
+- revisão direcionada: 30 passaram; suíte backend: 206 passaram; Ruff completo aprovado;
+- o contrato de sessão `404/409/410`, `503 provider_unavailable`, seleção, payload, retries,
+  retrieval e a reserva do fallback pré-rota para a Task 7 foram preservados.

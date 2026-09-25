@@ -10,7 +10,7 @@ from app.conversation.models import (
     SessionExpiredError,
     SessionNotFoundError,
 )
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,8 +75,8 @@ def normalize_exception(exception: Exception) -> NormalizedError:
             "provider",
             "LLM provider is temporarily unavailable.",
         )
+    if isinstance(exception, LLMProviderRequestError):
+        return NormalizedError(502, "provider_error", "provider", "LLM provider request failed.")
     if isinstance(exception, HTTPException):
         return normalize_status(exception.status_code)
-    if isinstance(exception, RuntimeError):
-        return NormalizedError(502, "provider_error", "provider", "LLM provider request failed.")
     return NormalizedError(502, "internal_error", "unhandled", "Internal server error.")
