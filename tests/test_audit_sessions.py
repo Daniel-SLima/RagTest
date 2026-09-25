@@ -30,6 +30,15 @@ class MemoryAuditSink:
         self.events.append(event)
 
 
+class FailingAuditSink:
+    def __init__(self) -> None:
+        self.attempts = 0
+
+    def emit(self, event: Any) -> None:
+        self.attempts += 1
+        raise RuntimeError("SESSION_AUDIT_SECRET")
+
+
 def snapshot_with_three_turns() -> SessionSnapshot:
     source = StoredSource(
         citation_id=1,
@@ -179,3 +188,40 @@ def test_failed_session_operation_does_not_emit_success_event(
     assert response.status_code in {404, 410}
     assert audit_sink.events == []
     UUID(response.headers["X-Request-ID"])
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "status_code"),
+    [
+        ("post", "/v1/sessions", 201),
+        ("get", f"/v1/sessions/{SESSION_ID}", 200),
+        ("delete", f"/v1/sessions/{SESSION_ID}", 204),
+    ],
+)
+def test_failing_sink_does_not_change_any_session_route(
+    client: TestClient,
+    service: AsyncMock,
+    overrides,
+    method: str,
+    path: str,
+    status_code: int,
+) -> None:
+    from app.api.dependencies import get_audit_sink
+
+    sink = FailingAuditSink()
+    app.dependency_overrides[get_audit_sink] = lambda: sink
+    if method == "post":
+        service.create_session.return_value = snapshot_with_three_turns()
+    elif method == "get":
+        service.get_session.return_value = snapshot_with_three_turns()
+
+    response = getattr(client, method)(path)
+
+    assert response.status_code == status_code
+    assert sink.attempts == 1
+    if method == "post":
+        service.create_session.assert_awaited_once()
+    elif method == "get":
+        service.get_session.assert_awaited_once_with(SESSION_ID)
+    else:
+        service.delete_session.assert_awaited_once_with(SESSION_ID)

@@ -17,7 +17,7 @@ from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.observability.audit import AuditEvent, AuditSink, safe_emit
-from app.observability.errors import normalize_exception
+from app.observability.errors import NormalizedError, normalize_exception
 from app.rag.chat import ChatResult, answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
@@ -65,6 +65,31 @@ def _emit_completed_event(
         citation_count=len(result.citation_ids),
         citation_retry_count=result.citation_retry_count,
         retrieval_query_count=len(result.retrieval_queries or ()),
+    )
+    request.state.audit_event_emitted = True
+    safe_emit(sink, event)
+
+
+def _emit_failed_event(
+    request: Request,
+    sink: AuditSink,
+    normalized: NormalizedError,
+    *,
+    session_id,
+    started_at: float,
+) -> None:
+    event = AuditEvent(
+        event_id=uuid4(),
+        timestamp=datetime.now(UTC),
+        request_id=request.state.request_id,
+        event_type="chat.failed",
+        outcome="failure",
+        operation="chat",
+        duration_ms=max(0, round((monotonic() - started_at) * 1000)),
+        session_id=session_id,
+        status_code=normalized.status_code,
+        error_code=normalized.error_code,
+        error_type=normalized.error_type,
     )
     request.state.audit_event_emitted = True
     safe_emit(sink, event)
@@ -134,6 +159,14 @@ async def chat(
             response_session_id = request.session_id
     except Exception as exc:  # noqa: BLE001 - normalize all chat failures centrally.
         normalized = normalize_exception(exc)
+        if http_request is not None and audit_sink is not None:
+            _emit_failed_event(
+                http_request,
+                audit_sink,
+                normalized,
+                session_id=request.session_id,
+                started_at=started_at,
+            )
         raise HTTPException(
             status_code=normalized.status_code,
             detail=normalized.public_detail,

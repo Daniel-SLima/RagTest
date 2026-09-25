@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock
 from uuid import UUID
@@ -22,9 +23,10 @@ from app.rag.chat import ChatResult
 from app.rag.vector_store import SearchHit
 
 SESSION_ID = UUID(int=17)
+_DEFAULT_RETRIEVAL_QUERIES = object()
 
 
-def completed_result() -> ChatResult:
+def completed_result(*, retrieval_queries: list[str] | None | object = _DEFAULT_RETRIEVAL_QUERIES) -> ChatResult:
     return ChatResult(
         answer="RESPOSTA_SECRET [1].",
         sources=[
@@ -43,7 +45,11 @@ def completed_result() -> ChatResult:
         grounded=True,
         citation_ids=[1],
         citation_retry_count=0,
-        retrieval_queries=["retrieval query"],
+        retrieval_queries=(
+            ["retrieval query"]
+            if retrieval_queries is _DEFAULT_RETRIEVAL_QUERIES
+            else retrieval_queries
+        ),
     )
 
 
@@ -66,9 +72,19 @@ class MemoryAuditSink:
         self.events.append(event)
 
 
+class FailingAuditSink:
+    def __init__(self) -> None:
+        self.attempts = 0
+
+    def emit(self, event) -> None:
+        self.attempts += 1
+        raise RuntimeError("AUDIT_SINK_SECRET")
+
+
 class PersistingService:
     def __init__(self) -> None:
         self.completed_before_audit = False
+        self.release_called = False
 
     async def run_turn(self, session_id, question, answerer):
         result = await answerer("contextual retrieval", "persisted history")
@@ -161,3 +177,67 @@ def test_session_chat_emits_after_turn_persistence(
     event = only_completed_event(audit_sink)
     assert service.completed_before_audit is True
     assert event.session_id == SESSION_ID
+    assert event.grounded is True
+    assert event.source_count == 1
+    assert event.citation_count == 1
+    assert event.citation_retry_count == 0
+    assert event.retrieval_query_count == 1
+
+
+def test_none_retrieval_queries_has_zero_audit_count_and_response_fallback(
+    client: TestClient,
+    audit_sink: MemoryAuditSink,
+    fake_dependencies,
+) -> None:
+    app.dependency_overrides[get_audit_sink] = lambda: audit_sink
+    fake_dependencies.return_value = completed_result(retrieval_queries=None)
+
+    response = client.post("/v1/chat", json={"message": "PERGUNTA_SECRET"})
+
+    assert response.status_code == 200
+    event = only_completed_event(audit_sink)
+    assert event.retrieval_query_count == 0
+    assert response.json()["retrieval_queries"] == ["PERGUNTA_SECRET"]
+
+
+def test_unknown_provider_and_model_labels_are_omitted_without_changing_response(
+    client: TestClient,
+    audit_sink: MemoryAuditSink,
+    fake_dependencies,
+) -> None:
+    app.dependency_overrides[get_audit_sink] = lambda: audit_sink
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None,
+        llm_provider="provider-secret",
+        retrieval_auto_decompose=False,
+    )
+    fake_dependencies.return_value = replace(completed_result(), model="model-secret")
+
+    response = client.post("/v1/chat", json={"message": "PERGUNTA_SECRET"})
+
+    assert response.status_code == 200
+    assert response.json()["model"] == "model-secret"
+    event = only_completed_event(audit_sink)
+    assert event.provider is None
+    assert event.model is None
+
+
+def test_failing_sink_does_not_change_persisted_session_chat(
+    client: TestClient,
+    fake_dependencies,
+) -> None:
+    service = PersistingService()
+    sink = FailingAuditSink()
+    app.dependency_overrides[get_conversation_service] = lambda: service
+    app.dependency_overrides[get_audit_sink] = lambda: sink
+
+    response = client.post(
+        "/v1/chat",
+        json={"message": "PERGUNTA_SECRET", "session_id": str(SESSION_ID)},
+    )
+
+    assert response.status_code == 200
+    assert service.completed_before_audit is True
+    assert service.release_called is False
+    assert sink.attempts == 1
+    fake_dependencies.assert_awaited_once()
