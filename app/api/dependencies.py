@@ -59,11 +59,11 @@ def get_llm_provider(
     if provider is None:
         try:
             provider = create_llm_provider(settings)
-        except RuntimeError as exc:
+        except RuntimeError:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=str(exc),
-            ) from exc
+                detail="LLM provider is temporarily unavailable.",
+            ) from None
         request.app.state.llm_provider = provider
     return provider
 

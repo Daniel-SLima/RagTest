@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import (
     get_conversation_service,
@@ -9,15 +9,10 @@ from app.api.dependencies import (
     get_sparse_embedding_provider,
     get_vector_store,
 )
-from app.conversation.models import (
-    SessionBusyError,
-    SessionConflictError,
-    SessionExpiredError,
-    SessionNotFoundError,
-)
 from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
-from app.llm.base import LLMProvider, LLMServiceUnavailableError
+from app.llm.base import LLMProvider
+from app.observability.errors import normalize_exception
 from app.rag.chat import answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
@@ -86,26 +81,12 @@ async def chat(
             )
             result = completed.result
             response_session_id = request.session_id
-    except SessionNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Session not found.") from exc
-    except SessionBusyError as exc:
-        raise HTTPException(status_code=409, detail="Session is busy.") from exc
-    except SessionConflictError as exc:
-        raise HTTPException(status_code=409, detail="Session conflict.") from exc
-    except SessionExpiredError as exc:
-        raise HTTPException(status_code=410, detail="Session expired.") from exc
-    except LLMServiceUnavailableError as exc:
+    except Exception as exc:  # noqa: BLE001 - normalize all chat failures centrally.
+        normalized = normalize_exception(exc)
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
-    except RuntimeError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="LLM provider request failed.",
-        ) from exc
+            status_code=normalized.status_code,
+            detail=normalized.public_detail,
+        ) from None
 
     return ChatResponse(
         session_id=response_session_id,

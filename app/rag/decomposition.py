@@ -134,10 +134,9 @@ async def decompose_question(
             system_prompt=_DECOMPOSITION_SYSTEM_PROMPT,
             user_prompt=f"Pergunta do usuário:\n{question}",
         )
-    except Exception:
+    except Exception:  # noqa: BLE001 - decomposition must fall back to single-query retrieval.
         logger.warning(
             "Automatic query decomposition failed; using single-query retrieval.",
-            exc_info=True,
         )
         return DecompositionResult(True, False, (), "fallback-error")
 

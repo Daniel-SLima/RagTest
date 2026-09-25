@@ -99,16 +99,10 @@ class OllamaProvider:
             with urlopen(request, timeout=self._request_timeout_seconds) as response:
                 raw = response.read().decode("utf-8")
         except HTTPError as exc:
-            try:
-                detail = exc.read().decode("utf-8").strip()
-            except Exception:  # noqa: BLE001 - best-effort extraction of provider error body.
-                detail = ""
             message = f"Ollama HTTP {exc.code}"
-            if detail:
-                message += f": {detail}"
             raise _OllamaRequestError(message, status_code=exc.code) from exc
         except (URLError, TimeoutError, OSError) as exc:
-            raise _OllamaRequestError(f"Não foi possível acessar o Ollama: {exc}") from exc
+            raise _OllamaRequestError("Ollama request failed.") from exc
 
         try:
             body = json.loads(raw)
@@ -148,11 +142,12 @@ class OllamaProvider:
 
                 delay = self._service_retry_base_delay_seconds * (2**retry_index)
                 logger.warning(
-                    "Ollama transient error; retrying in %.1fs (%s/%s): %s",
-                    delay,
+                    "Ollama transient error; model=%s status=%s retry=%s/%s delay=%.1fs",
+                    self._model_name,
+                    exc.status_code if exc.status_code is not None else "unknown",
                     retry_index + 1,
                     self._service_retry_attempts,
-                    exc,
+                    delay,
                 )
                 if delay > 0:
                     await asyncio.sleep(delay)
@@ -193,7 +188,7 @@ class OllamaProvider:
 
         provider_error = body.get("error")
         if provider_error:
-            raise RuntimeError(f"Ollama retornou erro: {provider_error}")
+            raise RuntimeError("Ollama returned an error response.")
 
         self._record_generation_metrics(body)
 

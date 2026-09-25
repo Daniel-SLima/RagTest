@@ -2592,3 +2592,22 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
   foi integrado nesta task;
 - o relatório operacional da task deve ser mantido no diretório SDD; próximo passo executável:
   Task 4, normalização segura de erros.
+
+### Task 4 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- implementado `NormalizedError`/`normalize_exception` em `app/observability/errors.py`, com
+  taxonomia estável para sessões, validação, indisponibilidade de provider, erro de provider e
+  falha inesperada; detalhes públicos são fixos e não copiam `str(exc)`;
+- `POST /v1/chat` passou a usar a normalização centralizada, preservando `404`, `409` e `410` de
+  sessão e usando `503` para `LLMServiceUnavailableError` e `502` seguro para provider/erro
+  inesperado; a dependência de seleção do provider também deixou de expor a mensagem de fábrica;
+- Groq e Ollama não concatenam corpo HTTP, URL/razão de `URLError` ou campo `error` de respostas
+  200 nas exceções; logs de retry usam somente provider, modelo, status, índice e delay;
+- o fallback de decomposição continua retornando single-query, mas o aviso não inclui traceback
+  nem texto da exceção;
+- testes direcionados: 10 passaram; providers existentes junto com a nova cobertura: 25 passaram;
+  suíte backend: 201 passaram; Ruff completo aprovado;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; o fallback pré-rota continua reservado à Task 7;
+- relatório operacional: `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-4-report.md`;
+- próximo passo executável: Task 5, eventos de ciclo de vida de sessão após sucesso.

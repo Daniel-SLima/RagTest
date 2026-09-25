@@ -319,3 +319,19 @@ Impacto:
 **Decisão:** o SQLite adquire uma lease atômica por sessão, valida token e revisão na conclusão e libera a lease em falhas do RAG.
 **Motivo:** duas requisições simultâneas não podem duplicar turnos nem sobrescrever histórico silenciosamente.
 **Impacto:** chamadas concorrentes recebem conflito; uma lease expirada pode ser recuperada sem intervenção manual.
+
+
+## D035 — Normalizar falhas do chat e limitar diagnósticos de providers
+
+**Data:** 2026-09-25
+**Mudança:** a auditoria 0.7.0-A centraliza a classificação de falhas em `NormalizedError`, usa
+detalhes públicos fixos e remove corpo HTTP, URL/razão de `URLError`, payload do campo `error` e
+traceback da decomposição dos diagnósticos de Groq/Ollama.
+**Motivo:** mensagens de provider podem carregar perguntas, trechos, URLs sensíveis ou detalhes de
+infraestrutura; a auditoria precisa preservar somente status e classes estáveis sem alterar retry,
+payload, seleção de provider ou retrieval.
+**Impacto:** sessões mantêm `404`, `409` e `410`, indisponibilidade permanece `503`, e provider/erro
+inesperado de chat usam `502` seguro. Logs de retry registram apenas provider, modelo, status,
+índice e delay. O fallback pré-rota e a classificação de respostas antes da rota permanecem
+responsabilidade da Task 7; governança ampla de logs, egress, retenção e LGPD segue fora deste
+recorte.

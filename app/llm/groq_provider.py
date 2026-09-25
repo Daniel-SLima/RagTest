@@ -165,20 +165,14 @@ class GroqProvider:
         except HTTPError as exc:
             if exc.headers is not None:
                 self._record_rate_limits(exc.headers)
-            try:
-                detail = exc.read().decode("utf-8").strip()
-            except Exception:  # noqa: BLE001 - best-effort extraction of provider error body.
-                detail = ""
             message = f"Groq HTTP {exc.code}"
-            if detail:
-                message += f": {detail}"
             raise _GroqRequestError(
                 message,
                 status_code=exc.code,
                 retry_after_seconds=self._retry_after_seconds(exc),
             ) from exc
         except (URLError, TimeoutError, OSError) as exc:
-            raise _GroqRequestError(f"Não foi possível acessar a Groq: {exc}") from exc
+            raise _GroqRequestError("Groq request failed.") from exc
 
         try:
             body = json.loads(raw)
@@ -223,11 +217,12 @@ class GroqProvider:
                         min(exc.retry_after_seconds, _MAX_RETRY_AFTER_SECONDS),
                     )
                 logger.warning(
-                    "Groq transient error; retrying in %.1fs (%s/%s): %s",
-                    delay,
+                    "Groq transient error; model=%s status=%s retry=%s/%s delay=%.1fs",
+                    self._model_name,
+                    exc.status_code if exc.status_code is not None else "unknown",
                     retry_index + 1,
                     self._service_retry_attempts,
-                    exc,
+                    delay,
                 )
                 if delay > 0:
                     await asyncio.sleep(delay)
@@ -277,7 +272,7 @@ class GroqProvider:
 
         provider_error = body.get("error")
         if provider_error:
-            raise RuntimeError(f"Groq retornou erro: {provider_error}")
+            raise RuntimeError("Groq returned an error response.")
 
         choices = body.get("choices")
         if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
