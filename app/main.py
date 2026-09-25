@@ -11,6 +11,7 @@ from app.api.routes.sessions import router as sessions_router
 from app.conversation.service import ConversationService
 from app.conversation.sqlite_store import SQLiteSessionStore
 from app.core.config import get_settings
+from app.observability.audit import JsonLogAuditSink
 from app.observability.middleware import RequestContextMiddleware
 from app.services.qdrant_service import QdrantService
 
@@ -22,6 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.session_store = SQLiteSessionStore(settings.session_db_path)
     await app.state.session_store.initialize()
     app.state.conversation_service = ConversationService(app.state.session_store, settings)
+    app.state.audit_sink = JsonLogAuditSink()
     app.state.embedding_provider = None
     app.state.sparse_embedding_provider = None
     app.state.llm_provider = None

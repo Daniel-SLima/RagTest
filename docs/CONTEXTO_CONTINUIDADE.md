@@ -2625,3 +2625,22 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - revisão direcionada: 30 passaram; suíte backend: 206 passaram; Ruff completo aprovado;
 - o contrato de sessão `404/409/410`, `503 provider_unavailable`, seleção, payload, retries,
   retrieval e a reserva do fallback pré-rota para a Task 7 foram preservados.
+
+### Task 5 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- implementado um único `JsonLogAuditSink` no `lifespan`, armazenado em `app.state.audit_sink`,
+  com `get_audit_sink` como fronteira substituível para testes e futuras integrações;
+- as rotas de sessão emitem `session.created`, `session.read` e `session.deleted` somente depois
+  da operação funcional correspondente retornar com sucesso, usando `request.state.request_id`,
+  timestamp UTC e duração monotônica calculada sem nova consulta ao SQLite;
+- `session.read` leva somente `turn_count`; criação e exclusão não copiam turnos, resposta,
+  pergunta, source ou excerpt. `chat.completed`/`chat.failed` permanecem reservados às Tasks 6/7;
+- `tests/test_audit_sessions.py` usa `MemoryAuditSink` e dependency override, cobrindo os três
+  eventos, 404/410 sem evento de sucesso, correlação com `X-Request-ID`, duração não negativa e
+  sentinelas sintéticas ausentes;
+- validação local: teste direcionado `5 passed`, suíte backend `211 passed`, Ruff completo
+  aprovado e `docker compose config --quiet` aprovado; warnings de AnyIO/`.pytest_cache` e
+  indisponibilidade de versão do Qdrant permanecem não bloqueantes do ambiente;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou
+  frontend foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-5-report.md`.
