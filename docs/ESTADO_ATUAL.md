@@ -15,9 +15,9 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Avaliação v2 + teste real do chat feitos (28/09). Corrigidos: recusa com citação falsa (D048) e charset (D049). Em aberto: agendamento da mamografia cai no fallback (dificuldade #36) |
+| Etapa atual | Avaliação v2 + teste real do chat feitos (28/09). Corrigidos: recusa com citação falsa (D048) e charset (D049). Fallback da mamografia diagnosticado e corrigido (D050) — falta repetir o teste real |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `316 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Testes | backend `322 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
 | Avaliação v2 | hybrid: dev 15/15 (MRR 0.833), holdout 24/25 após D047 (não independente) · dense-rerank: 9/15 e 21/25 — ver `docs/avaliacao-retrieval.md` |
 | Qdrant | 773 chunks, sincronizado em 28/09 após a D047 |
 | GitHub | `feature/audit-0.7.0` e `feature/dominio-0.8.0` enviadas em 28/09 (até `59b35ab`); commits posteriores só locais |
@@ -52,12 +52,11 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [x] Avaliação v2 (2 rodadas) e teste do chat com provider real (28/09).
-- [x] Push das branches (28/09).
-- [ ] `git push` de novo (commits novos) e abrir os PRs: `audit-0.7.0` → `main`, depois `dominio-0.8.0` → `main`.
-- [ ] Reconstruir a API (`docker compose up -d --build`) e rodar o diagnóstico da dificuldade #36:
-      `docker compose exec api ragtest-chat "Como eu agendo a mamografia?"` e salvar a saída em
-      `docs/resultados/diagnostico_mamografia.txt`.
+- [x] Avaliação v2, teste do chat, diagnóstico da mamografia e push inicial (28/09).
+- [ ] `git push` dos commits novos, esperar a CI e fazer o merge: primeiro o PR `audit-0.7.0`,
+      depois o `dominio-0.8.0`. Em seguida `git switch main` e `git pull`.
+- [ ] Repetir o teste real: `docker compose up -d --build` e
+      `docker compose exec api ragtest-chat "Como eu agendo a mamografia?" > docs\resultados\diagnostico_mamografia_2.txt`.
 - [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env`.
 
 ## 4. Próxima tarefa para o agente (ordem headless)
@@ -76,8 +75,8 @@
 
 **Próximas tarefas (depois da ordem headless):**
 
-6. **Dificuldade #36** (prioridade): com a saída do `ragtest-chat`, ver quais blocos ficaram sem
-   citação e corrigir (prompt, classificador de blocos ou catálogo). Depois repetir o teste do chat.
+6. ✅ Dificuldade #36 corrigida (D050). Conferir `diagnostico_mamografia_2.txt` quando existir.
+   Depois do merge, trabalhar em branch nova a partir da `main` (ex.: `feature/qualidade-0.9.0`).
 7. ✅ Avaliação v2 registrada; hybrid padrão (D046); calibração sem separação (limiar desligado);
    recusas viram fora de escopo (D048).
    Próximo: congelar **holdout v3** (perguntas novas) e transformar mínimos em critério de
@@ -113,6 +112,8 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-09-28 (5) — Claude (Cowork)**: diagnóstico da mamografia → gate entende títulos em negrito e
+  hierarquia de listas (D050).
 - **2026-09-28 (4) — Claude (Cowork)**: avaliação v2 analisada (hybrid padrão, D046/D047); teste real do
   chat revelou recusa com citação falsa (D048), charset ausente (D049) e fallback na mamografia (#36).
 - **2026-09-28 (3) — Claude (Cowork)**: diretriz backend headless registrada no plano, no AGENTS.md

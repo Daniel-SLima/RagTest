@@ -478,12 +478,22 @@ Planejado: "Como eu agendo a mamografia?" deveria ser respondida com o CHATSCM e
 Observado: o retrieval trouxe as fontes certas (CHATSCM e 2 chunks do catálogo), mas as duas
 gerações foram reprovadas pelo gate (`citation_retry_count=1`, `grounded=false`).
 
-Diagnóstico: pendente. A API não expõe os blocos reprovados; o CLI `ragtest-chat` passou a
-imprimir os blocos sem citação de cada tentativa para permitir o diagnóstico.
+Diagnóstico: o `ragtest-chat` passou a imprimir os blocos sem citação de cada tentativa
+(`docs/resultados/diagnostico_mamografia.txt`). As afirmações de fato estavam citadas; o gate
+reprovava a **estrutura** da resposta:
+1. um título em negrito ("**Como agendar a mamografia**") contado como afirmação;
+2. o passo "1. **Procure a UBS...**", cujas citações estavam nos subitens logo abaixo;
+3. itens curtos de uma lista ("Cartão SUS", "Documento com foto") sob uma introdução já citada.
+Cobertura 4/7 na primeira tentativa e 6/8 no repair.
 
-Correção: pendente de reprodução com `ragtest-chat`.
+Correção: o gate passa a reconhecer três estruturas (D050): linha só em negrito é título; um passo
+de lista sem citação é aceito quando **todos** os subitens informativos dele estão citados; itens
+curtos (até 10 palavras) herdam a citação de uma introdução citada terminada em ":". Itens longos,
+passos com subitens sem citação e introduções sem citação continuam reprovados.
 
-Aprendizado técnico: (a registrar após o diagnóstico).
+Aprendizado técnico: um validador estrutural precisa entender a hierarquia do Markdown que o modelo
+realmente produz; contar linhas isoladas pune respostas bem organizadas e empurra o sistema para o
+fallback.
 
 ## 37. Acentos corrompidos no teste do chat pelo PowerShell
 

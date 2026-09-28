@@ -535,3 +535,16 @@ fallback de erros do middleware). Contrato OpenAPI e cliente TS regenerados.
 **Motivo:** clientes que assumem Latin-1 quando o charset falta (PowerShell 5.1, e o pacote `http`
 do Dart/Flutter) corrompiam os acentos.
 **Impacto:** nenhuma mudança de schema; só o media type declarado.
+
+
+## D050 — Gate de citações entende títulos em negrito e hierarquia de listas
+
+**Data:** 2026-09-28
+**Mudança:** `app/rag/grounding.py` ganhou isenções estruturais: (a) linha apenas em negrito, sem
+citação, é título; (b) item de lista sem citação cujos subitens informativos estão **todos**
+citados é tratado como cabeçalho do passo; (c) itens de até 10 palavras seguem a citação de uma
+introdução citada terminada em ":". As mesmas isenções valem para a poda determinística.
+**Motivo:** a resposta real sobre agendamento da mamografia caiu no fallback só por estrutura
+(dificuldade #36), embora todas as afirmações tivessem fonte.
+**Impacto:** o gate continua exigindo citação em toda afirmação isolada; testes negativos cobrem
+passo com subitens sem citação, item longo e introdução sem citação.
