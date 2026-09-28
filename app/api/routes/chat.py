@@ -13,16 +13,18 @@ from app.api.dependencies import (
     get_sparse_embedding_provider,
     get_vector_store,
 )
+from app.catalog.services import load_catalog_or_none
 from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.observability.audit import AuditEvent, AuditSink, safe_emit
 from app.observability.errors import NormalizedError, normalize_exception
+from app.rag.actions import build_actions
 from app.rag.chat import ChatResult, answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
 from app.rag.vector_store import QdrantVectorStore
-from app.schemas.chat import ChatRequest, ChatResponse, ChatSource
+from app.schemas.chat import ChatAction, ChatRequest, ChatResponse, ChatSafety, ChatSource
 
 router = APIRouter(prefix="/v1", tags=["chat"])
 
@@ -182,6 +184,9 @@ async def chat(
             started_at=started_at,
         )
 
+    safety = result.safety
+    actions = build_actions(result, load_catalog_or_none(settings.source_dir))
+
     return ChatResponse(
         session_id=response_session_id,
         answer=result.answer,
@@ -204,5 +209,19 @@ async def chat(
                 excerpt=" ".join(hit.content.split())[:500],
             )
             for index, hit in enumerate(result.sources, start=1)
+        ],
+        safety=ChatSafety(
+            triaged=bool(safety and safety.triggered),
+            rule_id=safety.rule_id if safety else None,
+        ),
+        actions=[
+            ChatAction(
+                type=action.type,
+                label=action.label,
+                url=action.url,
+                service_id=action.service_id,
+                suggested_in_days=action.suggested_in_days,
+            )
+            for action in actions
         ],
     )

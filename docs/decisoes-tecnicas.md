@@ -386,3 +386,30 @@ problema proposto pelo orientador. A auditoria automática de 2026-09-28 encontr
 nos 3 arquivos.
 **Impacto:** após a aprovação, o dataset de avaliação v2 e os testes reais de chat podem usar
 perguntas cujas fontes são o CHATSCM. A regra de não registrar conteúdo em logs continua.
+
+
+## D039 — Triagem determinística de sinais de alarme antes do RAG
+
+**Data:** 2026-09-28
+**Decisão:** `answer_with_rag` chama `app/safety/triage.py` antes de qualquer retrieval ou LLM.
+Se a mensagem em primeira pessoa descrever um sinal de alarme (pressão alta, alteração visual,
+dor de cabeça forte, sangramento, perda de líquido, inchaço, contrações fortes, febre na gestação),
+a resposta é fixa: maternidade + 192 no contexto de gestação; UPA + 192 fora dele.
+**Motivo:** urgência não pode depender de retrieval, disponibilidade do provider ou do gate de
+citações. As regras vêm do CHATSCM (gestante parte 2) e dos sinais de alerta da Caderneta da Gestante.
+**Impacto:** `ChatResult.safety` e `ChatResponse.safety` (`triaged`, `rule_id`); modelo
+`triagem-deterministica`; `decomposition_status=skipped-triage`. Perguntas informativas
+("o que é sangramento de escape?") não disparam a triagem porque exigem marcador de primeira pessoa.
+Falsos positivos são preferíveis a falsos negativos; a lista é testada em `tests/test_triage.py`.
+
+
+## D040 — Ações estruturadas derivadas do catálogo e das fontes citadas
+
+**Data:** 2026-09-28
+**Decisão:** `ChatResponse.actions` lista `open_link`, `schedule_reminder` e `call_emergency`.
+As ações vêm de regras (`app/rag/actions.py`), nunca do texto do LLM: só entram serviços cujo
+documento do catálogo foi **citado** numa resposta `grounded=true`; triagem gera apenas `call_emergency`.
+**Motivo:** cumprir "links de redirecionamento e gatilhos de lembretes" da proposta sem deixar o
+modelo inventar links, mantendo o backend neutro: o app integrador executa as ações.
+**Impacto:** contrato aditivo e retrocompatível (`actions=[]` por padrão). O catálogo é lido de
+`SOURCE_DIR/servicos/catalogo_servicos.json`; se ausente ou inválido, não há ações de serviço.

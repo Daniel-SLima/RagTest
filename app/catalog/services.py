@@ -102,3 +102,16 @@ def render_service_text(service: ServiceEntry) -> str:
         + "; ".join(f"{source.titulo} ({source.orgao}, {source.ano})" for source in service.fontes)
     )
     return "\n".join(lines)
+
+
+DEFAULT_CATALOG_RELATIVE_PATH = Path("servicos/catalogo_servicos.json")
+
+
+def load_catalog_or_none(source_dir: Path) -> ServiceCatalog | None:
+    path = source_dir / DEFAULT_CATALOG_RELATIVE_PATH
+    if not path.is_file():
+        return None
+    try:
+        return load_service_catalog(path)
+    except ServiceCatalogError:
+        return None

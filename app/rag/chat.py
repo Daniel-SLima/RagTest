@@ -17,6 +17,7 @@ from app.rag.prompting import (
 )
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore, SearchHit
+from app.safety.triage import TRIAGE_MODEL_NAME, TriageResult, triage_message
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +62,7 @@ class ChatResult:
     retrieval_queries: list[str] | None = None
     decomposition_status: str = "not-needed"
     citation_validation_attempts: tuple[CitationValidationAttempt, ...] = ()
+    safety: TriageResult | None = None
 
 
 _GROUNDING_FALLBACK = (
@@ -208,6 +210,19 @@ async def answer_with_rag(
     retrieval_question: str | None = None,
     conversation_context: str | None = None,
 ) -> ChatResult:
+    triage = triage_message(question)
+    if triage.triggered:
+        return ChatResult(
+            answer=triage.answer,
+            sources=[],
+            model=TRIAGE_MODEL_NAME,
+            grounded=False,
+            citation_ids=[],
+            retrieval_queries=[],
+            decomposition_status="skipped-triage",
+            safety=triage,
+        )
+
     search_question = retrieval_question or question
     decomposition = await decompose_question(
         search_question,
@@ -297,4 +312,5 @@ async def answer_with_rag(
         retrieval_queries=list(retrieval_queries),
         decomposition_status=decomposition.status,
         citation_validation_attempts=citation_validation_attempts,
+        safety=triage,
     )

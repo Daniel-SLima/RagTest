@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -24,6 +25,19 @@ class ChatSource(BaseModel):
     excerpt: str
 
 
+class ChatSafety(BaseModel):
+    triaged: bool = False
+    rule_id: str | None = None
+
+
+class ChatAction(BaseModel):
+    type: Literal["open_link", "schedule_reminder", "call_emergency"]
+    label: str
+    url: str | None = None
+    service_id: str | None = None
+    suggested_in_days: int | None = None
+
+
 class ChatResponse(BaseModel):
     session_id: UUID | None = None
     answer: str
@@ -35,3 +49,5 @@ class ChatResponse(BaseModel):
     retrieval_queries: list[str]
     decomposition_status: str
     sources: list[ChatSource]
+    safety: ChatSafety = ChatSafety()
+    actions: list[ChatAction] = []
