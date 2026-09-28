@@ -374,7 +374,9 @@ política LGPD. Não há alegação de conformidade LGPD.
 ## D038 — Liberar o CHATSCM para providers externos após auditoria de dados pessoais
 
 **Data:** 2026-09-28
-**Status:** PROPOSTA — aguardando checklist manual em `docs/revisao-privacidade-chatscm.md`.
+**Status:** APROVADA pelo autor em 2026-09-28, que autorizou o uso de todos os documentos de
+`data/source` no desenvolvimento. O checklist manual em `docs/revisao-privacidade-chatscm.md`
+continua recomendado antes de qualquer uso em produção.
 **Decisão:** o CHATSCM é o FAQ institucional do Se Cuida Mulher e contém o núcleo do domínio do
 TCC (preventivo, mamografia, agendamento, pré-natal, sinais de urgência). Ele deixa de ser
 bloqueado para providers externos quando a auditoria automática (`ragtest-audit-pii`) não

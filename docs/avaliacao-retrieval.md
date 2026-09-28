@@ -264,3 +264,23 @@ CI final da 0.5.18:
     pytest: 72 passed, 4 warnings
 
 Conclusão: o avaliador v2 pode expressar semântica OR/AND sem alterar o contrato histórico do dataset v1.
+
+
+## Dataset de domínio v2 (2026-09-28)
+
+Foco na proposta do orientador: rastreamento (preventivo/mamografia), agendamento, gestação e
+urgência. Perguntas escritas em linguagem de usuária (informal, com erros comuns), sem copiar o
+texto das fontes. Rótulos explícitos (`acceptable_sources`: qualquer uma das fontes no top-k conta).
+
+| Arquivo | Casos | Uso |
+|---|---|---|
+| `app/evaluation/datasets/dominio-v2-dev.json` | 15 | pode ser usado para ajustes |
+| `app/evaluation/datasets/dominio-v2-holdout.json` | 25 | **congelado**: rodar uma vez por configuração final, não ajustar em cima dele |
+| `app/evaluation/datasets/dominio-v2-fora-escopo.json` | 4 | comportamento esperado `recusar`; usado na Fase 3 (não serve para o avaliador de retrieval) |
+
+Execução (depois de sincronizar o Qdrant com o catálogo de serviços):
+
+    ragtest-evaluate-retrieval --cases app/evaluation/datasets/dominio-v2-dev.json --mode all
+    ragtest-evaluate-retrieval --cases app/evaluation/datasets/dominio-v2-holdout.json --mode all
+
+Resultados: ainda não executado.

@@ -57,6 +57,9 @@ ragtest-audit-pii = "app.cli.audit_pii:main"
 [tool.setuptools.packages.find]
 include = ["app*"]
 
+[tool.setuptools.package-data]
+"app.evaluation" = ["datasets/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

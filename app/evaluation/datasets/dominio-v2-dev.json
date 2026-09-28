@@ -1,0 +1,137 @@
+[
+  {
+    "id": "v2-dev-idade-preventivo",
+    "topic": "rastreamento",
+    "query": "com quantos anos tenho que fazer o papanicolau?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-idade-mamografia",
+    "topic": "rastreamento",
+    "query": "a partir de que idade posso fazer mamografia pelo sus",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-onde-agendar-preventivo",
+    "topic": "agendamento",
+    "query": "onde eu marco o preventivo",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-vaga-mamografia",
+    "topic": "agendamento",
+    "query": "como consigo vaga pra mamografia se o posto não faz o exame",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-resultado-preventivo",
+    "topic": "rastreamento",
+    "query": "quanto tempo demora pra sair o resultado do preventivo",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-preventivo-dor",
+    "topic": "rastreamento",
+    "query": "o exame preventivo dói?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-descobri-gravidez",
+    "topic": "gestacao",
+    "query": "descobri que tô grávida, o que faço primeiro?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-preventivo-gestante",
+    "topic": "rastreamento",
+    "query": "grávida pode fazer preventivo?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-semanas-meses",
+    "topic": "gestacao",
+    "query": "tô com 20 semanas, quantos meses são?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  },
+  {
+    "id": "v2-dev-visao-embacada",
+    "topic": "urgencia",
+    "query": "estou grávida e com a vista embaçada",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "servicos/catalogo_servicos.json",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-dev-bolsa-sem-contracao",
+    "topic": "urgencia",
+    "query": "minha bolsa estourou mas não sinto contração",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "chatscm/chatscm_gestante_parte_2.docx"
+    ]
+  },
+  {
+    "id": "v2-dev-vacinas-gestante",
+    "topic": "gestacao",
+    "query": "quais vacinas a gestante precisa tomar",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "vacinacao/calendario_nacional_vacinacao_gestante.pdf",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-dev-caroco-mama",
+    "topic": "rastreamento",
+    "query": "achei um caroço no peito, o que eu faço",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-dev-diu-dor",
+    "topic": "contracepcao",
+    "query": "o que é o DIU e dói pra colocar?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "id": "v2-dev-teste-rapido",
+    "topic": "acesso",
+    "query": "onde faço teste rápido de sífilis e HIV",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  }
+]

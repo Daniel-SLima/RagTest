@@ -11,7 +11,6 @@ Esta pasta contém os documentos brutos usados pelo pipeline de ingestão.
 - `gestacao/`: materiais gerais de acompanhamento da gestação.
 - `medicamentos/`: referências de medicamentos.
 - `pessoa_idosa/`: materiais específicos para saúde da pessoa idosa.
-- `rastreamento/`: diretrizes de rastreamento do câncer do colo do útero e de mama (ver `LEIA-ME.md`).
 - `saude_sexual_reprodutiva/`: contracepção e métodos contraceptivos.
 - `servicos/`: `catalogo_servicos.json`, catálogo estruturado de serviços (preventivo, mamografia, pré-natal, urgência). Cada serviço vira um documento indexado com `doc_type=servico` e `service_id`; o mesmo arquivo alimentará as ações de link/lembrete.
 - `vacinacao/`: calendários e materiais de vacinação.

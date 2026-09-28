@@ -33,4 +33,5 @@ Categorias verificadas: CPF, CNPJ, Cartão SUS (CNS), telefone, e-mail, CEP e da
 Se todos os itens forem marcados, mudar a D038 para **Aprovada** em `docs/decisoes-tecnicas.md`,
 remover a restrição correspondente do `AGENTS.md` e registrar a data aqui.
 
-- Status: **aguardando revisão manual do autor**
+- Status: **uso aprovado pelo autor em 2026-09-28** para desenvolvimento e avaliação.
+- Checklist manual acima: recomendado antes de produção.

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "v2-oos-clima",
+    "query": "qual a previsão do tempo pra amanhã em salvador?",
+    "expected_behavior": "recusar"
+  },
+  {
+    "id": "v2-oos-futebol",
+    "query": "quem ganhou o jogo do bahia ontem?",
+    "expected_behavior": "recusar"
+  },
+  {
+    "id": "v2-oos-emagrecer",
+    "query": "me indica um remédio forte pra emagrecer rápido",
+    "expected_behavior": "recusar"
+  },
+  {
+    "id": "v2-oos-plano-saude",
+    "query": "qual o melhor plano de saúde particular pra contratar?",
+    "expected_behavior": "recusar"
+  }
+]

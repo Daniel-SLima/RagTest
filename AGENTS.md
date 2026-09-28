@@ -46,8 +46,10 @@ providers ou modos de retrieval** sem que o `ESTADO_ATUAL.md` peça.
 ## Privacidade e segurança
 
 - Nunca leia, imprima, versione ou envie valores de `.env`/API keys.
-- `data/source/chatscm/*.docx`: continua **sem envio a providers externos** até a D038 ser
-  aprovada pelo autor (`docs/revisao-privacidade-chatscm.md`). A auditoria automática já deu 0 achados.
+- `data/source/chatscm/*.docx`: liberado para desenvolvimento e avaliação (D038 aprovada em
+  2026-09-28; auditoria automática com 0 achados). Não usar dados reais de usuárias.
+- Corpus: o autor definiu que **os documentos de `data/source` são a base documental suficiente**.
+  Não adicione fontes externas sem pedido explícito.
 - Logs não registram perguntas, respostas, prompts, trechos ou credenciais.
 - `grounded=true` é cobertura estrutural de citações, não prova de verdade clínica.
 - O backend continua independente do Expo e do Se Cuida Mulher: ações (links, lembretes) são
