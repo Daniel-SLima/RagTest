@@ -51,6 +51,20 @@ export type ChatSource = {
   excerpt: string
 }
 
+export type ChatSafety = {
+  triaged: boolean
+  rule_id: string | null
+  out_of_scope: boolean
+}
+
+export type ChatAction = {
+  type: "open_link" | "schedule_reminder" | "call_emergency"
+  label: string
+  url: string | null
+  service_id: string | null
+  suggested_in_days: number | null
+}
+
 export type ChatApiResponse = {
   answer: string
   model: string
@@ -61,6 +75,8 @@ export type ChatApiResponse = {
   retrieval_queries: string[]
   decomposition_status: string
   sources: ChatSource[]
+  safety?: ChatSafety
+  actions?: ChatAction[]
 }
 
 export function buildChatRequest(input: ChatRequestInput): ChatApiRequest {

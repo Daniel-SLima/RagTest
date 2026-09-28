@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,19 +10,32 @@ import {
   View,
 } from "react-native"
 
+import { AnswerActions } from "./src/components/answer-actions"
 import { AssistantAnswer } from "./src/components/assistant-answer"
 import {
+  type ChatAction,
   ChatApiError,
   type ChatApiResponse,
   sendChatMessage,
 } from "./src/lib/chat-api"
+import { formatDate, type Reminder, reminderFromAction } from "./src/lib/reminders"
 
 type SendChat = typeof sendChatMessage
 
 type AppProps = {
   apiBaseUrl?: string
   sendChat?: SendChat
+  openUrl?: (url: string) => Promise<unknown>
+  now?: () => Date
 }
+
+const SUGGESTED_QUESTIONS = [
+  "Quando devo fazer o preventivo?",
+  "Como agendo a mamografia?",
+  "Estou grávida, e agora?",
+]
+
+const APP_ONLY_LINK_NOTICE = "Este atalho abre a tela correspondente no app Se Cuida Mulher."
 
 const DEFAULT_API_BASE_URL =
   process.env.EXPO_PUBLIC_RAG_API_BASE_URL ?? "http://localhost:8000"
@@ -29,6 +43,8 @@ const DEFAULT_API_BASE_URL =
 export default function App({
   apiBaseUrl = DEFAULT_API_BASE_URL,
   sendChat = sendChatMessage,
+  openUrl = (url: string) => Linking.openURL(url),
+  now = () => new Date(),
 }: AppProps) {
   const conversationRef = useRef<ScrollView>(null)
   const [draft, setDraft] = useState("")
@@ -36,6 +52,8 @@ export default function App({
   const [response, setResponse] = useState<ChatApiResponse | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [reminders, setReminders] = useState<Reminder[]>([])
 
   const canSend = draft.trim().length >= 2 && !isLoading
 
@@ -51,6 +69,7 @@ export default function App({
     setQuestion(message)
     setResponse(null)
     setError(null)
+    setNotice(null)
     setIsLoading(true)
 
     try {
@@ -78,6 +97,26 @@ export default function App({
 
     setDraft("")
     await requestAnswer(message)
+  }
+
+  function handleOpenUrl(url: string) {
+    if (url.startsWith("seucuida://")) {
+      setNotice(APP_ONLY_LINK_NOTICE)
+      return
+    }
+    setNotice(null)
+    void openUrl(url).catch(() => setNotice("Não foi possível abrir este atalho neste dispositivo."))
+  }
+
+  function handleScheduleReminder(action: ChatAction) {
+    const reminder = reminderFromAction(action, now())
+    if (!reminder) {
+      return
+    }
+    setReminders((current) =>
+      current.some((item) => item.id === reminder.id) ? current : [...current, reminder],
+    )
+    setNotice(`Lembrete criado para ${formatDate(reminder.dueDate)}.`)
   }
 
   async function handleRetry() {
@@ -112,6 +151,19 @@ export default function App({
               Faça uma pergunta sobre saúde e consulte respostas fundamentadas
               nos documentos disponíveis no módulo RAG.
             </Text>
+            <View style={styles.suggestions}>
+              {SUGGESTED_QUESTIONS.map((suggestion) => (
+                <Pressable
+                  accessibilityLabel={suggestion}
+                  accessibilityRole="button"
+                  key={suggestion}
+                  onPress={() => requestAnswer(suggestion)}
+                  style={styles.suggestion}
+                >
+                  <Text style={styles.suggestionText}>{suggestion}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         ) : (
           <View style={styles.conversation}>
@@ -131,6 +183,24 @@ export default function App({
               <View style={styles.assistantMessage}>
                 <Text style={styles.messageLabel}>Assistente</Text>
                 <AssistantAnswer response={response} />
+                <AnswerActions
+                  actions={response.actions ?? []}
+                  notice={notice}
+                  onOpenUrl={handleOpenUrl}
+                  onScheduleReminder={handleScheduleReminder}
+                  safety={response.safety}
+                />
+              </View>
+            ) : null}
+
+            {reminders.length > 0 ? (
+              <View style={styles.remindersCard}>
+                <Text style={styles.messageLabel}>Meus lembretes</Text>
+                {reminders.map((reminder) => (
+                  <Text key={reminder.id} style={styles.reminderText}>
+                    {`${reminder.label} — ${formatDate(reminder.dueDate)}`}
+                  </Text>
+                ))}
               </View>
             ) : null}
 
@@ -230,6 +300,31 @@ const styles = StyleSheet.create({
   },
   conversation: {
     gap: 14,
+  },
+  suggestions: {
+    gap: 8,
+    marginTop: 4,
+  },
+  suggestion: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D8DCE3",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  suggestionText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  remindersCard: {
+    borderRadius: 16,
+    backgroundColor: "#EEF6F0",
+    padding: 16,
+    gap: 6,
+  },
+  reminderText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   userMessage: {
     alignSelf: "flex-end",
