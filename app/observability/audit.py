@@ -49,7 +49,7 @@ _ALLOWED_MODELS: Final = frozenset(
         "qwen3:8b",
     }
 )
-_ALLOWED_STATUS_CODES: Final = frozenset({404, 409, 410, 422, 502, 503})
+_ALLOWED_STATUS_CODES: Final = frozenset({401, 404, 409, 410, 422, 429, 502, 503})
 _ALLOWED_ERROR_CODES: Final = frozenset(
     {
         "session_not_found",
@@ -60,9 +60,13 @@ _ALLOWED_ERROR_CODES: Final = frozenset(
         "provider_error",
         "internal_error",
         "provider_unavailable",
+        "unauthorized",
+        "rate_limited",
     }
 )
-_ALLOWED_ERROR_TYPES: Final = frozenset({"session", "validation", "provider", "unhandled"})
+_ALLOWED_ERROR_TYPES: Final = frozenset(
+    {"session", "validation", "provider", "unhandled", "auth", "rate_limit"}
+)
 
 
 def _coerce_enum[T: Enum](field_name: str, enum_type: type[T], value: object) -> T:

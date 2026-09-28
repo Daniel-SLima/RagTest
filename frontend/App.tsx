@@ -29,13 +29,17 @@ type AppProps = {
   sendChat?: SendChat
   openUrl?: (url: string) => Promise<unknown>
   loadSuggestions?: SuggestionsLoader
+  apiKey?: string
 }
+
+const DEFAULT_API_KEY = process.env.EXPO_PUBLIC_RAG_API_KEY
 
 const DEFAULT_API_BASE_URL =
   process.env.EXPO_PUBLIC_RAG_API_BASE_URL ?? "http://localhost:8000"
 
 export default function App({
   apiBaseUrl = DEFAULT_API_BASE_URL,
+  apiKey = DEFAULT_API_KEY,
   sendChat = sendChatMessage,
   openUrl = (url: string) => Linking.openURL(url),
   loadSuggestions,
@@ -52,7 +56,7 @@ export default function App({
 
   useEffect(() => {
     let active = true
-    const loader = loadSuggestions ?? createSuggestionsLoader(apiBaseUrl)
+    const loader = loadSuggestions ?? createSuggestionsLoader(apiBaseUrl, apiKey)
     loader()
       .then((items) => {
         if (active) {
@@ -63,7 +67,7 @@ export default function App({
     return () => {
       active = false
     }
-  }, [apiBaseUrl, loadSuggestions])
+  }, [apiBaseUrl, apiKey, loadSuggestions])
 
   const canSend = draft.trim().length >= 2 && !isLoading
 
@@ -85,7 +89,7 @@ export default function App({
     try {
       const result = await sendChat(
         { message },
-        { baseUrl: apiBaseUrl },
+        apiKey ? { baseUrl: apiBaseUrl, apiKey } : { baseUrl: apiBaseUrl },
       )
       setResponse(result)
     } catch (requestError) {

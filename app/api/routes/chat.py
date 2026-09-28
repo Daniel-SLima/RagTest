@@ -33,6 +33,7 @@ from app.schemas.chat import (
     ChatSafety,
     ChatSource,
 )
+from app.security.auth import enforce_chat_rate_limit
 
 router = APIRouter(prefix="/v1", tags=["chat"])
 
@@ -105,7 +106,11 @@ def _emit_failed_event(
     safe_emit(sink, event)
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+    dependencies=[Depends(enforce_chat_rate_limit)],
+)
 async def chat(
     request: ChatRequest,
     embeddings: Annotated[EmbeddingProvider, Depends(get_embedding_provider)],

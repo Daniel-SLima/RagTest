@@ -34,6 +34,10 @@ def _session_error(
 def normalize_status(status_code: int) -> NormalizedError:
     """Map an observed HTTP status to a safe audit/public error class."""
 
+    if status_code == 401:
+        return NormalizedError(401, "unauthorized", "auth", "Invalid or missing API key.")
+    if status_code == 429:
+        return NormalizedError(429, "rate_limited", "rate_limit", "Too many requests.")
     if status_code == 404:
         return _session_error(404, "session_not_found", "Session not found.")
     if status_code == 409:

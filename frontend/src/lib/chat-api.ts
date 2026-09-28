@@ -70,14 +70,19 @@ export type ChatFetcher = (
   url: string,
   init: {
     method: "POST"
-    headers: { "Content-Type": "application/json" }
+    headers: Record<string, string>
     body: string
   },
 ) => Promise<ChatFetchResponse>
 
 type SendChatOptions = {
   baseUrl: string
+  apiKey?: string
   fetcher?: ChatFetcher
+}
+
+function authHeaders(apiKey?: string): Record<string, string> {
+  return apiKey ? { "X-API-Key": apiKey } : {}
 }
 
 export async function sendChatMessage(
@@ -91,7 +96,7 @@ export async function sendChatMessage(
 
   const response = await fetcher(`${baseUrl}/v1/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(options.apiKey) },
     body: JSON.stringify(buildChatRequest(input)),
   })
 
@@ -109,9 +114,11 @@ export async function sendChatMessage(
 
 export type SuggestionsLoader = () => Promise<string[]>
 
-export function createSuggestionsLoader(baseUrl: string): SuggestionsLoader {
+export function createSuggestionsLoader(baseUrl: string, apiKey?: string): SuggestionsLoader {
   return async () => {
-    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/suggestions`)
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/suggestions`, {
+      headers: authHeaders(apiKey),
+    })
     if (!response.ok) {
       return []
     }

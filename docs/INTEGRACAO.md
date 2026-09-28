@@ -29,6 +29,16 @@ Qualquer mudança no contrato quebra `tests/test_contract.py` até o arquivo ser
 
 Toda resposta traz o header `X-Request-ID` (use em relatos de erro).
 
+## Autenticação e limites
+
+- Com `API_KEYS` configurado, toda rota `/v1/*` exige o header `X-API-Key` (uma chave por app
+  integrador, formato `cliente:chave,cliente2:chave2`). `/health` e `/ready` são públicas.
+- Sem chave ou chave inválida: `401 {"detail": "Invalid or missing API key."}` + `WWW-Authenticate: ApiKey`.
+- `/v1/chat` tem limite de `RATE_LIMIT_PER_MINUTE` perguntas por minuto por cliente (padrão 30).
+  Excedeu: `429 {"detail": "Too many requests."}` + `Retry-After` (segundos).
+- A chave deve ficar no **backend do app** ou em armazenamento seguro; em app público, a chave no
+  bundle é visível — trate-a como identificação do cliente, não como segredo forte.
+
 ## `POST /v1/chat`
 
 Requisição mínima:
@@ -88,6 +98,8 @@ triagem de urgência. O LLM nunca gera links ou datas.
 
 | HTTP | Significado |
 |---|---|
+| 401 | chave de API ausente ou inválida |
+| 429 | limite de perguntas excedido → esperar `Retry-After` segundos |
 | 404 / 410 | sessão inexistente / expirada → criar nova sessão |
 | 409 | sessão ocupada com outra resposta → aguardar e reenviar |
 | 422 | requisição inválida |
@@ -107,10 +119,13 @@ lembretes. Para o município real: editar o JSON (validado por `app/catalog/serv
 | `LLM_PROVIDER` | `gemini`, `groq` ou `ollama` (troca sem mudar o contrato) |
 | `RETRIEVAL_MIN_SCORE` | limiar de fora de escopo (calibrar com `ragtest-calibrate-scope`) |
 | `CORS_ALLOWED_ORIGINS` | origens web permitidas |
+| `API_KEYS` | chaves dos apps integradores (vazio = autenticação desligada) |
+| `RATE_LIMIT_PER_MINUTE` | limite do `/v1/chat` por cliente (0 = sem limite) |
 | `APP_TIMEZONE` | fuso usado para calcular `due_date` (padrão `America/Sao_Paulo`) |
 
 ## Limitações atuais
 
-- Sem autenticação: não usar dados reais de usuárias.
+- Autenticação por chave simples (sem usuário final/OAuth): não usar dados reais de usuárias.
+- Limite de requisições em memória: vale por processo da API (suficiente para um contêiner).
 - Lembretes do cliente demonstrativo ficam em memória; notificações nativas são responsabilidade do app integrador.
 - `grounded=true` indica cobertura de citações, não validação clínica.

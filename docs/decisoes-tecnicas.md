@@ -453,3 +453,18 @@ ganhou `GET /v1/services` e `GET /v1/services/{id}` com nomes de campos em ingl�
 precisa ser explícito, versionado e impossível de mudar sem querer.
 **Impacto:** mudanças de schema exigem regenerar e revisar o arquivo; clientes Flutter podem ser
 gerados do mesmo arquivo.
+
+
+## D044 — Autenticação por chave de API e limite de requisições por cliente
+
+**Data:** 2026-09-28
+**Decisão:** `API_KEYS` (`cliente:chave,...`) protege todas as rotas `/v1/*` via header
+`X-API-Key` (comparação em tempo constante); vazio desliga a autenticação para desenvolvimento.
+`/v1/chat` tem janela deslizante em memória de `RATE_LIMIT_PER_MINUTE` por cliente (ou por IP
+quando a autenticação está desligada). 401 e 429 passam a ser classes próprias na normalização de
+erros e na auditoria (`unauthorized`, `rate_limited`), e o middleware preserva `Retry-After` e
+`WWW-Authenticate`.
+**Motivo:** a API vai ser consumida por um app de terceiros e cada pergunta custa uma chamada ao
+LLM; sem identificação e limite, qualquer cliente esgotaria a cota do provider.
+**Impacto:** limite por processo (não compartilhado entre réplicas); chaves por usuária final e
+OAuth ficam fora do escopo do TCC. O contrato OpenAPI passou a declarar o esquema `APIKeyHeader`.

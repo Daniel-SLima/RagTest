@@ -66,6 +66,7 @@ async def _send_safe_error(
         (name, value)
         for name, value in original_headers
         if name.lower().startswith(b"access-control-")
+        or name.lower() in (b"retry-after", b"www-authenticate")
     ]
     headers.extend(
         [

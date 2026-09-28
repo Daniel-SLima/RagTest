@@ -21,6 +21,8 @@ class Settings(BaseSettings):
 
     source_dir: Path = Path("data/source")
     app_timezone: str = "America/Sao_Paulo"
+    api_keys: str | None = None
+    rate_limit_per_minute: int = Field(default=30, ge=0, le=10000)
     chunk_size: int = 1000
     chunk_overlap: int = 200
 
@@ -87,6 +89,7 @@ class Settings(BaseSettings):
         "gemini_api_key",
         "groq_api_key",
         "retrieval_min_score",
+        "api_keys",
         mode="before",
     )
     @classmethod

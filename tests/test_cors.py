@@ -57,4 +57,4 @@ def test_cors_exposes_request_id_on_real_cross_origin_response() -> None:
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:8081"
-    assert response.headers["access-control-expose-headers"] == "X-Request-ID"
+    assert response.headers["access-control-expose-headers"] == "X-Request-ID, Retry-After"

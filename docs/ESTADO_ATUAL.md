@@ -15,9 +15,9 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Ordem headless — passos 2 e 3 ✅ · próximo: passo 4 (autenticação + rate limit) |
+| Etapa atual | Ordem headless — passos 2, 3 e 4 ✅ · próximo: passo 5 (teste ponta a ponta na CI) |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `295 passed`, `ruff` limpo · frontend Jest `18 passed`, `tsc` ok (28/09) |
+| Testes | backend `301 passed`, `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
 | Qdrant | Inalterado (767 chunks). Catálogo **não sincronizado** — o agente não tem Docker nem acesso ao HuggingFace. |
 
 **Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
@@ -43,7 +43,8 @@
 9. **Headless (D042)**: `display`, rótulos de fontes, ações com `due_date`/`requires_host_app`/`note`,
    `GET /v1/suggestions`; Expo reduzido a renderizar esses campos.
 10. **Contrato congelado (D043)**: snapshot OpenAPI testado, cliente TS gerado, `GET /v1/services[/{id}]`.
-11. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
+11. **Autenticação e limites (D044)**: `X-API-Key` por app integrador, rate limit no chat.
+12. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
    calibração, salvando em `docs/resultados/`.
 
 ## 3. Pendências que dependem do autor (Theniels)
@@ -52,6 +53,7 @@
       PowerShell bloquear scripts: `powershell -ExecutionPolicy Bypass -File scripts/avaliar_dominio.ps1`.
 - [ ] Se a calibração sugerir um valor, colocar `RETRIEVAL_MIN_SCORE=<valor>` no `.env` e
       `docker compose up -d`.
+- [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env` (ex.: `seucuida:<chave-longa>`).
 - [ ] (Opcional) Testar o cliente de referência: `cd frontend && npm install && npm run web`.
 - [ ] `git push -u origin feature/audit-0.7.0 feature/dominio-0.8.0` e abrir os PRs (seção 6).
 
@@ -64,9 +66,12 @@
 3. ✅ **Contrato congelado** (D043): `docs/contrato/openapi-v1.json` + `tests/test_contract.py`,
    `ragtest-export-openapi`, cliente TS gerado (`npm run generate:api`, checado na CI),
    `GET /v1/services` e `GET /v1/services/{id}`.
-4. **Autenticação** (próximo) `X-API-Key` + rate limit por chave (desligável em desenvolvimento).
-   Depois de mudar o contrato: `ragtest-export-openapi` e `npm run generate:api`.
-5. **Teste ponta a ponta** na CI com Qdrant real (service container) e embeddings/LLM falsos.
+4. ✅ **Autenticação** (D044): `API_KEYS` + `X-API-Key` em `/v1/*`, limite `RATE_LIMIT_PER_MINUTE`
+   no `/v1/chat`, 401/429 normalizados e auditados.
+5. **Teste ponta a ponta** (próximo) na CI com Qdrant real (service container) e embeddings/LLM
+   falsos: ingestão → sync → `/v1/chat` → citações, ações e auditoria.
+
+Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
 
 **Observação para agentes em ambiente remoto:** `pytest tests -p no:cacheprovider --ignore=.pytest_cache`
 (a pasta `.pytest_cache` pode estar bloqueada); o frontend precisa de `npm install` próprio fora da
@@ -93,7 +98,7 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
 - **2026-09-28 (3) — Claude (Cowork)**: diretriz backend headless registrada no plano, no AGENTS.md
-  e aqui; regra de atualizar plano/estado a cada etapa. Passos 2 (D042) e 3 (D043) da ordem headless concluídos.
+  e aqui; regra de atualizar plano/estado a cada etapa. Passos 2 (D042), 3 (D043) e 4 (D044) da ordem headless concluídos.
 
 - **2026-09-28 — Claude (Cowork)**: análise do repositório e plano (`PLANO_FINALIZACAO_TCC.md`);
   Fase 0 parcial (`.gitattributes`, docs); Fase 1: auditoria de PII, D038 proposta, catálogo de
