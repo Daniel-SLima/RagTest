@@ -1,0 +1,215 @@
+[
+  {
+    "id": "v3-holdout-preventivo-papanicolau",
+    "topic": "rastreamento",
+    "query": "papanicolau é a mesma coisa que preventivo?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-preventivo-70-anos",
+    "topic": "rastreamento",
+    "query": "tenho 70 anos, ainda preciso fazer preventivo?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-mamografia-45",
+    "topic": "rastreamento",
+    "query": "com 45 anos já posso fazer mamografia?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-ubs-faz-mamografia",
+    "topic": "agendamento",
+    "query": "a unidade de saúde faz a mamografia lá mesmo?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-pedido-mamografia",
+    "topic": "agendamento",
+    "query": "preciso de pedido do médico pra fazer mamografia?",
+    "acceptable_sources": [
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-preventivo-menstruada",
+    "topic": "rastreamento",
+    "query": "posso fazer o preventivo menstruada?",
+    "acceptable_sources": [
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-dna-hpv",
+    "topic": "rastreamento",
+    "query": "o que é esse teste de DNA-HPV?",
+    "acceptable_sources": [
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-ultrassom-sus",
+    "topic": "agendamento",
+    "query": "como marco ultrassom pelo sus",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-onde-prenatal",
+    "topic": "agendamento",
+    "query": "to gravida, onde eu faço o pre natal",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v3-holdout-morfologico",
+    "topic": "gestacao",
+    "query": "quantas ultrassons morfológicas tenho que fazer na gravidez",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-bebe-mexer",
+    "topic": "gestacao",
+    "query": "quando começo a sentir o bebê mexer",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-pintar-cabelo",
+    "topic": "gestacao",
+    "query": "posso pintar o cabelo grávida",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-cerveja",
+    "topic": "gestacao",
+    "query": "grávida pode beber cerveja de vez em quando?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-peso-gravidez",
+    "topic": "gestacao",
+    "query": "quantos quilos é normal engordar na gravidez",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v3-holdout-sexo-bebe",
+    "topic": "gestacao",
+    "query": "quando dá pra saber se é menino ou menina",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-enjoo",
+    "topic": "gestacao",
+    "query": "enjoo e vômito na gravidez é normal?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v3-holdout-tampao",
+    "topic": "gestacao",
+    "query": "o tampão saiu, é trabalho de parto?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-contracoes",
+    "topic": "urgencia",
+    "query": "estou tendo contrações fortes e seguidas",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "servicos/catalogo_servicos.json",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v3-holdout-dor-cabeca",
+    "topic": "urgencia",
+    "query": "estou com dor de cabeça muito forte e tô grávida",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "servicos/catalogo_servicos.json",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v3-holdout-febre-manchas",
+    "topic": "urgencia",
+    "query": "estou grávida com febre e manchas vermelhas no corpo",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v3-holdout-sifilis-cura",
+    "topic": "prevencao",
+    "query": "sífilis tem cura?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-camisinha-feminina",
+    "topic": "contracepcao",
+    "query": "como usa a camisinha feminina",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "id": "v3-holdout-primeira-relacao",
+    "topic": "contracepcao",
+    "query": "dá pra engravidar na primeira vez?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-anticoncepcional-libido",
+    "topic": "contracepcao",
+    "query": "o anticoncepcional diminui a vontade de transar?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v3-holdout-vacina-hpv-onde",
+    "topic": "prevencao",
+    "query": "onde eu tomo a vacina do hpv",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  }
+]

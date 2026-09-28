@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+import sys
 from dataclasses import dataclass
 from importlib.resources import files
 from pathlib import Path
@@ -8,6 +9,7 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.evaluation import EVALUATION_DATASET_VERSION, select_retrieval_cases
+from app.evaluation.gate import check_quality_gate
 from app.evaluation.labels import (
     evaluation_label_mode,
     parse_source_judgments,
@@ -47,6 +49,8 @@ class ExplicitAggregateMetrics:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate RagTest retrieval quality.")
     parser.add_argument("--cases", type=Path, default=None)
+    parser.add_argument("--min-pass-rate", type=float, default=None)
+    parser.add_argument("--min-mrr", type=float, default=None)
     parser.add_argument(
         "--dataset",
         default=None,
@@ -316,7 +320,7 @@ async def run(
     mode: str,
     suite: str,
     dataset: str | None = None,
-) -> None:
+) -> list[tuple[str, AggregateMetrics | ExplicitAggregateMetrics]]:
     cases, source_label = _load_cases(cases_path, suite, dataset)
     label_mode = evaluation_label_mode(cases)
     profiles = selected_profiles(mode)
@@ -398,13 +402,26 @@ async def run(
                         f"{_format_optional(result.required_recall):>10}  "
                         f"{_format_optional(result.required_ndcg):>8}"
                     )
+        return results
     finally:
         await qdrant.close()
 
 
 def main() -> None:
     args = parse_args()
-    asyncio.run(run(args.cases, args.limit, args.mode, args.suite, args.dataset))
+    results = asyncio.run(run(args.cases, args.limit, args.mode, args.suite, args.dataset))
+    if args.min_pass_rate is None and args.min_mrr is None:
+        return
+    failures = check_quality_gate(
+        results, min_pass_rate=args.min_pass_rate, min_mrr=args.min_mrr
+    )
+    print()
+    print("=== quality gate ===")
+    if failures:
+        for failure in failures:
+            print(f"FAIL {failure}")
+        sys.exit(1)
+    print("PASS")
 
 
 if __name__ == "__main__":
