@@ -19,7 +19,7 @@ export function reminderFromAction(action: ChatAction): Reminder | null {
   return {
     id: `${action.service_id ?? "geral"}-${action.due_date}`,
     label: action.label,
-    serviceId: action.service_id,
+    serviceId: action.service_id ?? null,
     dueDate: action.due_date,
   }
 }

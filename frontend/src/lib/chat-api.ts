@@ -1,3 +1,4 @@
+import type { components } from "./api-types"
 
 export class ChatApiError extends Error {
   readonly status: number
@@ -40,57 +41,13 @@ export type ChatApiRequest = {
   auto_decompose: boolean
 }
 
-export type ChatSource = {
-  citation_id: number
-  score: number
-  source: string
-  category: string | null
-  audience: string | null
-  page: number | null
-  chunk_count: number
-  excerpt: string
-  title?: string | null
-  location_label?: string | null
-}
+type Schemas = components["schemas"]
 
-export type ChatSafety = {
-  triaged: boolean
-  rule_id: string | null
-  out_of_scope: boolean
-}
-
-export type ChatAction = {
-  type: "open_link" | "schedule_reminder" | "call_emergency"
-  label: string
-  url: string | null
-  service_id: string | null
-  suggested_in_days: number | null
-  due_date?: string | null
-  requires_host_app?: boolean
-  note?: string | null
-}
-
-export type ChatDisplay = {
-  status: "emergency" | "out_of_scope" | "verified" | "unverified" | "no_sources"
-  tone: "danger" | "neutral" | "success" | "warning"
-  title: string
-  message: string
-}
-
-export type ChatApiResponse = {
-  answer: string
-  model: string
-  grounded: boolean
-  citation_ids: number[]
-  citation_retry_count: number
-  multi_query_used: boolean
-  retrieval_queries: string[]
-  decomposition_status: string
-  sources: ChatSource[]
-  safety?: ChatSafety
-  actions?: ChatAction[]
-  display?: ChatDisplay | null
-}
+export type ChatSource = Schemas["ChatSource"]
+export type ChatSafety = Schemas["ChatSafety"]
+export type ChatAction = Schemas["ChatAction"]
+export type ChatDisplay = Schemas["ChatDisplay"]
+export type ChatApiResponse = Schemas["ChatResponse"]
 
 export function buildChatRequest(input: ChatRequestInput): ChatApiRequest {
   return {

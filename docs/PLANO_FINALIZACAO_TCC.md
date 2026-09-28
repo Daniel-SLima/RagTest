@@ -305,8 +305,9 @@ memória, sugestões). O trabalho passa a ser no contrato:
 | F2 | Avaliação v2 | 🟡 dataset pronto; falta executar |
 | F3 | Triagem de urgência + fora de escopo | ✅ (limiar a calibrar) |
 | F4 | Ações estruturadas | ✅ |
-| F5 | Backend headless | 🟡 passo 2 ✅ (D042); falta contrato congelado |
-| F6 | Robustez e integração | ⏳ |
+| F5 | Backend headless | ✅ lógica na API (D042) + contrato congelado (D043) |
+
+| F6 | Robustez e integração | ⏳ próximo: autenticação + rate limit |
 | F7 | Usabilidade + monografia | ⏳ |
 
 Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RAGAS (fica a rubrica manual).

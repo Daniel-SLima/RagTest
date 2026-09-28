@@ -3,6 +3,15 @@
 O backend é independente do cliente. O app integrador (React Native, Flutter ou web) conversa
 com ele por REST/JSON. Documentação interativa: `http://<host>:8000/docs` (OpenAPI).
 
+**Contrato congelado:** `docs/contrato/openapi-v1.json`. Gere o cliente a partir dele:
+
+- TypeScript/React Native: `npx openapi-typescript docs/contrato/openapi-v1.json -o api-types.ts --default-non-nullable false`
+  (o cliente de referência já faz isso com `npm run generate:api`);
+- Flutter/Dart: `openapi-generator-cli generate -i docs/contrato/openapi-v1.json -g dart-dio -o ragtest_client`.
+
+Qualquer mudança no contrato quebra `tests/test_contract.py` até o arquivo ser regenerado com
+`ragtest-export-openapi` e revisado.
+
 ## Endpoints
 
 | Método | Rota | Uso |
@@ -15,6 +24,8 @@ com ele por REST/JSON. Documentação interativa: `http://<host>:8000/docs` (Ope
 | POST | `/v1/chat` | pergunta → resposta com fontes, segurança e ações |
 | POST | `/v1/search` | busca vetorial pura (diagnóstico) |
 | GET | `/v1/suggestions` | perguntas sugeridas para a tela inicial (vêm do catálogo) |
+| GET | `/v1/services` | lista de serviços do catálogo (id, nome, público, link) |
+| GET | `/v1/services/{id}` | detalhes: para quem, periodicidade, onde, como agendar, documentos, preparo, sinais de alarme, lembretes, fontes |
 
 Toda resposta traz o header `X-Request-ID` (use em relatos de erro).
 

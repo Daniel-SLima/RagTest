@@ -439,3 +439,17 @@ campos e fica congelado como cliente de referência.
 reescrito; qualquer regra no front teria de ser duplicada em cada cliente.
 **Impacto:** contrato aditivo (campos novos opcionais para clientes antigos). `due_date` usa
 `APP_TIMEZONE` (fallback UTC−3 sem depender de tzdata).
+
+
+## D043 — Contrato OpenAPI congelado e cliente gerado
+
+**Data:** 2026-09-28
+**Decisão:** `docs/contrato/openapi-v1.json` é o contrato público da API v1 (sem `info.version`
+para não mudar a cada release). `tests/test_contract.py` falha se o OpenAPI gerado divergir;
+`ragtest-export-openapi` regenera. O cliente de referência usa tipos gerados por
+`openapi-typescript` (`npm run generate:api`) e a CI verifica que estão atualizados. O catálogo
+ganhou `GET /v1/services` e `GET /v1/services/{id}` com nomes de campos em inglês, como o resto da API.
+**Motivo:** o app final será escrito depois e possivelmente em outra linguagem; o contrato
+precisa ser explícito, versionado e impossível de mudar sem querer.
+**Impacto:** mudanças de schema exigem regenerar e revisar o arquivo; clientes Flutter podem ser
+gerados do mesmo arquivo.

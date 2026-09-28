@@ -75,3 +75,8 @@ jobs:
 
       - name: Frontend typecheck
         run: npm run typecheck
+
+      - name: Generated API client matches the frozen contract
+        run: |
+          npm run generate:api
+          git diff --exit-code src/lib/api-types.ts

@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest --runInBand",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:api": "openapi-typescript ../docs/contrato/openapi-v1.json -o src/lib/api-types.ts --default-non-nullable false"
   },
   "dependencies": {
     "expo": "57.0.22",
@@ -26,7 +27,8 @@
     "jest": "^30.0.0",
     "jest-expo": "57.0.5",
     "typescript": "^5.9.0",
-    "@types/node": "^24.0.0"
+    "@types/node": "^24.0.0",
+    "openapi-typescript": "7.13.0"
   },
   "jest": {
     "preset": "jest-expo",

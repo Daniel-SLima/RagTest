@@ -15,9 +15,9 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Ordem headless — passo 2 ✅ concluído · próximo: passo 3 (contrato congelado) |
+| Etapa atual | Ordem headless — passos 2 e 3 ✅ · próximo: passo 4 (autenticação + rate limit) |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `290 passed`, `ruff` limpo · frontend Jest `18 passed`, `tsc` ok (28/09) |
+| Testes | backend `295 passed`, `ruff` limpo · frontend Jest `18 passed`, `tsc` ok (28/09) |
 | Qdrant | Inalterado (767 chunks). Catálogo **não sincronizado** — o agente não tem Docker nem acesso ao HuggingFace. |
 
 **Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
@@ -42,7 +42,8 @@
    com data), aviso para links `seucuida://`, perguntas sugeridas. Compatível com respostas antigas.
 9. **Headless (D042)**: `display`, rótulos de fontes, ações com `due_date`/`requires_host_app`/`note`,
    `GET /v1/suggestions`; Expo reduzido a renderizar esses campos.
-10. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
+10. **Contrato congelado (D043)**: snapshot OpenAPI testado, cliente TS gerado, `GET /v1/services[/{id}]`.
+11. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
    calibração, salvando em `docs/resultados/`.
 
 ## 3. Pendências que dependem do autor (Theniels)
@@ -60,9 +61,11 @@
    registrar as métricas em `docs/avaliacao-retrieval.md` e analisar falhas só do dev.
 2. ✅ **Lógica de apresentação na API** (D042): `display`, `sources[].title/location_label`,
    `actions[].due_date/requires_host_app/note`, `GET /v1/suggestions`. Expo só renderiza.
-3. **Contrato congelado** (próximo): `docs/contrato/openapi-v1.json` + teste de snapshot, cliente TS
-   gerado a partir dele, `GET /v1/services` e `GET /v1/services/{id}`.
-4. **Autenticação** `X-API-Key` + rate limit por chave (desligável em desenvolvimento).
+3. ✅ **Contrato congelado** (D043): `docs/contrato/openapi-v1.json` + `tests/test_contract.py`,
+   `ragtest-export-openapi`, cliente TS gerado (`npm run generate:api`, checado na CI),
+   `GET /v1/services` e `GET /v1/services/{id}`.
+4. **Autenticação** (próximo) `X-API-Key` + rate limit por chave (desligável em desenvolvimento).
+   Depois de mudar o contrato: `ragtest-export-openapi` e `npm run generate:api`.
 5. **Teste ponta a ponta** na CI com Qdrant real (service container) e embeddings/LLM falsos.
 
 **Observação para agentes em ambiente remoto:** `pytest tests -p no:cacheprovider --ignore=.pytest_cache`
@@ -90,7 +93,7 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
 - **2026-09-28 (3) — Claude (Cowork)**: diretriz backend headless registrada no plano, no AGENTS.md
-  e aqui; regra de atualizar plano/estado a cada etapa. Passo 2 da ordem headless concluído (D042).
+  e aqui; regra de atualizar plano/estado a cada etapa. Passos 2 (D042) e 3 (D043) da ordem headless concluídos.
 
 - **2026-09-28 — Claude (Cowork)**: análise do repositório e plano (`PLANO_FINALIZACAO_TCC.md`);
   Fase 0 parcial (`.gitattributes`, docs); Fase 1: auditoria de PII, D038 proposta, catálogo de
