@@ -53,8 +53,9 @@
 ## 3. Pendências que dependem do autor (Theniels)
 
 - [x] Avaliação v2, teste do chat, diagnóstico da mamografia e push inicial (28/09).
-- [ ] `git push` dos commits novos, esperar a CI e fazer o merge: primeiro o PR `audit-0.7.0`,
-      depois o `dominio-0.8.0`. Em seguida `git switch main` e `git pull`.
+- [ ] `git push`, criar o PR `feature/dominio-0.8.0` → `main` (ele já contém a 0.7.0), esperar a CI
+      verde e fazer o merge. O PR #21 (draft da 0.7.0) é fechado automaticamente como merged.
+      Depois `git switch main` e `git pull`. (CI da 0.7.0 falhava por testes dependentes do `.env` — dificuldade #38.)
 - [ ] Repetir o teste real: `docker compose up -d --build` e
       `docker compose exec api ragtest-chat "Como eu agendo a mamografia?" > docs\resultados\diagnostico_mamografia_2.txt`.
 - [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env`.
