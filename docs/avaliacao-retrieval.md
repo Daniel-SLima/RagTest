@@ -264,3 +264,82 @@ CI final da 0.5.18:
     pytest: 72 passed, 4 warnings
 
 Conclusão: o avaliador v2 pode expressar semântica OR/AND sem alterar o contrato histórico do dataset v1.
+
+
+## Dataset de domínio v2 (2026-09-28)
+
+Foco na proposta do orientador: rastreamento (preventivo/mamografia), agendamento, gestação e
+urgência. Perguntas escritas em linguagem de usuária (informal, com erros comuns), sem copiar o
+texto das fontes. Rótulos explícitos (`acceptable_sources`: qualquer uma das fontes no top-k conta).
+
+| Arquivo | Casos | Uso |
+|---|---|---|
+| `app/evaluation/datasets/dominio-v2-dev.json` | 15 | pode ser usado para ajustes |
+| `app/evaluation/datasets/dominio-v2-holdout.json` | 25 | **congelado**: rodar uma vez por configuração final, não ajustar em cima dele |
+| `app/evaluation/datasets/dominio-v2-fora-escopo.json` | 4 | comportamento esperado `recusar`; usado na Fase 3 (não serve para o avaliador de retrieval) |
+
+Execução (depois de sincronizar o Qdrant com o catálogo de serviços):
+
+    ragtest-evaluate-retrieval --cases app/evaluation/datasets/dominio-v2-dev.json --mode all
+    ragtest-evaluate-retrieval --cases app/evaluation/datasets/dominio-v2-holdout.json --mode all
+
+### Primeira execução — 2026-09-28 (`docs/resultados/avaliacao_2026-09-28_1454.txt`)
+
+Corpus: 773 chunks (767 anteriores + 6 do catálogo de serviços). k=5. Rótulo: `acceptable_sources`.
+
+| Modo | Dev PassRate | Dev MRR | Holdout PassRate | Holdout MRR |
+|---|---|---|---|---|
+| dense | 0.600 (9/15) | 0.533 | 0.760 (19/25) | 0.680 |
+| dense-rerank | 0.600 (9/15) | 0.567 | 0.840 (21/25) | 0.770 |
+| **hybrid** | **1.000 (15/15)** | **0.833** | **0.920 (23/25)** | **0.853** |
+
+Leitura:
+
+- No domínio (linguagem coloquial, FAQ do CHATSCM, catálogo), o **hybrid** (denso + BM25 com RRF)
+  supera os demais nas duas suítes. No corpus genérico anterior (vacinas, DIU, insulina) o
+  `dense-rerank` tinha vencido (D006); a diferença é que perguntas de usuária usam termos exatos
+  ("preventivo", "implanon", "mamografia") que o BM25 captura e o modelo denso multilíngue pequeno não.
+- Falhas do dense/dense-rerank no dev: agendamento do preventivo, resultado do preventivo, "descobri
+  que tô grávida", preventivo na gestação, caroço na mama, DIU — todas respondidas pelo CHATSCM.
+- Falhas do hybrid no holdout: "de quanto em quanto tempo repito o preventivo" e "o que evitar antes
+  do preventivo". As duas dependem só do catálogo. A inspeção mostrou que o serviço `preventivo`
+  virava 2 chunks e o segundo (documentos/preparo) não continha o nome do serviço.
+
+Ações tomadas (D046 e D047): `hybrid` virou o modo padrão; cada chunk do catálogo passa a levar o
+cabeçalho `Serviço: <nome>`.
+
+**Atenção metodológica:** a correção do cabeçalho foi motivada por falhas do holdout. Uma nova
+execução do holdout v2 **não é mais independente** para essa mudança; o dev continua válido e um
+holdout v3 com perguntas novas deve ser congelado antes da próxima rodada.
+
+### Segunda execução — 2026-09-28 (`docs/resultados/avaliacao_2026-09-28_1503.txt`)
+
+Após D047 (contexto do serviço nos chunks do catálogo), 773 chunks, sync com 2 inserções e 2 remoções.
+
+| Modo | Dev PassRate | Dev MRR | Holdout PassRate* | Holdout MRR* |
+|---|---|---|---|---|
+| dense | 0.600 | 0.533 | 0.760 | 0.660 |
+| dense-rerank | 0.600 | 0.567 | 0.840 | 0.750 |
+| **hybrid** | **1.000** | **0.833** | **0.960 (24/25)** | **0.861** |
+
+\* Holdout não independente para a D047 (ver nota acima). Falha restante do hybrid: "de quanto em
+quanto tempo repito o preventivo se deu normal" (o chunk da periodicidade não aparece no top 5).
+
+### Teste do chat com provider real — 2026-09-28 (`docs/resultados/teste_chat.json`, Groq GPT-OSS 120B)
+
+| Pergunta | Resultado |
+|---|---|
+| Como eu agendo a mamografia? | ❌ `grounded=false` após repair (fontes corretas: CHATSCM + catálogo). Causa em investigação — dificuldade #36 |
+| Com quantos anos faço o preventivo? | ✅ grounded, cita o catálogo, ações do preventivo com `due_date` |
+| estou grávida e sangrando | ✅ triagem determinística, sem LLM, ação 192 |
+| quem ganhou o jogo do bahia? | ❌ recusa com citação falsa `[1]` marcada como verificada → corrigido pela D048 |
+
+O arquivo aparece com acentos corrompidos porque o PowerShell 5.1 decodificava a resposta sem
+charset como Latin-1; corrigido pela D049.
+
+### Calibração de fora de escopo (dev × fora de escopo)
+
+Menor score top-1 do domínio: 0.3527 (bolsa estourou). Maior fora de escopo: 0.6233 ("melhor plano
+de saúde particular"). **Sem separação limpa** (8 perguntas do domínio abaixo de 0.6233).
+Decisão: `RETRIEVAL_MIN_SCORE` continua desligado; recusa por limiar de similaridade densa não é
+viável neste corpus (ver D041). Alternativa futura: classificador de domínio leve ou regra de palavras-chave.

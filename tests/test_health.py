@@ -36,3 +36,14 @@ def test_ready_returns_503_when_qdrant_is_unavailable() -> None:
 
     assert response.status_code == 503
     assert response.json() == {"detail": "Qdrant is unavailable"}
+
+
+def test_json_responses_declare_utf8_charset() -> None:
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    with TestClient(app) as client:
+        response = client.get("/health")
+
+    assert response.headers["content-type"] == "application/json; charset=utf-8"

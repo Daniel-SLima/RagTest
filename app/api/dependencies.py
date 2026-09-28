@@ -6,6 +6,7 @@ from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.llm.factory import create_llm_provider
+from app.observability.audit import AuditSink
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.embeddings.factory import (
     create_embedding_provider,
@@ -27,6 +28,13 @@ def get_conversation_service(request: Request) -> ConversationService:
     if service is None:
         raise RuntimeError("Conversation service was not initialized")
     return service
+
+
+def get_audit_sink(request: Request) -> AuditSink:
+    sink = getattr(request.app.state, "audit_sink", None)
+    if sink is None:
+        raise RuntimeError("Audit sink was not initialized")
+    return sink
 
 
 def get_embedding_provider(
@@ -59,11 +67,11 @@ def get_llm_provider(
     if provider is None:
         try:
             provider = create_llm_provider(settings)
-        except RuntimeError as exc:
+        except RuntimeError:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=str(exc),
-            ) from exc
+                detail="LLM provider is temporarily unavailable.",
+            ) from None
         request.app.state.llm_provider = provider
     return provider
 

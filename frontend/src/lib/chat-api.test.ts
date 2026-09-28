@@ -103,3 +103,16 @@ describe("sendChatMessage", () => {
   })
 
 })
+
+describe("api key", () => {
+  it("sends X-API-Key when configured", async () => {
+    const fetcher = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({}) })
+
+    await sendChatMessage({ message: "oi tudo bem" }, { baseUrl: "http://api", apiKey: "segredo", fetcher })
+
+    expect(fetcher.mock.calls[0][1].headers).toEqual({
+      "Content-Type": "application/json",
+      "X-API-Key": "segredo",
+    })
+  })
+})

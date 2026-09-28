@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 
 logger = logging.getLogger(__name__)
 
@@ -165,28 +165,22 @@ class GroqProvider:
         except HTTPError as exc:
             if exc.headers is not None:
                 self._record_rate_limits(exc.headers)
-            try:
-                detail = exc.read().decode("utf-8").strip()
-            except Exception:  # noqa: BLE001 - best-effort extraction of provider error body.
-                detail = ""
             message = f"Groq HTTP {exc.code}"
-            if detail:
-                message += f": {detail}"
             raise _GroqRequestError(
                 message,
                 status_code=exc.code,
                 retry_after_seconds=self._retry_after_seconds(exc),
-            ) from exc
-        except (URLError, TimeoutError, OSError) as exc:
-            raise _GroqRequestError(f"Não foi possível acessar a Groq: {exc}") from exc
+            ) from None
+        except (URLError, TimeoutError, OSError):
+            raise _GroqRequestError("Groq request failed.") from None
 
         try:
             body = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError("Groq retornou JSON inválido.") from exc
+        except json.JSONDecodeError:
+            raise LLMProviderRequestError(provider="groq") from None
 
         if not isinstance(body, dict):
-            raise RuntimeError("Groq retornou uma resposta inesperada.")
+            raise LLMProviderRequestError(provider="groq")
         return body
 
     async def _post_json(self, payload: dict[str, object]) -> dict[str, object]:
@@ -207,7 +201,10 @@ class GroqProvider:
                 retries_exhausted = retry_index >= self._service_retry_attempts
 
                 if not is_transient:
-                    raise RuntimeError(str(exc)) from exc
+                    raise LLMProviderRequestError(
+                        provider="groq",
+                        status_code=exc.status_code,
+                    ) from None
 
                 if retries_exhausted:
                     raise LLMServiceUnavailableError(
@@ -223,11 +220,12 @@ class GroqProvider:
                         min(exc.retry_after_seconds, _MAX_RETRY_AFTER_SECONDS),
                     )
                 logger.warning(
-                    "Groq transient error; retrying in %.1fs (%s/%s): %s",
-                    delay,
+                    "Groq transient error; model=%s status=%s retry=%s/%s delay=%.1fs",
+                    self._model_name,
+                    exc.status_code if exc.status_code is not None else "unknown",
                     retry_index + 1,
                     self._service_retry_attempts,
-                    exc,
+                    delay,
                 )
                 if delay > 0:
                     await asyncio.sleep(delay)
@@ -277,20 +275,20 @@ class GroqProvider:
 
         provider_error = body.get("error")
         if provider_error:
-            raise RuntimeError(f"Groq retornou erro: {provider_error}")
+            raise LLMProviderRequestError(provider="groq")
 
         choices = body.get("choices")
         if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-            raise RuntimeError("Groq não retornou choices no formato esperado.")
+            raise LLMProviderRequestError(provider="groq")
 
         choice = choices[0]
         message = choice.get("message")
         if not isinstance(message, dict):
-            raise RuntimeError("Groq não retornou o campo message esperado.")
+            raise LLMProviderRequestError(provider="groq")
 
         content = message.get("content")
         if not isinstance(content, str):
-            raise RuntimeError("Groq não retornou conteúdo textual.")
+            raise LLMProviderRequestError(provider="groq")
 
         finish_reason = choice.get("finish_reason")
         finish_reason_text = finish_reason if isinstance(finish_reason, str) else None

@@ -1,3 +1,4 @@
+import type { components } from "./api-types"
 
 export class ChatApiError extends Error {
   readonly status: number
@@ -40,28 +41,13 @@ export type ChatApiRequest = {
   auto_decompose: boolean
 }
 
-export type ChatSource = {
-  citation_id: number
-  score: number
-  source: string
-  category: string | null
-  audience: string | null
-  page: number | null
-  chunk_count: number
-  excerpt: string
-}
+type Schemas = components["schemas"]
 
-export type ChatApiResponse = {
-  answer: string
-  model: string
-  grounded: boolean
-  citation_ids: number[]
-  citation_retry_count: number
-  multi_query_used: boolean
-  retrieval_queries: string[]
-  decomposition_status: string
-  sources: ChatSource[]
-}
+export type ChatSource = Schemas["ChatSource"]
+export type ChatSafety = Schemas["ChatSafety"]
+export type ChatAction = Schemas["ChatAction"]
+export type ChatDisplay = Schemas["ChatDisplay"]
+export type ChatApiResponse = Schemas["ChatResponse"]
 
 export function buildChatRequest(input: ChatRequestInput): ChatApiRequest {
   return {
@@ -84,14 +70,19 @@ export type ChatFetcher = (
   url: string,
   init: {
     method: "POST"
-    headers: { "Content-Type": "application/json" }
+    headers: Record<string, string>
     body: string
   },
 ) => Promise<ChatFetchResponse>
 
 type SendChatOptions = {
   baseUrl: string
+  apiKey?: string
   fetcher?: ChatFetcher
+}
+
+function authHeaders(apiKey?: string): Record<string, string> {
+  return apiKey ? { "X-API-Key": apiKey } : {}
 }
 
 export async function sendChatMessage(
@@ -105,7 +96,7 @@ export async function sendChatMessage(
 
   const response = await fetcher(`${baseUrl}/v1/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(options.apiKey) },
     body: JSON.stringify(buildChatRequest(input)),
   })
 
@@ -119,4 +110,19 @@ export async function sendChatMessage(
   }
 
   return body as ChatApiResponse
+}
+
+export type SuggestionsLoader = () => Promise<string[]>
+
+export function createSuggestionsLoader(baseUrl: string, apiKey?: string): SuggestionsLoader {
+  return async () => {
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/suggestions`, {
+      headers: authHeaders(apiKey),
+    })
+    if (!response.ok) {
+      return []
+    }
+    const body = (await response.json()) as { suggestions?: { text: string }[] }
+    return (body.suggestions ?? []).map((item) => item.text)
+  }
 }

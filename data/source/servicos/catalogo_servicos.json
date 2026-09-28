@@ -1,0 +1,233 @@
+{
+  "versao": "2026-09-28-v1",
+  "revisado_em": "2026-09-28",
+  "aviso": "Catálogo de demonstração. Onde e como agendar são orientações genéricas da Atenção Primária; substituir pelos fluxos reais do município ao integrar no Se Cuida Mulher.",
+  "sugestoes": [
+    {
+      "texto": "Quando devo fazer o preventivo?",
+      "topico": "rastreamento"
+    },
+    {
+      "texto": "Com que idade faço a mamografia?",
+      "topico": "rastreamento"
+    },
+    {
+      "texto": "Como agendo a mamografia?",
+      "topico": "agendamento"
+    },
+    {
+      "texto": "Estou grávida, e agora?",
+      "topico": "gestacao"
+    },
+    {
+      "texto": "Quais métodos contraceptivos o SUS oferece?",
+      "topico": "contracepcao"
+    }
+  ],
+  "servicos": [
+    {
+      "id": "preventivo",
+      "nome": "Exame preventivo do câncer do colo do útero",
+      "sinonimos": [
+        "papanicolau",
+        "preventivo",
+        "citopatológico do colo do útero",
+        "colpocitologia oncótica",
+        "esfregaço cervicovaginal",
+        "teste de DNA-HPV",
+        "exame de HPV"
+      ],
+      "audience": "mulher",
+      "publico": "Mulheres e pessoas com colo do útero de 25 a 64 anos. Fora dessa faixa, o exame pode ser solicitado conforme avaliação de médico ou enfermeiro.",
+      "periodicidade": "Onde o teste de DNA-HPV já foi implantado: repetir a cada 5 anos quando o resultado for negativo. Onde ainda se usa o Papanicolau: os dois primeiros exames com intervalo de 1 ano e, se ambos forem normais, a cada 3 anos.",
+      "onde": "Unidade Básica de Saúde (UBS) ou Unidade de Saúde da Família (USF) de referência.",
+      "como_agendar": "Procure a UBS ou USF mais próxima de casa e verifique a data do agendamento para o preventivo. No app, o item Unidades de Saúde lista as unidades da atenção básica.",
+      "documentos": [
+        "Cartão Nacional de Saúde (Cartão SUS)",
+        "Documento de identificação com foto"
+      ],
+      "preparo": [
+        "Evitar relações sexuais, mesmo com preservativo, nos 2 dias anteriores ao exame",
+        "Não usar duchas, medicamentos ou cremes vaginais nos 2 dias anteriores",
+        "Evitar agendar durante a menstruação"
+      ],
+      "observacoes": [
+        "O resultado fica pronto entre 20 e 30 dias.",
+        "O exame deve ser sem dor; algumas mulheres sentem um leve desconforto.",
+        "Gestantes podem fazer o exame em qualquer período da gestação, preferencialmente até o 7º mês."
+      ],
+      "link": {
+        "rotulo": "Ver unidades de saúde",
+        "url": "seucuida://unidades"
+      },
+      "lembretes": [
+        {
+          "rotulo": "Primeiro Papanicolau: repetir em 1 ano",
+          "dias": 365
+        },
+        {
+          "rotulo": "Papanicolau normal: próximo em 3 anos",
+          "dias": 1095
+        },
+        {
+          "rotulo": "DNA-HPV negativo: próximo em 5 anos",
+          "dias": 1825
+        }
+      ],
+      "fontes": [
+        {
+          "titulo": "Diretrizes Brasileiras para o Rastreamento do Câncer do Colo do Útero",
+          "orgao": "Ministério da Saúde",
+          "ano": 2025,
+          "url": "https://www.gov.br/saude/pt-br/assuntos/pcdt/r/rastreamento-cancer-do-colo-do-utero"
+        },
+        {
+          "titulo": "Diretrizes Brasileiras para o Rastreamento do Câncer do Colo do Útero, 2ª ed.",
+          "orgao": "INCA",
+          "ano": 2016
+        },
+        {
+          "titulo": "CHATSCM — perguntas frequentes do Se Cuida Mulher",
+          "orgao": "Se Cuida Mulher",
+          "ano": 2026
+        }
+      ]
+    },
+    {
+      "id": "mamografia",
+      "nome": "Mamografia",
+      "sinonimos": [
+        "exame da mama",
+        "rastreamento do câncer de mama",
+        "mamografia de rastreamento"
+      ],
+      "audience": "mulher",
+      "publico": "No SUS, a mamografia pode ser feita a partir dos 40 anos. O rastreamento de rotina é recomendado dos 50 aos 74 anos; entre 40 e 49 anos e acima de 74 anos sem sintomas, a decisão é tomada com o profissional de saúde.",
+      "periodicidade": "A cada 2 anos na faixa de 50 a 74 anos.",
+      "onde": "Solicitação na UBS/USF; o exame é realizado em serviço de imagem de referência.",
+      "como_agendar": "Procure a UBS ou USF mais próxima e verifique na recepção se há vaga para mamografia. A UBS não realiza o exame, mas a recepção consulta no sistema a vaga e a unidade onde ele será feito.",
+      "documentos": [
+        "Cartão Nacional de Saúde (Cartão SUS)",
+        "Documento de identificação com foto",
+        "Solicitação do exame, quando exigida pelo serviço"
+      ],
+      "preparo": [
+        "Evitar desodorante, talco ou creme nas mamas e axilas no dia do exame"
+      ],
+      "observacoes": [
+        "Se notar caroço na mama, alteração na pele ou saída de líquido pelo mamilo, procure a UBS e agende consulta com médico ou enfermeiro, sem esperar o próximo rastreamento."
+      ],
+      "link": {
+        "rotulo": "Ver unidades de saúde",
+        "url": "seucuida://unidades"
+      },
+      "lembretes": [
+        {
+          "rotulo": "Mamografia de rastreamento: a cada 2 anos",
+          "dias": 730
+        }
+      ],
+      "fontes": [
+        {
+          "titulo": "Nota Técnica nº 626/2025-CGCAN/DECAN/SAES/MS — rastreamento do câncer de mama",
+          "orgao": "Ministério da Saúde",
+          "ano": 2025,
+          "url": "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/notas-tecnicas/2025/nota-tecnica-no-626-2025-cgcan-decan-saes-ms.pdf"
+        },
+        {
+          "titulo": "Ministério da Saúde padroniza informações para acesso ao exame de mamografia no SUS",
+          "orgao": "INCA",
+          "ano": 2025,
+          "url": "https://www.gov.br/inca/pt-br/assuntos/noticias/2025/ministerio-da-saude-padroniza-informacoes-para-acesso-ao-exame-de-mamografia-no-sus"
+        },
+        {
+          "titulo": "CHATSCM — perguntas frequentes do Se Cuida Mulher",
+          "orgao": "Se Cuida Mulher",
+          "ano": 2026
+        }
+      ]
+    },
+    {
+      "id": "prenatal",
+      "nome": "Consulta de pré-natal",
+      "sinonimos": [
+        "pré-natal",
+        "prenatal",
+        "estou grávida",
+        "acompanhamento da gestação"
+      ],
+      "audience": "gestante",
+      "publico": "Gestantes, desde a suspeita ou confirmação da gravidez.",
+      "periodicidade": "Conforme o calendário de consultas definido pela equipe de saúde.",
+      "onde": "Unidade Básica de Saúde (UBS) ou Unidade de Saúde da Família (USF) mais próxima de casa.",
+      "como_agendar": "Procure a UBS/USF mais próxima e faça o agendamento na recepção. Gestante tem prioridade no agendamento.",
+      "documentos": [
+        "Cartão Nacional de Saúde (Cartão SUS)",
+        "Documento de identificação com foto",
+        "Caderneta da gestante, se já tiver"
+      ],
+      "link": {
+        "rotulo": "Ver unidades de saúde",
+        "url": "seucuida://unidades"
+      },
+      "lembretes": [
+        {
+          "rotulo": "Lembrar da próxima consulta de pré-natal",
+          "dias": 30
+        }
+      ],
+      "fontes": [
+        {
+          "titulo": "CHATSCM — Gestação e pré-natal",
+          "orgao": "Se Cuida Mulher",
+          "ano": 2026
+        },
+        {
+          "titulo": "Caderneta da Gestante, 8ª ed.",
+          "orgao": "Ministério da Saúde",
+          "ano": 2024
+        }
+      ]
+    },
+    {
+      "id": "urgencia_obstetrica",
+      "nome": "Urgência e emergência",
+      "sinonimos": [
+        "emergência",
+        "urgência",
+        "maternidade",
+        "UPA",
+        "SAMU"
+      ],
+      "audience": "mulher",
+      "publico": "Qualquer pessoa com sinais de alarme; gestantes devem ir à maternidade.",
+      "onde": "Gestante: maternidade de referência. Não gestante: UPA ou pronto-atendimento.",
+      "como_agendar": "Não é necessário agendar. Procure atendimento imediatamente ou ligue 192 (SAMU).",
+      "sinais_alarme": [
+        "Pressão alta na gestação",
+        "Dor de cabeça forte, com visão embaçada ou embaralhada ou enxergando estrelinhas",
+        "Sangramento ou perda de líquido (água) pela vagina",
+        "Muito inchaço nos pés, nas pernas e no rosto, principalmente ao acordar",
+        "Contrações fortes, dolorosas e frequentes",
+        "Febre"
+      ],
+      "telefone_emergencia": "192",
+      "link": {
+        "rotulo": "Ligar para o SAMU (192)",
+        "url": "tel:192"
+      },
+      "fontes": [
+        {
+          "titulo": "CHATSCM — Gestante parte 2 (sinais de urgência)",
+          "orgao": "Se Cuida Mulher",
+          "ano": 2026
+        },
+        {
+          "titulo": "Caderneta da Gestante, 8ª ed. — Sinais de alerta",
+          "orgao": "Ministério da Saúde",
+          "ano": 2024
+        }
+      ]
+    }
+  ]
+}

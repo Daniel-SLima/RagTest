@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 
 logger = logging.getLogger(__name__)
 
@@ -99,24 +99,18 @@ class OllamaProvider:
             with urlopen(request, timeout=self._request_timeout_seconds) as response:
                 raw = response.read().decode("utf-8")
         except HTTPError as exc:
-            try:
-                detail = exc.read().decode("utf-8").strip()
-            except Exception:  # noqa: BLE001 - best-effort extraction of provider error body.
-                detail = ""
             message = f"Ollama HTTP {exc.code}"
-            if detail:
-                message += f": {detail}"
-            raise _OllamaRequestError(message, status_code=exc.code) from exc
-        except (URLError, TimeoutError, OSError) as exc:
-            raise _OllamaRequestError(f"Não foi possível acessar o Ollama: {exc}") from exc
+            raise _OllamaRequestError(message, status_code=exc.code) from None
+        except (URLError, TimeoutError, OSError):
+            raise _OllamaRequestError("Ollama request failed.") from None
 
         try:
             body = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError("Ollama retornou JSON inválido.") from exc
+        except json.JSONDecodeError:
+            raise LLMProviderRequestError(provider="ollama") from None
 
         if not isinstance(body, dict):
-            raise RuntimeError("Ollama retornou uma resposta inesperada.")
+            raise LLMProviderRequestError(provider="ollama")
         return body
 
     async def _post_json(self, payload: dict[str, object]) -> dict[str, object]:
@@ -137,7 +131,10 @@ class OllamaProvider:
                 retries_exhausted = retry_index >= self._service_retry_attempts
 
                 if not is_transient:
-                    raise RuntimeError(str(exc)) from exc
+                    raise LLMProviderRequestError(
+                        provider="ollama",
+                        status_code=exc.status_code,
+                    ) from None
 
                 if retries_exhausted:
                     raise LLMServiceUnavailableError(
@@ -148,11 +145,12 @@ class OllamaProvider:
 
                 delay = self._service_retry_base_delay_seconds * (2**retry_index)
                 logger.warning(
-                    "Ollama transient error; retrying in %.1fs (%s/%s): %s",
-                    delay,
+                    "Ollama transient error; model=%s status=%s retry=%s/%s delay=%.1fs",
+                    self._model_name,
+                    exc.status_code if exc.status_code is not None else "unknown",
                     retry_index + 1,
                     self._service_retry_attempts,
-                    exc,
+                    delay,
                 )
                 if delay > 0:
                     await asyncio.sleep(delay)
@@ -193,22 +191,19 @@ class OllamaProvider:
 
         provider_error = body.get("error")
         if provider_error:
-            raise RuntimeError(f"Ollama retornou erro: {provider_error}")
+            raise LLMProviderRequestError(provider="ollama")
 
         self._record_generation_metrics(body)
 
         message = body.get("message")
         if not isinstance(message, dict):
-            raise RuntimeError("Ollama não retornou o campo message esperado.")
+            raise LLMProviderRequestError(provider="ollama")
 
         content = message.get("content")
         if not isinstance(content, str):
-            raise RuntimeError("Ollama não retornou conteúdo textual.")
+            raise LLMProviderRequestError(provider="ollama")
 
         text = content.strip()
         if not self._think and "</think>" in text.lower():
-            raise RuntimeError(
-                "Ollama retornou conteúdo de reasoning apesar de think=false. "
-                "Use um modelo que respeite a desativação de thinking."
-            )
+            raise LLMProviderRequestError(provider="ollama")
         return text

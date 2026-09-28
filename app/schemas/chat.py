@@ -1,3 +1,5 @@
+from datetime import date
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -22,6 +24,32 @@ class ChatSource(BaseModel):
     page: int | None = None
     chunk_count: int = 1
     excerpt: str
+    title: str | None = None
+    location_label: str | None = None
+
+
+class ChatSafety(BaseModel):
+    triaged: bool = False
+    rule_id: str | None = None
+    out_of_scope: bool = False
+
+
+class ChatAction(BaseModel):
+    type: Literal["open_link", "schedule_reminder", "call_emergency"]
+    label: str
+    url: str | None = None
+    service_id: str | None = None
+    suggested_in_days: int | None = None
+    due_date: date | None = None
+    requires_host_app: bool = False
+    note: str | None = None
+
+
+class ChatDisplay(BaseModel):
+    status: Literal["emergency", "out_of_scope", "verified", "unverified", "no_sources"]
+    tone: Literal["danger", "neutral", "success", "warning"]
+    title: str
+    message: str
 
 
 class ChatResponse(BaseModel):
@@ -35,3 +63,6 @@ class ChatResponse(BaseModel):
     retrieval_queries: list[str]
     decomposition_status: str
     sources: list[ChatSource]
+    safety: ChatSafety = ChatSafety()
+    actions: list[ChatAction] = []
+    display: ChatDisplay | None = None

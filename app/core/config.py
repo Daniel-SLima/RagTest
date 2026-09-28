@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "RagTest API"
-    app_version: str = "0.6.0"
+    app_version: str = "0.8.0"
     environment: str = "development"
     api_host: str = "0.0.0.0"
     api_port: int = 8000
@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     qdrant_collection: str = "ragtest_documents"
 
     source_dir: Path = Path("data/source")
+    app_timezone: str = "America/Sao_Paulo"
+    api_keys: str | None = None
+    rate_limit_per_minute: int = Field(default=30, ge=0, le=10000)
     chunk_size: int = 1000
     chunk_overlap: int = 200
 
@@ -38,11 +41,12 @@ class Settings(BaseSettings):
     sparse_embedding_model: str = "Qdrant/bm25"
     sparse_embedding_language: str = "portuguese"
 
-    retrieval_mode: Literal["dense", "dense-rerank", "hybrid"] = "dense-rerank"
+    retrieval_mode: Literal["dense", "dense-rerank", "hybrid"] = "hybrid"
     retrieval_merge_same_page: bool = True
     retrieval_max_group_chars: int = 5000
     retrieval_auto_decompose: bool = True
     retrieval_max_subqueries: int = Field(default=3, ge=2, le=3)
+    retrieval_min_score: float | None = Field(default=None, ge=-1.0, le=1.0)
 
     session_db_path: Path = Path("data/state/sessions.sqlite3")
     session_retention_days: int = Field(default=7, ge=1, le=365)
@@ -80,7 +84,14 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @field_validator("qdrant_api_key", "gemini_api_key", "groq_api_key", mode="before")
+    @field_validator(
+        "qdrant_api_key",
+        "gemini_api_key",
+        "groq_api_key",
+        "retrieval_min_score",
+        "api_keys",
+        mode="before",
+    )
     @classmethod
     def empty_secret_is_none(cls, value: object) -> object:
         if value == "":

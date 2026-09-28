@@ -70,6 +70,23 @@ Todos tiveram HitRate@5=1.000 nas duas suites.
 **Motivo:** reduzir o risco de avaliar apenas nas mesmas perguntas que orientaram os ajustes do sistema.  
 **Impacto:** mudanças futuras não devem ser ajustadas no holdout e depois apresentadas como validação independente sobre o mesmo conjunto.
 
+## D009 — Configuração multiagente por papel, sem fixar o orquestrador
+
+**Data:** 2026-09-22
+**Mudança:** foi criada a infraestrutura local `AGENTS.md` + `.codex/config.toml` +
+`.codex/agents/*.toml`, com modelos e esforços explícitos por papel. O nível do projeto não define
+`model` nem `model_reasoning_effort`; o modelo principal permanece determinado pela sessão do Codex.
+O QA usa `gpt-5.6-luna`/`high` com `workspace-write` controlado por instrução explícita de não
+alterar produção, testes ou documentação.
+**Motivo:** separar custo e profundidade por tarefa, preservar qualidade em revisões complexas e
+permitir que ferramentas de teste criem artefatos transitórios sem permitir correções silenciosas.
+Uma sondagem read-only não concluiu dentro do intervalo de observação; não houve erro de permissão
+diagnosticável, então `workspace-write` é mantido como sandbox mínimo para o QA.
+**Impacto:** todos os subagentes usam exclusivamente `gpt-5.6-luna`: reviewer usa `high`
+read-only; developer usa `high` workspace-write; QA usa `high` workspace-write; documenter usa
+`medium` workspace-write; security/privacy usa `xhigh` read-only. A configuração está validada e
+versionada nesta branch.
+
 ---
 
 ## Quando adicionar uma nova decisão
@@ -302,3 +319,232 @@ Impacto:
 **Decisão:** o SQLite adquire uma lease atômica por sessão, valida token e revisão na conclusão e libera a lease em falhas do RAG.
 **Motivo:** duas requisições simultâneas não podem duplicar turnos nem sobrescrever histórico silenciosamente.
 **Impacto:** chamadas concorrentes recebem conflito; uma lease expirada pode ser recuperada sem intervenção manual.
+
+
+## D035 — Normalizar falhas do chat e limitar diagnósticos de providers
+
+**Data:** 2026-09-25
+**Mudança:** a auditoria 0.7.0-A centraliza a classificação de falhas em `NormalizedError`, usa
+detalhes públicos fixos e remove corpo HTTP, URL/razão de `URLError`, payload do campo `error` e
+traceback da decomposição dos diagnósticos de Groq/Ollama.
+**Motivo:** mensagens de provider podem carregar perguntas, trechos, URLs sensíveis ou detalhes de
+infraestrutura; a auditoria precisa preservar somente status e classes estáveis sem alterar retry,
+payload, seleção de provider ou retrieval.
+**Impacto:** sessões mantêm `404`, `409` e `410`, indisponibilidade permanece `503`, e provider/erro
+inesperado de chat usam `502` seguro. Logs de retry registram apenas provider, modelo, status,
+índice e delay. O fallback pré-rota e a classificação de respostas antes da rota permanecem
+responsabilidade da Task 7; governança ampla de logs, egress, retenção e LGPD segue fora deste
+recorte.
+
+
+## D036 — Marcar explicitamente falhas de provider antes da normalização
+
+**Data:** 2026-09-25
+**Mudança:** `LLMProviderRequestError` passou a transportar somente o rótulo do provider e o
+`status_code`, sem copiar a mensagem original. Groq e Ollama usam esse marcador para erros HTTP
+não transitórios e respostas inválidas; `RuntimeError` genérico não é mais inferido como falha de
+provider.
+**Motivo:** `RuntimeError(str(exc))` podia propagar texto arbitrário de um `_RequestError`, e a
+classificação ampla confundia falhas internas com falhas do provider.
+**Impacto:** a rota mantém detalhes públicos fixos, erros de provider continuam em
+`502/provider_error/provider`, falhas internas passam a `502/internal_error/unhandled`, e os
+status internos continuam disponíveis para decidir retries sem alterar sua política. Os contratos
+`404/409/410`, `503 provider_unavailable`, payload, seleção, retrieval e fallback automático
+permanecem inalterados.
+
+
+## D037 — Manter auditoria estruturada minimizada e sanitização de provider com escopo limitado
+
+**Data:** 2026-09-25
+**Decisão:** a 0.7.0-A registra somente eventos operacionais com campos allowlisted e usa
+`JsonLogAuditSink` como destino inicial intercambiável. A sanitização de erros é bounded aos
+fluxos de Groq/Ollama, decomposição, seleção de provider e normalização do chat; corpos HTTP,
+mensagens brutas e tracebacks não entram no contrato de auditoria nem nos detalhes públicos.
+**Motivo:** correlação por requisição, ciclo de vida de sessão/chat e classes de falha podem ser
+verificados sem transformar logs em cópia de perguntas, respostas, histórico ou material do
+corpus. Limitar a sanitização evita declarar uma cobertura de privacidade que não foi auditada em
+todo o sistema.
+**Impacto:** falhas do sink permanecem não bloqueantes, o histórico funcional continua no SQLite
+e o `grounded=true` mantém significado estrutural. Ficam explicitamente fora desta decisão:
+autenticação/autorização, egress de CHATSCM, retenção/WAL/backups, criptografia/TLS, rate limits,
+headers de segurança, exposição do Qdrant, auditoria durável, governança de dependências/CLI e
+política LGPD. Não há alegação de conformidade LGPD.
+
+
+## D038 — Liberar o CHATSCM para providers externos após auditoria de dados pessoais
+
+**Data:** 2026-09-28
+**Status:** APROVADA pelo autor em 2026-09-28, que autorizou o uso de todos os documentos de
+`data/source` no desenvolvimento. O checklist manual em `docs/revisao-privacidade-chatscm.md`
+continua recomendado antes de qualquer uso em produção.
+**Decisão:** o CHATSCM é o FAQ institucional do Se Cuida Mulher e contém o núcleo do domínio do
+TCC (preventivo, mamografia, agendamento, pré-natal, sinais de urgência). Ele deixa de ser
+bloqueado para providers externos quando a auditoria automática (`ragtest-audit-pii`) não
+encontrar identificadores pessoais e o autor confirmar o checklist manual.
+**Motivo:** manter o bloqueio indefinidamente impede avaliar e demonstrar o RAG justamente no
+problema proposto pelo orientador. A auditoria automática de 2026-09-28 encontrou 0 achados
+nos 3 arquivos.
+**Impacto:** após a aprovação, o dataset de avaliação v2 e os testes reais de chat podem usar
+perguntas cujas fontes são o CHATSCM. A regra de não registrar conteúdo em logs continua.
+
+
+## D039 — Triagem determinística de sinais de alarme antes do RAG
+
+**Data:** 2026-09-28
+**Decisão:** `answer_with_rag` chama `app/safety/triage.py` antes de qualquer retrieval ou LLM.
+Se a mensagem em primeira pessoa descrever um sinal de alarme (pressão alta, alteração visual,
+dor de cabeça forte, sangramento, perda de líquido, inchaço, contrações fortes, febre na gestação),
+a resposta é fixa: maternidade + 192 no contexto de gestação; UPA + 192 fora dele.
+**Motivo:** urgência não pode depender de retrieval, disponibilidade do provider ou do gate de
+citações. As regras vêm do CHATSCM (gestante parte 2) e dos sinais de alerta da Caderneta da Gestante.
+**Impacto:** `ChatResult.safety` e `ChatResponse.safety` (`triaged`, `rule_id`); modelo
+`triagem-deterministica`; `decomposition_status=skipped-triage`. Perguntas informativas
+("o que é sangramento de escape?") não disparam a triagem porque exigem marcador de primeira pessoa.
+Falsos positivos são preferíveis a falsos negativos; a lista é testada em `tests/test_triage.py`.
+
+
+## D040 — Ações estruturadas derivadas do catálogo e das fontes citadas
+
+**Data:** 2026-09-28
+**Decisão:** `ChatResponse.actions` lista `open_link`, `schedule_reminder` e `call_emergency`.
+As ações vêm de regras (`app/rag/actions.py`), nunca do texto do LLM: só entram serviços cujo
+documento do catálogo foi **citado** numa resposta `grounded=true`; triagem gera apenas `call_emergency`.
+**Motivo:** cumprir "links de redirecionamento e gatilhos de lembretes" da proposta sem deixar o
+modelo inventar links, mantendo o backend neutro: o app integrador executa as ações.
+**Impacto:** contrato aditivo e retrocompatível (`actions=[]` por padrão). O catálogo é lido de
+`SOURCE_DIR/servicos/catalogo_servicos.json`; se ausente ou inválido, não há ações de serviço.
+
+
+## D041 — Fora de escopo por limiar de similaridade calibrado, desligado por padrão
+
+**Data:** 2026-09-28
+**Decisão:** `RETRIEVAL_MIN_SCORE` (padrão vazio = desligado) vira o `min_score` padrão do
+`/v1/chat`. Sem trechos acima do limiar, a resposta é fixa (sem LLM), orienta a procurar a UBS e
+marca `safety.out_of_scope=true`. O valor só deve ser configurado após `ragtest-calibrate-scope`
+(scores top-1 do dataset v2 dev × `dominio-v2-fora-escopo.json`).
+**Motivo:** recusar perguntas fora do domínio sem um classificador extra, reaproveitando o
+`score_threshold` já existente no Qdrant; um limiar sem calibração poderia recusar perguntas válidas.
+**Impacto:** nenhum efeito até o limiar ser definido; `min_score` enviado na requisição continua
+tendo prioridade.
+
+
+## D042 — Backend headless: textos de exibição, datas e sugestões vêm da API
+
+**Data:** 2026-09-28
+**Decisão:** o `/v1/chat` passa a entregar `display` (status, tom, título, mensagem), rótulos das
+fontes (`title`, `location_label`) e ações com `due_date`, `requires_host_app` e `note`; novo
+`GET /v1/suggestions` (lista editável no catálogo). O cliente Expo foi reduzido a renderizar esses
+campos e fica congelado como cliente de referência.
+**Motivo:** o autor definiu que o produto é o backend e que o app final (Se Cuida Mulher) será
+reescrito; qualquer regra no front teria de ser duplicada em cada cliente.
+**Impacto:** contrato aditivo (campos novos opcionais para clientes antigos). `due_date` usa
+`APP_TIMEZONE` (fallback UTC−3 sem depender de tzdata).
+
+
+## D043 — Contrato OpenAPI congelado e cliente gerado
+
+**Data:** 2026-09-28
+**Decisão:** `docs/contrato/openapi-v1.json` é o contrato público da API v1 (sem `info.version`
+para não mudar a cada release). `tests/test_contract.py` falha se o OpenAPI gerado divergir;
+`ragtest-export-openapi` regenera. O cliente de referência usa tipos gerados por
+`openapi-typescript` (`npm run generate:api`) e a CI verifica que estão atualizados. O catálogo
+ganhou `GET /v1/services` e `GET /v1/services/{id}` com nomes de campos em inglês, como o resto da API.
+**Motivo:** o app final será escrito depois e possivelmente em outra linguagem; o contrato
+precisa ser explícito, versionado e impossível de mudar sem querer.
+**Impacto:** mudanças de schema exigem regenerar e revisar o arquivo; clientes Flutter podem ser
+gerados do mesmo arquivo.
+
+
+## D044 — Autenticação por chave de API e limite de requisições por cliente
+
+**Data:** 2026-09-28
+**Decisão:** `API_KEYS` (`cliente:chave,...`) protege todas as rotas `/v1/*` via header
+`X-API-Key` (comparação em tempo constante); vazio desliga a autenticação para desenvolvimento.
+`/v1/chat` tem janela deslizante em memória de `RATE_LIMIT_PER_MINUTE` por cliente (ou por IP
+quando a autenticação está desligada). 401 e 429 passam a ser classes próprias na normalização de
+erros e na auditoria (`unauthorized`, `rate_limited`), e o middleware preserva `Retry-After` e
+`WWW-Authenticate`.
+**Motivo:** a API vai ser consumida por um app de terceiros e cada pergunta custa uma chamada ao
+LLM; sem identificação e limite, qualquer cliente esgotaria a cota do provider.
+**Impacto:** limite por processo (não compartilhado entre réplicas); chaves por usuária final e
+OAuth ficam fora do escopo do TCC. O contrato OpenAPI passou a declarar o esquema `APIKeyHeader`.
+
+
+## D045 — Teste ponta a ponta do pipeline com Qdrant real e providers falsos
+
+**Data:** 2026-09-28
+**Decisão:** `tests/e2e/test_pipeline_e2e.py` percorre ingestão (catálogo + DOCX) → chunking →
+Qdrant (denso + esparso) → `/v1/chat` com autenticação, sessões, citações, ações, triagem e
+auditoria. Embeddings e LLM são falsos e determinísticos. Localmente usa o modo em memória do
+qdrant-client; na CI, o job `e2e-qdrant` roda contra um Qdrant 1.19.1 real (service container)
+via `RAGTEST_E2E_QDRANT_URL`.
+**Motivo:** os testes unitários simulavam cada camada separadamente; faltava provar que o contrato
+funciona com um banco vetorial real sem depender de rede externa, cota de LLM ou download de modelos.
+**Impacto:** regressões de integração (payload do Qdrant, `service_id` nas fontes, dependências
+da rota) passam a quebrar a CI. A qualidade semântica continua medida pela avaliação v2 com os
+modelos reais.
+
+
+## D046 — Hybrid (denso + BM25) passa a ser o modo padrão de retrieval
+
+**Data:** 2026-09-28
+**Mudança:** `RETRIEVAL_MODE` padrão de `dense-rerank` para `hybrid` (config, docker-compose,
+`.env.example` e `.env` local).
+**Motivo:** no dataset de domínio v2, hybrid obteve PassRate@5 1.000 no dev (dense-rerank 0.600) e
+0.920 no holdout (dense-rerank 0.840), com MRR 0.833/0.853 contra 0.567/0.770. A escolha foi feita
+pelo dev; o holdout confirmou. A D006 continua válida para o corpus genérico antigo, onde hybrid
+tinha MRR menor, mas o domínio do TCC é a prioridade (perguntas coloquiais com termos exatos).
+**Impacto:** cada consulta passa a usar também o embedding esparso BM25 (já indexado); nenhuma
+reindexação é necessária. Os perfis dense e dense-rerank continuam disponíveis para comparação.
+**Complemento à D041:** a calibração não encontrou limiar que separe domínio e fora de escopo;
+`RETRIEVAL_MIN_SCORE` permanece desligado.
+
+
+## D047 — Contexto do serviço em todos os chunks do catálogo
+
+**Data:** 2026-09-28
+**Mudança:** documentos do catálogo levam `chunk_context="Serviço: <nome>"` e `split_documents`
+prefixa esse contexto em todo chunk que não começa com ele.
+**Motivo:** o serviço `preventivo` gerava 2 chunks e o segundo (documentos e preparo) não citava o
+serviço, falhando em "o que evitar antes do preventivo".
+**Impacto:** os pontos do catálogo mudam (id depende do conteúdo); `ragtest-sync-ingestion --apply`
+troca os chunks afetados sem recriar a collection. Mudança motivada por falha do holdout v2 — ver
+a nota metodológica em `avaliacao-retrieval.md`.
+
+
+## D048 — Recusa explícita do modelo vira "fora de escopo", sem citação falsa
+
+**Data:** 2026-09-28
+**Mudança:** o prompt pede que, sem informação nos trechos, o modelo responda só
+`SEM_BASE_DOCUMENTAL`. `app/rag/refusal.py` detecta esse marcador ou uma recusa curta em
+linguagem natural ("não contêm informação", "não é possível responder"), sem listas e com até 500
+caracteres. Nesses casos o chat devolve a resposta fixa de fora de escopo (`out_of_scope=true`,
+`grounded=false`, sem citações) sem acionar o repair.
+**Motivo:** no teste real, "quem ganhou o jogo do Bahia?" gerou uma recusa correta, mas o gate de
+citações exigiu citação e o modelo citou uma página qualquer; a resposta saiu como "Citações
+verificadas". A recusa por limiar de similaridade não era viável (D041).
+**Impacto:** respostas parciais ("responda a parte encontrada e diga o que falta") continuam
+passando pelo gate normal. Menos chamadas de repair em perguntas fora do tema.
+
+
+## D049 — Respostas JSON declaram `charset=utf-8`
+
+**Data:** 2026-09-28
+**Mudança:** a API usa `application/json; charset=utf-8` como tipo padrão de resposta (também no
+fallback de erros do middleware). Contrato OpenAPI e cliente TS regenerados.
+**Motivo:** clientes que assumem Latin-1 quando o charset falta (PowerShell 5.1, e o pacote `http`
+do Dart/Flutter) corrompiam os acentos.
+**Impacto:** nenhuma mudança de schema; só o media type declarado.
+
+
+## D050 — Gate de citações entende títulos em negrito e hierarquia de listas
+
+**Data:** 2026-09-28
+**Mudança:** `app/rag/grounding.py` ganhou isenções estruturais: (a) linha apenas em negrito, sem
+citação, é título; (b) item de lista sem citação cujos subitens informativos estão **todos**
+citados é tratado como cabeçalho do passo; (c) itens de até 10 palavras seguem a citação de uma
+introdução citada terminada em ":". As mesmas isenções valem para a poda determinística.
+**Motivo:** a resposta real sobre agendamento da mamografia caiu no fallback só por estrutura
+(dificuldade #36), embora todas as afirmações tivessem fonte.
+**Impacto:** o gate continua exigindo citação em toda afirmação isolada; testes negativos cobrem
+passo com subitens sem citação, item longo e introdução sem citação.

@@ -1,0 +1,908 @@
+﻿
+===== build =====
+ Image 00-ragtest-api Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 539B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 934B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.6s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 142B done
+#4 DONE 0.0s
+
+#5 [1/7] FROM docker.io/library/python:3.12-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
+#5 resolve docker.io/library/python:3.12-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 11.42kB 0.0s done
+#6 DONE 0.0s
+
+#7 [6/7] COPY app ./app
+#7 CACHED
+
+#8 [3/7] RUN apt-get update     && apt-get install -y --no-install-recommends         tesseract-ocr         tesseract-ocr-por     && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [2/7] WORKDIR /app
+#9 CACHED
+
+#10 [4/7] RUN addgroup --gid 10001 app     && adduser --uid 10001 --gid 10001 --disabled-password --gecos "" app     && mkdir -p /app/.cache/fastembed /app/.cache/huggingface /app/state     && chown -R app:app /app/.cache /app/state /home/app
+#10 CACHED
+
+#11 [5/7] COPY pyproject.toml README.md ./
+#11 CACHED
+
+#12 [7/7] RUN pip install --no-cache-dir .
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers done
+#13 exporting manifest sha256:e9003202d2b28a8bdf85d5e196b303ccb3d6828d477841630e68b3c2c6f06619 done
+#13 exporting config sha256:9ac86042202a2f6c7de952dbd623edcf7b3e3efbd94f4fd075fe4dd3cfc8dc91 done
+#13 exporting attestation manifest sha256:ab1bb1b7072f05d132a07e436eaeead0f0e216778c2ce3be5fb22fb5f89db8f1 0.0s done
+#13 exporting manifest list sha256:0d73602c47c5d6b48fb4ab2fd1450e0438810a393dfe239f6d46b13b2aeb44f1 0.0s done
+#13 naming to docker.io/library/00-ragtest-api:latest
+#13 naming to docker.io/library/00-ragtest-api:latest done
+#13 unpacking to docker.io/library/00-ragtest-api:latest 0.0s done
+#13 DONE 0.2s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s
+ Image 00-ragtest-api Built 
+ Container 00-ragtest-api-1 Running 
+ Container 00-ragtest-qdrant-1 Running 
+
+===== aguardando a API =====
+API pronta
+
+===== ready =====
+{"status":"ready","dependencies":{"qdrant":"ok"}}
+
+===== plano de sincronizacao =====
+RagTest ingestion sync plan
+Source files       : 19
+Files loaded       : 19/19
+Current chunks     : 773
+Indexed points     : 767
+Current sources    : 19
+Indexed sources    : 18
+Missing points     : 6
+Stale points       : 0
+Orphan sources     : 0
+In sync            : no
+
+Sources with differences:
+- servicos/catalogo_servicos.json: current=6 indexed=0 missing=6 stale=0
+
+Read-only plan: no Qdrant points were changed.
+
+===== sincronizacao =====
+RagTest ingestion sync
+Mode               : apply
+Source files       : 19
+Files loaded       : 19/19
+Current chunks     : 773
+Indexed points     : 767
+Missing points     : 6
+Stale points       : 0
+Orphan sources     : 0
+In sync before     : no
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+
+Inserted points    : 6
+Deleted points     : 0
+Indexed after      : 773
+Missing after      : 0
+Stale after        : 0
+Orphans after      : 0
+In sync after      : yes
+
+===== avaliacao dev =====
+RagTest retrieval benchmark
+Dataset: 2026-09-20-v1 | Cases: 15 | k=5 | source=packaged dataset dominio-v2-dev
+Label semantics: explicit
+Metrics: PassRate/MRR + AcceptableHitRate for OR alternatives + RequiredRecall/RequiredNDCG for AND-required sources.
+
+=== mode=dense ===
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5145 rank=0.5145
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.4280 rank=0.4280
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.4274 rank=0.4274
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4141 rank=0.4141
+    5. servicos/catalogo_servicos.json retrieval=0.4065 rank=0.4065
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7817 rank=0.7817
+    2. chatscm/chatscm.docx retrieval=0.7300 rank=0.7300
+    3. chatscm/chatscm.docx retrieval=0.6500 rank=0.6500
+    4. chatscm/chatscm.docx retrieval=0.5805 rank=0.5805
+    5. servicos/catalogo_servicos.json retrieval=0.5684 rank=0.5684
+[FAIL] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5711 rank=0.5711
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5652 rank=0.5652
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.5358 rank=0.5358
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:59 retrieval=0.5100 rank=0.5100
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:61 retrieval=0.5092 rank=0.5092
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto n├úo faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6938 rank=0.6938
+    2. chatscm/chatscm.docx retrieval=0.6928 rank=0.6928
+    3. servicos/catalogo_servicos.json retrieval=0.6842 rank=0.6842
+    4. servicos/catalogo_servicos.json retrieval=0.6679 rank=0.6679
+    5. chatscm/chatscm.docx retrieval=0.6612 rank=0.6612
+[FAIL] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6502 rank=0.6502
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.5805 rank=0.5805
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.5571 rank=0.5571
+    4. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.5414 rank=0.5414
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5343 rank=0.5343
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo d├│i? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5591 rank=0.5591
+    2. chatscm/chatscm_gestante.docx retrieval=0.5437 rank=0.5437
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.5357 rank=0.5357
+    4. chatscm/chatscm.docx retrieval=0.5259 rank=0.5259
+    5. servicos/catalogo_servicos.json retrieval=0.5207 rank=0.5207
+[FAIL] 7. [v2-dev-descobri-gravidez] descobri que t├┤ gr├ívida, o que fa├ºo primeiro? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5741 rank=0.5741
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5665 rank=0.5665
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5497 rank=0.5497
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5471 rank=0.5471
+    5. chatscm/chatscm.docx retrieval=0.5339 rank=0.5339
+[FAIL] 8. [v2-dev-preventivo-gestante] gr├ívida pode fazer preventivo? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.7328 rank=0.7328
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.7115 rank=0.7115
+    3. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.7102 rank=0.7102
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7041 rank=0.7041
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6917 rank=0.6917
+[PASS] 9. [v2-dev-semanas-meses] t├┤ com 20 semanas, quantos meses s├úo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=5
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.7073 rank=0.7073
+    2. chatscm/chatscm_gestante.docx retrieval=0.7023 rank=0.7023
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6551 rank=0.6551
+    4. servicos/catalogo_servicos.json retrieval=0.5051 rank=0.5051
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.4908 rank=0.4908
+[PASS] 10. [v2-dev-visao-embacada] estou gr├ívida e com a vista emba├ºada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5657 rank=0.5657
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5596 rank=0.5596
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5394 rank=0.5394
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5320 rank=0.5320
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4904 rank=0.4904
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas n├úo sinto contra├º├úo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3527 rank=0.3527
+    2. chatscm/chatscm_gestante.docx retrieval=0.3435 rank=0.3435
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3218 rank=0.3218
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:63 retrieval=0.3144 rank=0.3144
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:25 retrieval=0.3115 rank=0.3115
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.7871 rank=0.7871
+    2. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.7531 rank=0.7531
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.7123 rank=0.7123
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:49 retrieval=0.6614 rank=0.6614
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:34 retrieval=0.6246 rank=0.6246
+[FAIL] 13. [v2-dev-caroco-mama] achei um caro├ºo no peito, o que eu fa├ºo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4550 rank=0.4550
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4548 rank=0.4548
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.4144 rank=0.4144
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3959 rank=0.3959
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3795 rank=0.3795
+[FAIL] 14. [v2-dev-diu-dor] o que ├® o DIU e d├│i pra colocar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.4678 rank=0.4678
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4606 rank=0.4606
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4436 rank=0.4436
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4064 rank=0.4064
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.4028 rank=0.4028
+[PASS] 15. [v2-dev-teste-rapido] onde fa├ºo teste r├ípido de s├¡filis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.7575 rank=0.7575
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.6262 rank=0.6262
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.5520 rank=0.5520
+    4. medicamentos/relacao_nacional_medicamentos_2024.pdf:240 retrieval=0.5455 rank=0.5455
+
+PassRate@5: 0.600 (9/15)
+MRR@5: 0.533
+AcceptableHitRate@5: 0.600
+
+=== mode=dense-rerank ===
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5145 rank=0.5445
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.4280 rank=0.4380
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4141 rank=0.4341
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.4274 rank=0.4274
+    5. servicos/catalogo_servicos.json retrieval=0.4065 rank=0.4165
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7817 rank=0.8102
+    2. chatscm/chatscm.docx retrieval=0.7300 rank=0.7514
+    3. chatscm/chatscm.docx retrieval=0.6500 rank=0.6572
+    4. chatscm/chatscm.docx retrieval=0.5805 rank=0.6019
+[FAIL] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5711 rank=0.5711
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5652 rank=0.5652
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.5358 rank=0.5525
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:59 retrieval=0.5100 rank=0.5100
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:61 retrieval=0.5092 rank=0.5092
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto n├úo faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6928 rank=0.7115
+    2. chatscm/chatscm.docx retrieval=0.6938 rank=0.7063
+    3. servicos/catalogo_servicos.json retrieval=0.6842 rank=0.6967
+    4. servicos/catalogo_servicos.json retrieval=0.6679 rank=0.6929
+    5. chatscm/chatscm.docx retrieval=0.6612 rank=0.6799
+[FAIL] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6502 rank=0.6502
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.5805 rank=0.5805
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.5571 rank=0.5785
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5343 rank=0.5486
+    5. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.5414 rank=0.5485
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo d├│i? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5591 rank=0.5758
+    2. chatscm/chatscm_gestante.docx retrieval=0.5437 rank=0.5604
+    3. chatscm/chatscm.docx retrieval=0.5259 rank=0.5593
+    4. servicos/catalogo_servicos.json retrieval=0.5207 rank=0.5540
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.5357 rank=0.5524
+[FAIL] 7. [v2-dev-descobri-gravidez] descobri que t├┤ gr├ívida, o que fa├ºo primeiro? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5665 rank=0.5915
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5497 rank=0.5872
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5741 rank=0.5866
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5471 rank=0.5846
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.5293 rank=0.5543
+[FAIL] 8. [v2-dev-preventivo-gestante] gr├ívida pode fazer preventivo? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.7328 rank=0.7703
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.7115 rank=0.7365
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7041 rank=0.7166
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.7102 rank=0.7102
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6917 rank=0.7042
+[PASS] 9. [v2-dev-semanas-meses] t├┤ com 20 semanas, quantos meses s├úo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.7073 rank=0.7573
+    2. chatscm/chatscm_gestante.docx retrieval=0.7023 rank=0.7523
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6551 rank=0.6718
+[PASS] 10. [v2-dev-visao-embacada] estou gr├ívida e com a vista emba├ºada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5596 rank=0.5971
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5657 rank=0.5782
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5320 rank=0.5570
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5394 rank=0.5519
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4904 rank=0.5029
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas n├úo sinto contra├º├úo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante.docx retrieval=0.3435 rank=0.3721
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3527 rank=0.3670
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3218 rank=0.3433
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:25 retrieval=0.3115 rank=0.3258
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:63 retrieval=0.3144 rank=0.3215
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.7531 rank=0.9031
+    2. chatscm/chatscm_gestante.docx retrieval=0.7871 rank=0.8996
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.7123 rank=0.8123
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:49 retrieval=0.6614 rank=0.7489
+    5. vacinacao/calendario_nacional_vacinacao_gestante.pdf:2 retrieval=0.5899 rank=0.7274
+[FAIL] 13. [v2-dev-caroco-mama] achei um caro├ºo no peito, o que eu fa├ºo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4550 rank=0.4675
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4548 rank=0.4673
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.4144 rank=0.4269
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3959 rank=0.4084
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3795 rank=0.3795
+[FAIL] 14. [v2-dev-diu-dor] o que ├® o DIU e d├│i pra colocar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.4678 rank=0.4678
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4606 rank=0.4606
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4436 rank=0.4436
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4064 rank=0.4064
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.4028 rank=0.4028
+[PASS] 15. [v2-dev-teste-rapido] onde fa├ºo teste r├ípido de s├¡filis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.7575 rank=0.7992
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.6262 rank=0.6679
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.5520 rank=0.5853
+
+PassRate@5: 0.600 (9/15)
+MRR@5: 0.567
+AcceptableHitRate@5: 0.600
+
+=== mode=hybrid ===
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8633
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5200
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.3333 rank=0.3433
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:20 retrieval=0.3088 rank=0.3388
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.2526 rank=0.2726
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7500 rank=0.7786
+    2. chatscm/chatscm.docx retrieval=0.7000 rank=0.7214
+    3. chatscm/chatscm.docx retrieval=0.6667 rank=0.6881
+    4. chatscm/chatscm.docx retrieval=0.4167 rank=0.4238
+    5. servicos/catalogo_servicos.json retrieval=0.2143 rank=0.2357
+[PASS] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5333
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3667
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3333 rank=0.3333
+    5. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.2500 rank=0.2667
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto n├úo faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7000 rank=0.7250
+    2. chatscm/chatscm.docx retrieval=0.6667 rank=0.6792
+    3. chatscm/chatscm.docx retrieval=0.5833 rank=0.6021
+    4. chatscm/chatscm.docx retrieval=0.5000 rank=0.5188
+    5. servicos/catalogo_servicos.json retrieval=0.3929 rank=0.4054
+[PASS] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5286
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.4103 rank=0.4388
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.3750 rank=0.3964
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.3333 rank=0.3333
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo d├│i? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5500 rank=0.6000
+    2. servicos/catalogo_servicos.json retrieval=0.5370 rank=0.5537
+    3. chatscm/chatscm.docx retrieval=0.4500 rank=0.4833
+    4. servicos/catalogo_servicos.json retrieval=0.3667 rank=0.4000
+    5. chatscm/chatscm_gestante.docx retrieval=0.3810 rank=0.3976
+[PASS] 7. [v2-dev-descobri-gravidez] descobri que t├┤ gr├ívida, o que fa├ºo primeiro? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5714 rank=0.5839
+    2. chatscm/chatscm_gestante.docx retrieval=0.5323 rank=0.5448
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4583 rank=0.4833
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3929 rank=0.4304
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3922 rank=0.4172
+[PASS] 8. [v2-dev-preventivo-gestante] gr├ívida pode fazer preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.5909 rank=0.6284
+    2. chatscm/chatscm_gestante.docx retrieval=0.4167 rank=0.4542
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.3583 rank=0.3833
+    4. chatscm/chatscm.docx retrieval=0.2500 rank=0.2750
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.2500 rank=0.2500
+[PASS] 9. [v2-dev-semanas-meses] t├┤ com 20 semanas, quantos meses s├úo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=1.0000 rank=1.0500
+    2. chatscm/chatscm_gestante.docx retrieval=0.6667 rank=0.7167
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.2870 rank=0.3037
+    4. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.2667 rank=0.3000
+    5. chatscm/chatscm_gestante.docx retrieval=0.2500 rank=0.3000
+[PASS] 10. [v2-dev-visao-embacada] estou gr├ívida e com a vista emba├ºada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6667 rank=0.7042
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5000 rank=0.5125
+    3. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5125
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.2500 rank=0.2625
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.2000 rank=0.2125
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas n├úo sinto contra├º├úo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.6667 rank=0.6810
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5429
+    3. chatscm/chatscm_gestante.docx retrieval=0.4333 rank=0.4619
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3409 rank=0.3695
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:30 retrieval=0.3333 rank=0.3548
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.1125
+    2. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.3833 rank=0.5333
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.3667 rank=0.4667
+    4. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.4458
+    5. chatscm/chatscm.docx retrieval=0.3214 rank=0.3589
+[PASS] 13. [v2-dev-caroco-mama] achei um caro├ºo no peito, o que eu fa├ºo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6000 rank=0.6125
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5250
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.5000 rank=0.5125
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4242 rank=0.4367
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:47 retrieval=0.3333 rank=0.3458
+[PASS] 14. [v2-dev-diu-dor] o que ├® o DIU e d├│i pra colocar? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5375
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3708
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3333 rank=0.3333
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.2500 rank=0.2750
+[PASS] 15. [v2-dev-teste-rapido] onde fa├ºo teste r├ípido de s├¡filis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8750
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.5833 rank=0.6250
+    3. chatscm/chatscm.docx retrieval=0.5000 rank=0.5417
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.3929 rank=0.4262
+    5. chatscm/chatscm_gestante.docx retrieval=0.3250 rank=0.3583
+
+PassRate@5: 1.000 (15/15)
+MRR@5: 0.833
+AcceptableHitRate@5: 1.000
+
+=== summary ===
+MODE            PASSRATE      MRR  ACCEPT_HIT  REQ_RECALL  REQ_NDCG
+dense              0.600    0.533       0.600           -         -
+dense-rerank       0.600    0.567       0.600           -         -
+hybrid             1.000    0.833       1.000           -         -
+
+===== avaliacao holdout =====
+RagTest retrieval benchmark
+Dataset: 2026-09-20-v1 | Cases: 25 | k=5 | source=packaged dataset dominio-v2-holdout
+Label semantics: explicit
+Metrics: PassRate/MRR + AcceptableHitRate for OR alternatives + RequiredRecall/RequiredNDCG for AND-required sources.
+
+=== mode=dense ===
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+[PASS] 1. [v2-holdout-mamo-ou-ultrassom] preciso fazer mamografia ou ultrassom da mama? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.8064 rank=0.8064
+    2. chatscm/chatscm.docx retrieval=0.6902 rank=0.6902
+    3. servicos/catalogo_servicos.json retrieval=0.6513 rank=0.6513
+    4. servicos/catalogo_servicos.json retrieval=0.6406 rank=0.6406
+[PASS] 2. [v2-holdout-para-que-papanicolau] pra que serve o exame de papanicolau | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6324 rank=0.6324
+    2. chatscm/chatscm.docx retrieval=0.5687 rank=0.5687
+    3. chatscm/chatscm.docx retrieval=0.5636 rank=0.5636
+    4. chatscm/chatscm.docx retrieval=0.5340 rank=0.5340
+    5. servicos/catalogo_servicos.json retrieval=0.5278 rank=0.5278
+[PASS] 3. [v2-holdout-como-mamografia] como ├® feita a mamografia, aperta muito? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6944 rank=0.6944
+    2. chatscm/chatscm.docx retrieval=0.6799 rank=0.6799
+    3. servicos/catalogo_servicos.json retrieval=0.6223 rank=0.6223
+    4. servicos/catalogo_servicos.json retrieval=0.6121 rank=0.6121
+    5. chatscm/chatscm.docx retrieval=0.5890 rank=0.5890
+[FAIL] 4. [v2-holdout-intervalo-preventivo] de quanto em quanto tempo repito o preventivo se deu normal | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=5
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5499 rank=0.5499
+    2. diabetes/cartilha_canetas_insulina_pacientes.pdf:4 retrieval=0.5422 rank=0.5422
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.5177 rank=0.5177
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5087 rank=0.5087
+    5. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.4987 rank=0.4987
+[FAIL] 5. [v2-holdout-preparo-preventivo] o que preciso evitar antes de fazer o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.6049 rank=0.6049
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.6030 rank=0.6030
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:53 retrieval=0.5900 rank=0.5900
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.5732 rank=0.5732
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:45 retrieval=0.5655 rank=0.5655
+[PASS] 6. [v2-holdout-documentos-mamografia] que documentos levo pra marcar a mamografia | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.6912 rank=0.6912
+    2. chatscm/chatscm.docx retrieval=0.6730 rank=0.6730
+    3. servicos/catalogo_servicos.json retrieval=0.6622 rank=0.6622
+    4. chatscm/chatscm.docx retrieval=0.6610 rank=0.6610
+    5. chatscm/chatscm.docx retrieval=0.5656 rank=0.5656
+[PASS] 7. [v2-holdout-agendar-prenatal] como agendo o pr├®-natal no postinho | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.7226 rank=0.7226
+    2. chatscm/chatscm_gestante.docx retrieval=0.6682 rank=0.6682
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:39 retrieval=0.6524 rank=0.6524
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.6279 rank=0.6279
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6261 rank=0.6261
+[FAIL] 8. [v2-holdout-prioridade-gestante] gestante tem prioridade pra marcar consulta? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.6466 rank=0.6466
+    2. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.6158 rank=0.6158
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:30 retrieval=0.6102 rank=0.6102
+    4. chatscm/chatscm.docx retrieval=0.5858 rank=0.5858
+    5. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:9 retrieval=0.5834 rank=0.5834
+[PASS] 9. [v2-holdout-intervalo-consultas] de quanto em quanto tempo s├úo as consultas do pr├®-natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.7699 rank=0.7699
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7660 rank=0.7660
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.7627 rank=0.7627
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.7572 rank=0.7572
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.7553 rank=0.7553
+[PASS] 10. [v2-holdout-exames-prenatal] quais exames eu fa├ºo durante o pr├®-natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.7875 rank=0.7875
+    2. chatscm/chatscm_gestante.docx retrieval=0.7190 rank=0.7190
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6738 rank=0.6738
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.6370 rank=0.6370
+    5. servicos/catalogo_servicos.json retrieval=0.6303 rank=0.6303
+[PASS] 11. [v2-holdout-pressao-alta] minha press├úo t├í alta e eu t├┤ gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6673 rank=0.6673
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6209 rank=0.6209
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6051 rank=0.6051
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5553 rank=0.5553
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5511 rank=0.5511
+[PASS] 12. [v2-holdout-sangramento-gravidez] t├┤ sangrando na gravidez, o que eu fa├ºo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5989 rank=0.5989
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5989 rank=0.5989
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5692 rank=0.5692
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5443 rank=0.5443
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.5284 rank=0.5284
+[PASS] 13. [v2-holdout-inchaco] meu p├® e meu rosto est├úo muito inchados na gesta├º├úo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.5918 rank=0.5918
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5631 rank=0.5631
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.5558 rank=0.5558
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5552 rank=0.5552
+    5. chatscm/chatscm_gestante.docx retrieval=0.5242 rank=0.5242
+[PASS] 14. [v2-holdout-ardencia-urina] sinto ard├¬ncia pra fazer xixi e t├┤ gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7056 rank=0.7056
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6935 rank=0.6935
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6454 rank=0.6454
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.6274 rank=0.6274
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:31 retrieval=0.6222 rank=0.6222
+[PASS] 15. [v2-holdout-hora-maternidade] quando devo ir pra maternidade pra ganhar o beb├¬ | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6515 rank=0.6515
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.6497 rank=0.6497
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:31 retrieval=0.6421 rank=0.6421
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6385 rank=0.6385
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6334 rank=0.6334
+[PASS] 16. [v2-holdout-mala-maternidade] o que levar na mala da maternidade | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.6543 rank=0.6543
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6361 rank=0.6361
+    3. chatscm/chatscm.docx retrieval=0.6131 rank=0.6131
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.6097 rank=0.6097
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5995 rank=0.5995
+[PASS] 17. [v2-holdout-remedio-gravidez] posso tomar rem├®dio estando gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6059 rank=0.6059
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.6006 rank=0.6006
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5987 rank=0.5987
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.5978 rank=0.5978
+    5. chatscm/chatscm_gestante.docx retrieval=0.5895 rank=0.5895
+[PASS] 18. [v2-holdout-hpv-vacina] o que ├® HPV e quem pode tomar a vacina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.7122 rank=0.7122
+    2. vacinacao/calendario_nacional_vacinacao_adolescentes_jovens.pdf:1 retrieval=0.6247 rank=0.6247
+    3. chatscm/chatscm.docx retrieval=0.6092 rank=0.6092
+    4. servicos/catalogo_servicos.json retrieval=0.5814 rank=0.5814
+    5. medicamentos/relacao_nacional_medicamentos_2024.pdf:81 retrieval=0.5758 rank=0.5758
+[FAIL] 19. [v2-holdout-metodos-sus] quais m├®todos pra n├úo engravidar tem de gra├ºa no sus | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:49 retrieval=0.4918 rank=0.4918
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.4918 rank=0.4918
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:10 retrieval=0.4823 rank=0.4823
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:53 retrieval=0.4794 rank=0.4794
+    5. alimentacao/guia_alimentar_populacao_brasileira_resumido.pdf:46 retrieval=0.4777 rank=0.4777
+[FAIL] 20. [v2-holdout-implanon] o que ├® o implanon | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.7119 rank=0.7119
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5311 rank=0.5311
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5013 rank=0.5013
+[FAIL] 21. [v2-holdout-pilula-dia-seguinte] onde consigo p├¡lula do dia seguinte de gra├ºa | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.5270 rank=0.5270
+    2. medicamentos/relacao_nacional_medicamentos_2024.pdf:121 retrieval=0.5026 rank=0.5026
+    3. medicamentos/relacao_nacional_medicamentos_2024.pdf:14 retrieval=0.5009 rank=0.5009
+    4. medicamentos/relacao_nacional_medicamentos_2024.pdf:233 retrieval=0.4771 rank=0.4771
+    5. medicamentos/relacao_nacional_medicamentos_2024.pdf:138 retrieval=0.4522 rank=0.4522
+[PASS] 22. [v2-holdout-preventivo-virgem] o que ├® preventivo de virgem | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.7739 rank=0.7739
+    2. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.6130 rank=0.6130
+    3. chatscm/chatscm.docx retrieval=0.6102 rank=0.6102
+    4. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:5 retrieval=0.6093 rank=0.6093
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.6089 rank=0.6089
+[PASS] 23. [v2-holdout-dentista-gravida] posso ir ao dentista gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.5853 rank=0.5853
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5592 rank=0.5592
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5575 rank=0.5575
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5259 rank=0.5259
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5148 rank=0.5148
+[PASS] 24. [v2-holdout-direitos-gestante] quais direitos tem a gestante | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:4 retrieval=0.7485 rank=0.7485
+    2. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:23 retrieval=0.7081 rank=0.7081
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:10 retrieval=0.6528 rank=0.6528
+    4. chatscm/chatscm_gestante.docx retrieval=0.5987 rank=0.5987
+    5. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:27 retrieval=0.5979 rank=0.5979
+[PASS] 25. [v2-holdout-violencia] sofri viol├¬ncia, o que devo fazer | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.5186 rank=0.5186
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:58 retrieval=0.3834 rank=0.3834
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3590 rank=0.3590
+    4. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:4 retrieval=0.3577 rank=0.3577
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3527 rank=0.3527
+
+PassRate@5: 0.760 (19/25)
+MRR@5: 0.680
+AcceptableHitRate@5: 0.760
+
+=== mode=dense-rerank ===
+[PASS] 1. [v2-holdout-mamo-ou-ultrassom] preciso fazer mamografia ou ultrassom da mama? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.8064 rank=0.8464
+    2. chatscm/chatscm.docx retrieval=0.6902 rank=0.7102
+    3. servicos/catalogo_servicos.json retrieval=0.6513 rank=0.6713
+    4. servicos/catalogo_servicos.json retrieval=0.6406 rank=0.6606
+[PASS] 2. [v2-holdout-para-que-papanicolau] pra que serve o exame de papanicolau | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6324 rank=0.6574
+    2. chatscm/chatscm.docx retrieval=0.5687 rank=0.6062
+    3. chatscm/chatscm.docx retrieval=0.5636 rank=0.5886
+    4. chatscm/chatscm.docx retrieval=0.5340 rank=0.5590
+    5. servicos/catalogo_servicos.json retrieval=0.5278 rank=0.5528
+[PASS] 3. [v2-holdout-como-mamografia] como ├® feita a mamografia, aperta muito? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6944 rank=0.7194
+    2. chatscm/chatscm.docx retrieval=0.6799 rank=0.6924
+    3. servicos/catalogo_servicos.json retrieval=0.6121 rank=0.6371
+    4. servicos/catalogo_servicos.json retrieval=0.6223 rank=0.6348
+    5. chatscm/chatscm.docx retrieval=0.5890 rank=0.5890
+[FAIL] 4. [v2-holdout-intervalo-preventivo] de quanto em quanto tempo repito o preventivo se deu normal | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=5
+    1. diabetes/cartilha_canetas_insulina_pacientes.pdf:4 retrieval=0.5422 rank=0.5506
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5499 rank=0.5499
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5087 rank=0.5254
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.5177 rank=0.5177
+    5. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.4987 rank=0.4987
+[FAIL] 5. [v2-holdout-preparo-preventivo] o que preciso evitar antes de fazer o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.6030 rank=0.6330
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.6049 rank=0.6249
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:53 retrieval=0.5900 rank=0.6100
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.5732 rank=0.5932
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:45 retrieval=0.5655 rank=0.5855
+[PASS] 6. [v2-holdout-documentos-mamografia] que documentos levo pra marcar a mamografia | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.6912 rank=0.7112
+    2. chatscm/chatscm.docx retrieval=0.6730 rank=0.6830
+    3. servicos/catalogo_servicos.json retrieval=0.6622 rank=0.6822
+    4. chatscm/chatscm.docx retrieval=0.6610 rank=0.6710
+    5. chatscm/chatscm.docx retrieval=0.5656 rank=0.5756
+[PASS] 7. [v2-holdout-agendar-prenatal] como agendo o pr├®-natal no postinho | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.7226 rank=0.7476
+    2. chatscm/chatscm_gestante.docx retrieval=0.6682 rank=0.7057
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.6279 rank=0.6529
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:39 retrieval=0.6524 rank=0.6524
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.6088 rank=0.6338
+[PASS] 8. [v2-holdout-prioridade-gestante] gestante tem prioridade pra marcar consulta? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.6466 rank=0.7132
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:30 retrieval=0.6102 rank=0.6602
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.6158 rank=0.6325
+    4. servicos/catalogo_servicos.json retrieval=0.5490 rank=0.6240
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:33 retrieval=0.5709 rank=0.6209
+[PASS] 9. [v2-holdout-intervalo-consultas] de quanto em quanto tempo s├úo as consultas do pr├®-natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.7627 rank=0.8027
+    2. servicos/catalogo_servicos.json retrieval=0.7699 rank=0.7999
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.7553 rank=0.7953
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.7388 rank=0.7888
+    5. chatscm/chatscm_gestante.docx retrieval=0.7477 rank=0.7877
+[PASS] 10. [v2-holdout-exames-prenatal] quais exames eu fa├ºo durante o pr├®-natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.7875 rank=0.8275
+    2. chatscm/chatscm_gestante.docx retrieval=0.7190 rank=0.7490
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6738 rank=0.6938
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.6370 rank=0.6770
+    5. servicos/catalogo_servicos.json retrieval=0.6303 rank=0.6503
+[PASS] 11. [v2-holdout-pressao-alta] minha press├úo t├í alta e eu t├┤ gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6673 rank=0.7048
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6209 rank=0.6334
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6051 rank=0.6176
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5553 rank=0.5803
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5511 rank=0.5511
+[PASS] 12. [v2-holdout-sangramento-gravidez] t├┤ sangrando na gravidez, o que eu fa├ºo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5989 rank=0.6323
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5989 rank=0.6322
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5692 rank=0.6026
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5443 rank=0.5610
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:45 retrieval=0.5262 rank=0.5596
+[PASS] 13. [v2-holdout-inchaco] meu p├® e meu rosto est├úo muito inchados na gesta├º├úo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.5918 rank=0.6501
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5631 rank=0.6214
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.5558 rank=0.6141
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5552 rank=0.6052
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5124 rank=0.6041
+[PASS] 14. [v2-holdout-ardencia-urina] sinto ard├¬ncia pra fazer xixi e t├┤ gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7056 rank=0.7139
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6935 rank=0.7018
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6454 rank=0.6454
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:31 retrieval=0.6222 rank=0.6305
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.6034 rank=0.6284
+[PASS] 15. [v2-holdout-hora-maternidade] quando devo ir pra maternidade pra ganhar o beb├¬ | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6515 rank=0.6681
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.6497 rank=0.6664
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6385 rank=0.6635
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:31 retrieval=0.6421 rank=0.6587
+    5. chatscm/chatscm_gestante.docx retrieval=0.6263 rank=0.6430
+[PASS] 16. [v2-holdout-mala-maternidade] o que levar na mala da maternidade | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante.docx retrieval=0.6543 rank=0.6709
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.6361 rank=0.6528
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:31 retrieval=0.5965 rank=0.6131
+    4. chatscm/chatscm.docx retrieval=0.6131 rank=0.6131
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:28 retrieval=0.5960 rank=0.6126
+[PASS] 17. [v2-holdout-remedio-gravidez] posso tomar rem├®dio estando gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.5895 rank=0.6195
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6059 rank=0.6159
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5987 rank=0.6087
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.6006 rank=0.6006
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5888 rank=0.5988
+[PASS] 18. [v2-holdout-hpv-vacina] o que ├® HPV e quem pode tomar a vacina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.7122 rank=0.7622
+    2. vacinacao/calendario_nacional_vacinacao_adolescentes_jovens.pdf:1 retrieval=0.6247 rank=0.6947
+    3. chatscm/chatscm.docx retrieval=0.6092 rank=0.6592
+    4. servicos/catalogo_servicos.json retrieval=0.5814 rank=0.6114
+    5. medicamentos/relacao_nacional_medicamentos_2024.pdf:81 retrieval=0.5758 rank=0.5858
+[FAIL] 19. [v2-holdout-metodos-sus] quais m├®todos pra n├úo engravidar tem de gra├ºa no sus | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:49 retrieval=0.4918 rank=0.4989
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.4918 rank=0.4989
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:10 retrieval=0.4823 rank=0.4823
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:53 retrieval=0.4794 rank=0.4794
+    5. alimentacao/guia_alimentar_populacao_brasileira_resumido.pdf:46 retrieval=0.4777 rank=0.4777
+[PASS] 20. [v2-holdout-implanon] o que ├® o implanon | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. saude_sexual_reprodutiva/implante_ministerio_saude.pdf:1 retrieval=0.4484 rank=0.7484
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.7119 rank=0.7119
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5311 rank=0.5311
+[FAIL] 21. [v2-holdout-pilula-dia-seguinte] onde consigo p├¡lula do dia seguinte de gra├ºa | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.5270 rank=0.5270
+    2. medicamentos/relacao_nacional_medicamentos_2024.pdf:121 retrieval=0.5026 rank=0.5026
+    3. medicamentos/relacao_nacional_medicamentos_2024.pdf:14 retrieval=0.5009 rank=0.5009
+    4. medicamentos/relacao_nacional_medicamentos_2024.pdf:233 retrieval=0.4771 rank=0.4771
+    5. medicamentos/relacao_nacional_medicamentos_2024.pdf:138 retrieval=0.4522 rank=0.4522
+[PASS] 22. [v2-holdout-preventivo-virgem] o que ├® preventivo de virgem | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.7739 rank=0.8239
+    2. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:5 retrieval=0.6093 rank=0.6343
+    3. chatscm/chatscm.docx retrieval=0.5969 rank=0.6219
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.6130 rank=0.6130
+    5. chatscm/chatscm.docx retrieval=0.6102 rank=0.6102
+[PASS] 23. [v2-holdout-dentista-gravida] posso ir ao dentista gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.5853 rank=0.6187
+    2. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5575 rank=0.5908
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5592 rank=0.5759
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5148 rank=0.5314
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5259 rank=0.5259
+[PASS] 24. [v2-holdout-direitos-gestante] quais direitos tem a gestante | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:4 retrieval=0.7485 rank=0.8652
+    2. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:23 retrieval=0.7081 rank=0.8081
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:10 retrieval=0.6528 rank=0.7528
+    4. chatscm/chatscm_gestante.docx retrieval=0.5987 rank=0.7320
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.5754 rank=0.7087
+[PASS] 25. [v2-holdout-violencia] sofri viol├¬ncia, o que devo fazer | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.5186 rank=0.5686
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:58 retrieval=0.3834 rank=0.4084
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:4 retrieval=0.3577 rank=0.3702
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3590 rank=0.3590
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3527 rank=0.3527
+
+PassRate@5: 0.840 (21/25)
+MRR@5: 0.770
+AcceptableHitRate@5: 0.840
+
+=== mode=hybrid ===
+[PASS] 1. [v2-holdout-mamo-ou-ultrassom] preciso fazer mamografia ou ultrassom da mama? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=1.0000 rank=1.0400
+    2. chatscm/chatscm.docx retrieval=0.5833 rank=0.6033
+    3. chatscm/chatscm.docx retrieval=0.3922 rank=0.4322
+    4. servicos/catalogo_servicos.json retrieval=0.3750 rank=0.3950
+    5. servicos/catalogo_servicos.json retrieval=0.3667 rank=0.3867
+[PASS] 2. [v2-holdout-para-que-papanicolau] pra que serve o exame de papanicolau | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8708
+    2. chatscm/chatscm.docx retrieval=0.6429 rank=0.6679
+    3. chatscm/chatscm.docx retrieval=0.5833 rank=0.6083
+    4. chatscm/chatscm.docx retrieval=0.4500 rank=0.4750
+    5. servicos/catalogo_servicos.json retrieval=0.3667 rank=0.3917
+[PASS] 3. [v2-holdout-como-mamografia] como ├® feita a mamografia, aperta muito? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=1.0000 rank=1.0250
+    2. servicos/catalogo_servicos.json retrieval=0.5333 rank=0.5583
+    3. chatscm/chatscm.docx retrieval=0.4583 rank=0.4708
+    4. chatscm/chatscm.docx retrieval=0.3750 rank=0.3875
+    5. servicos/catalogo_servicos.json retrieval=0.3611 rank=0.3736
+[FAIL] 4. [v2-holdout-intervalo-preventivo] de quanto em quanto tempo repito o preventivo se deu normal | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. diabetes/cartilha_canetas_insulina_pacientes.pdf:7 retrieval=0.5000 rank=0.5250
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3583
+    4. diabetes/cartilha_canetas_insulina_pacientes.pdf:4 retrieval=0.3333 rank=0.3417
+    5. chatscm/chatscm.docx retrieval=0.2885 rank=0.3135
+[FAIL] 5. [v2-holdout-preparo-preventivo] o que preciso evitar antes de fazer o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.5400 rank=0.5600
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5300
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.3860 rank=0.4060
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:17 retrieval=0.3333 rank=0.3533
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:8 retrieval=0.2500 rank=0.2800
+[PASS] 6. [v2-holdout-documentos-mamografia] que documentos levo pra marcar a mamografia | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.8333 rank=0.8533
+    2. servicos/catalogo_servicos.json retrieval=0.7500 rank=0.7700
+    3. chatscm/chatscm.docx retrieval=0.4500 rank=0.4600
+    4. chatscm/chatscm.docx retrieval=0.4242 rank=0.4342
+    5. chatscm/chatscm.docx retrieval=0.3667 rank=0.3767
+[PASS] 7. [v2-holdout-agendar-prenatal] como agendo o pr├®-natal no postinho | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.8333 rank=0.8708
+    2. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5833 rank=0.6083
+    3. servicos/catalogo_servicos.json retrieval=0.4000 rank=0.4375
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:1 retrieval=0.3000 rank=0.3375
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.2476 rank=0.2726
+[PASS] 8. [v2-holdout-prioridade-gestante] gestante tem prioridade pra marcar consulta? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.6000 rank=0.6667
+    2. servicos/catalogo_servicos.json retrieval=0.5714 rank=0.6464
+    3. chatscm/chatscm_gestante.docx retrieval=0.3596 rank=0.4346
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.2750 rank=0.3500
+    5. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.3333 rank=0.3500
+[PASS] 9. [v2-holdout-intervalo-consultas] de quanto em quanto tempo s├úo as consultas do pr├®-natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.6111 rank=0.6611
+    2. servicos/catalogo_servicos.json retrieval=0.5769 rank=0.6069
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.3409 rank=0.3909
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.3333 rank=0.3733
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3333 rank=0.3433
+[PASS] 10. [v2-holdout-exames-prenatal] quais exames eu fa├ºo durante o pr├®-natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.0400
+    2. chatscm/chatscm_gestante.docx retrieval=0.5833 rank=0.6133
+    3. chatscm/chatscm_gestante.docx retrieval=0.4103 rank=0.4503
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.3111 rank=0.3411
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.3000 rank=0.3400
+[PASS] 11. [v2-holdout-pressao-alta] minha press├úo t├í alta e eu t├┤ gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6429 rank=0.6804
+    2. alimentacao/guia_alimentar_populacao_brasileira_resumido.pdf:3 retrieval=0.5000 rank=0.5250
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.4500 rank=0.4750
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:14 retrieval=0.3333 rank=0.3583
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.3333 rank=0.3458
+[PASS] 12. [v2-holdout-sangramento-gravidez] t├┤ sangrando na gravidez, o que eu fa├ºo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.8333 rank=0.8667
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.5417 rank=0.5750
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5333
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4500 rank=0.4833
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:9 retrieval=0.2500 rank=0.2667
+[PASS] 13. [v2-holdout-inchaco] meu p├® e meu rosto est├úo muito inchados na gesta├º├úo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.6111 rank=0.6778
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5526 rank=0.6443
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4583 rank=0.5500
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.4167 rank=0.4750
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3333 rank=0.3917
+[PASS] 14. [v2-holdout-ardencia-urina] sinto ard├¬ncia pra fazer xixi e t├┤ gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5083
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:30 retrieval=0.5000 rank=0.5083
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.4444 rank=0.4778
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3429 rank=0.3429
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.3333 rank=0.3417
+[PASS] 15. [v2-holdout-hora-maternidade] quando devo ir pra maternidade pra ganhar o beb├¬ | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5333
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.5000 rank=0.5167
+    3. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.3583
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3333 rank=0.3500
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3333 rank=0.3417
+[PASS] 16. [v2-holdout-mala-maternidade] o que levar na mala da maternidade | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5500
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5167
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.3333 rank=0.3500
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.3333 rank=0.3500
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:28 retrieval=0.2500 rank=0.2833
+[PASS] 17. [v2-holdout-remedio-gravidez] posso tomar rem├®dio estando gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=5
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.5000 rank=0.5200
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5100
+    3. chatscm/chatscm_gestante.docx retrieval=0.3667 rank=0.3967
+    4. chatscm/chatscm.docx retrieval=0.3333 rank=0.3433
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.3333 rank=0.3333
+[PASS] 18. [v2-holdout-hpv-vacina] o que ├® HPV e quem pode tomar a vacina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8833
+    2. chatscm/chatscm.docx retrieval=0.7500 rank=0.8000
+    3. vacinacao/calendario_nacional_vacinacao_adolescentes_jovens.pdf:1 retrieval=0.4048 rank=0.4748
+    4. servicos/catalogo_servicos.json retrieval=0.3429 rank=0.3729
+    5. chatscm/chatscm.docx retrieval=0.2935 rank=0.3235
+[PASS] 19. [v2-holdout-metodos-sus] quais m├®todos pra n├úo engravidar tem de gra├ºa no sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5500 rank=0.5786
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:49 retrieval=0.5000 rank=0.5071
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3619
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.3333 rank=0.3405
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:36 retrieval=0.2500 rank=0.2643
+[PASS] 20. [v2-holdout-implanon] o que ├® o implanon | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5500
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3833
+    4. saude_sexual_reprodutiva/implante_ministerio_saude.pdf:1 retrieval=0.0667 rank=0.3667
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.3333 rank=0.3333
+[PASS] 21. [v2-holdout-pilula-dia-seguinte] onde consigo p├¡lula do dia seguinte de gra├ºa | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5417
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:44 retrieval=0.5000 rank=0.5000
+    3. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:1 retrieval=0.3333 rank=0.3583
+    4. medicamentos/relacao_nacional_medicamentos_2024.pdf:121 retrieval=0.3333 rank=0.3333
+    5. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:5 retrieval=0.2500 rank=0.2833
+[PASS] 22. [v2-holdout-preventivo-virgem] o que ├® preventivo de virgem | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=1.0000 rank=1.0500
+    2. chatscm/chatscm.docx retrieval=0.3333 rank=0.3833
+    3. chatscm/chatscm.docx retrieval=0.3111 rank=0.3361
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.3333 rank=0.3333
+    5. chatscm/chatscm.docx retrieval=0.2500 rank=0.2750
+[PASS] 23. [v2-holdout-dentista-gravida] posso ir ao dentista gr├ívida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5833 rank=0.6167
+    2. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.5400 rank=0.5733
+    3. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5333
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.4444 rank=0.4611
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3000 rank=0.3000
+[PASS] 24. [v2-holdout-direitos-gestante] quais direitos tem a gestante | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:4 retrieval=0.5000 rank=0.6167
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.6167
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:3 retrieval=0.3333 rank=0.4500
+    4. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:23 retrieval=0.3333 rank=0.4333
+    5. chatscm/chatscm_gestante.docx retrieval=0.2909 rank=0.4242
+[PASS] 25. [v2-holdout-violencia] sofri viol├¬ncia, o que devo fazer | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.0500
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:58 retrieval=0.5333 rank=0.5583
+    3. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.3833
+    4. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:4 retrieval=0.3667 rank=0.3792
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.2500 rank=0.2625
+
+PassRate@5: 0.920 (23/25)
+MRR@5: 0.853
+AcceptableHitRate@5: 0.920
+
+=== summary ===
+MODE            PASSRATE      MRR  ACCEPT_HIT  REQ_RECALL  REQ_NDCG
+dense              0.760    0.680       0.760           -         -
+dense-rerank       0.840    0.770       0.840           -         -
+hybrid             0.920    0.853       0.920           -         -
+
+===== calibracao fora de escopo =====
+RagTest scope calibration | split=dev
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+  in  0.5145  v2-dev-idade-preventivo
+  in  0.7817  v2-dev-idade-mamografia
+  in  0.5711  v2-dev-onde-agendar-preventivo
+  in  0.6938  v2-dev-vaga-mamografia
+  in  0.6502  v2-dev-resultado-preventivo
+  in  0.5591  v2-dev-preventivo-dor
+  in  0.5741  v2-dev-descobri-gravidez
+  in  0.7328  v2-dev-preventivo-gestante
+  in  0.7073  v2-dev-semanas-meses
+  in  0.5657  v2-dev-visao-embacada
+  in  0.3527  v2-dev-bolsa-sem-contracao
+  in  0.7871  v2-dev-vacinas-gestante
+  in  0.4550  v2-dev-caroco-mama
+  in  0.4678  v2-dev-diu-dor
+  in  0.7575  v2-dev-teste-rapido
+  out 0.3274  v2-oos-clima
+  out 0.3229  v2-oos-futebol
+  out 0.4492  v2-oos-emagrecer
+  out 0.6233  v2-oos-plano-saude
+
+min in-scope      : 0.3527
+max out-of-scope  : 0.6233
+Sem separa├º├úo limpa: 8 pergunta(s) do dom├¡nio ficam abaixo do pior fora de escopo. N├úo configure o limiar sem analisar os casos.
+
+Concluido. Resultado salvo em docs/resultados/avaliacao_2026-09-28_1454.txt

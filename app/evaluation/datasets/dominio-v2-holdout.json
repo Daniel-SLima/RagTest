@@ -1,0 +1,223 @@
+[
+  {
+    "id": "v2-holdout-mamo-ou-ultrassom",
+    "topic": "rastreamento",
+    "query": "preciso fazer mamografia ou ultrassom da mama?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v2-holdout-para-que-papanicolau",
+    "topic": "rastreamento",
+    "query": "pra que serve o exame de papanicolau",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-holdout-como-mamografia",
+    "topic": "rastreamento",
+    "query": "como é feita a mamografia, aperta muito?",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v2-holdout-intervalo-preventivo",
+    "topic": "rastreamento",
+    "query": "de quanto em quanto tempo repito o preventivo se deu normal",
+    "acceptable_sources": [
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-holdout-preparo-preventivo",
+    "topic": "rastreamento",
+    "query": "o que preciso evitar antes de fazer o preventivo",
+    "acceptable_sources": [
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-holdout-documentos-mamografia",
+    "topic": "agendamento",
+    "query": "que documentos levo pra marcar a mamografia",
+    "acceptable_sources": [
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-holdout-agendar-prenatal",
+    "topic": "agendamento",
+    "query": "como agendo o pré-natal no postinho",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-holdout-prioridade-gestante",
+    "topic": "agendamento",
+    "query": "gestante tem prioridade pra marcar consulta?",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "servicos/catalogo_servicos.json"
+    ]
+  },
+  {
+    "id": "v2-holdout-intervalo-consultas",
+    "topic": "gestacao",
+    "query": "de quanto em quanto tempo são as consultas do pré-natal",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-exames-prenatal",
+    "topic": "gestacao",
+    "query": "quais exames eu faço durante o pré-natal",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-pressao-alta",
+    "topic": "urgencia",
+    "query": "minha pressão tá alta e eu tô grávida",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "servicos/catalogo_servicos.json",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-sangramento-gravidez",
+    "topic": "urgencia",
+    "query": "tô sangrando na gravidez, o que eu faço",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "servicos/catalogo_servicos.json",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-inchaco",
+    "topic": "urgencia",
+    "query": "meu pé e meu rosto estão muito inchados na gestação",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "servicos/catalogo_servicos.json",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-ardencia-urina",
+    "topic": "urgencia",
+    "query": "sinto ardência pra fazer xixi e tô grávida",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-hora-maternidade",
+    "topic": "gestacao",
+    "query": "quando devo ir pra maternidade pra ganhar o bebê",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-mala-maternidade",
+    "topic": "gestacao",
+    "query": "o que levar na mala da maternidade",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante_parte_2.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-remedio-gravidez",
+    "topic": "gestacao",
+    "query": "posso tomar remédio estando grávida",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-hpv-vacina",
+    "topic": "prevencao",
+    "query": "o que é HPV e quem pode tomar a vacina",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v2-holdout-metodos-sus",
+    "topic": "contracepcao",
+    "query": "quais métodos pra não engravidar tem de graça no sus",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-implanon",
+    "topic": "contracepcao",
+    "query": "o que é o implanon",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "saude_sexual_reprodutiva/implante_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-pilula-dia-seguinte",
+    "topic": "contracepcao",
+    "query": "onde consigo pílula do dia seguinte de graça",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx",
+      "saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-preventivo-virgem",
+    "topic": "rastreamento",
+    "query": "o que é preventivo de virgem",
+    "acceptable_sources": [
+      "chatscm/chatscm.docx"
+    ]
+  },
+  {
+    "id": "v2-holdout-dentista-gravida",
+    "topic": "gestacao",
+    "query": "posso ir ao dentista grávida",
+    "acceptable_sources": [
+      "gestacao/cartilha_saude_bucal_gestante.pdf",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-direitos-gestante",
+    "topic": "direitos",
+    "query": "quais direitos tem a gestante",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx",
+      "direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf",
+      "gestacao/caderneta_gestante_8ed_rev.pdf"
+    ]
+  },
+  {
+    "id": "v2-holdout-violencia",
+    "topic": "acesso",
+    "query": "sofri violência, o que devo fazer",
+    "acceptable_sources": [
+      "chatscm/chatscm_gestante.docx"
+    ]
+  }
+]

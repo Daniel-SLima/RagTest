@@ -8,7 +8,7 @@
 > Em um novo chat, antes de continuar o projeto, leia este arquivo e depois confira o estado atual do repositório/branch/PR.
 
 
-## HANDOFF AUTORITATIVO ATUAL — 2026-09-21 DESIGN DA 0.6.0
+## HANDOFF AUTORITATIVO ATUAL — 2026-09-25 TASK 8 DA AUDITORIA 0.7.0-A
 
 > **Esta seção prevalece sobre qualquer trecho histórico conflitante existente abaixo.**
 > O restante do arquivo preserva o histórico do projeto e pode mencionar branches, PRs e versões anteriores.
@@ -17,7 +17,8 @@
 
 - Repositório: `Daniel-SLima/RagTest`
 - Branch padrão: `main`
-- Versão integrada e validada em `main`: **0.5.24**
+- Versão integrada e validada no `origin/main` remoto: **0.5.24**
+- Versão integrada e validada na `main` local: **0.6.0**, commit `f173a29`
 - PR #19: **merged**
 - Merge commit da 0.5.24: `28edf6a51bf29a4aa62ff56a74efbffb640e728f`
 - Head final da feature antes do merge: `534e1c5334424a57e7cd0adb56f6ea763c20b4ec`
@@ -25,11 +26,45 @@
 - CI pós-merge em `main`: run `35677503800`, com os três jobs em `success`
 - Runtime local Expo Web da 0.5.24: **verificado para grounding e retry manual**
 - Corpus, embeddings e Qdrant: **inalterados**
-- Branch atual: `feature/sessions-0.6.0`.
+- O `origin/main` remoto permanece em `4badc96`; o workspace local está deliberadamente à frente.
+- Branch de implementação: `feature/audit-0.7.0`; último commit funcional da auditoria:
+  `d43873b` (`fix: close audit middleware review blockers`). Há commits documentais posteriores;
+  confirme o HEAD e a contagem relativa ao remoto com `git status --short --branch` e `git log`.
+  Não houve push, merge ou rebase.
+- PR #21 permanece draft no fluxo de trabalho informado; o estado remoto não foi alterado nesta sessão.
+- Tasks 1–7 da auditoria 0.7.0-A e o fix de revisão em `d43873b` estão implementados; Task 8 foi
+  consolidada documentalmente e os gates locais passaram nesta sessão.
+- O `AuditEvent`, o `JsonLogAuditSink`, o request ID backend-owned, CORS, eventos de sessão/chat,
+  normalização de falhas e fallback pré-rota estão implementados. Os relatórios e testes locais
+  classificam esses itens como **implementados/verificados localmente**; isto não é validação de
+  produção nem alegação de conformidade LGPD.
+- Sidequest `sidequest/ragtest-demo` permanece isolada e não é ancestral desta branch; não foi
+  incorporada.
 - A arquitetura da **0.6.0 — sessões conversacionais portáveis** foi aprovada em conversa.
 - A consolidação escrita está em `docs/superpowers/specs/2026-09-21-sessoes-conversacionais-0.6.0-design.md` e foi aprovada pelo usuário em 2026-09-22.
 - O plano TDD foi executado de forma nativa nesta branch.
-- As Tasks 1–7 da 0.6.0 estão implementadas; a suíte local tem 150 testes aprovados.
+- As Tasks 1–7 da 0.6.0 estão implementadas e integradas na `main` local; a coleta anterior
+  continha 149 testes. A auditoria 0.7.0-A acrescentou a cobertura registrada nos relatórios,
+  culminando em 233 testes backend no gate do fix de revisão.
+- A configuração multiagente foi criada, tecnicamente revisada e versionada nesta branch por este
+  commit: `AGENTS.md`, `.codex/config.toml` e `.codex/agents/*.toml`.
+- `.codex/config.toml` não define `model` nem `model_reasoning_effort` no nível do projeto: o modelo
+  principal continua sendo determinado pela sessão do Codex. Cada agente personalizado possui seu
+  próprio modelo/esforço explícitos; todos usam exclusivamente `gpt-5.6-luna`; não há default
+  implícito de subagente.
+- A referência anterior a **150 testes** foi uma contagem incorreta: a execução oficial atual e a
+  coleta explícita retornam **149**. Uma revalidação leve do QA chegou a relatar 147 por erro de
+  soma/transcrição; a saída por arquivo foi conferida e totaliza 149, incluindo os 2 testes de
+  `test_vector_store.py`. Não há diff em `tests/`, marcadores skip/xfail, seletores de exclusão ou
+  teste removido/desabilitado.
+- O QA foi executado como subagente real em `workspace-write`, sem alterar código, testes,
+  documentação, corpus, Qdrant ou dependências e sem deixar artefatos: backend pytest **149 passed**,
+  Ruff **All checks passed**, frontend Jest **13 passed** e TypeScript **passou**.
+- A mudança de QA para `workspace-write` é deliberada para permitir caches/artefatos transitórios de
+  ferramentas. Uma sondagem posterior com `read-only` não retornou dentro do intervalo de observação
+  e foi interrompida, sem produzir erro de permissão diagnosticável; por isso não tratamos read-only
+  como gate confiável para esta suíte. `AGENTS.md` e `qa.toml` proíbem alterar código de produção,
+  testes ou documentação para fazer uma validação passar.
 - Branch histórica da feature: `feature/ux-grounding-0.5.24`, preservada após o merge.
 
 ### O que a 0.5.24 entregou
@@ -56,11 +91,12 @@
 
 ### Próximo passo exato
 
-1. revisar o plano de implementação TDD da 0.6.0;
-2. escolher a forma de execução prevista no plano;
-3. após essa aprovação, implementar sessões no backend sem acoplamento ao cliente e sem alterar Qdrant/corpus;
-4. atualizar documentação, decisões, dificuldades e contexto a cada avanço relevante;
-5. não mesclar futuros PRs sem autorização explícita.
+1. Executar o QA final independente e a revisão de segurança/privacidade sobre o estado documental
+   e funcional já verificado;
+2. manter as pendências da 0.7.0-B registradas sem iniciar autenticação, egress, retenção,
+   criptografia, governança ou política LGPD;
+3. submeter o estado local para revisão/orquestração antes de qualquer push ou merge;
+4. não fazer merge, push, rebase ou sincronização sem autorização explícita.
 
 ### Regras críticas preservadas
 
@@ -75,11 +111,11 @@
 
 ---
 
-**Última atualização:** 2026-09-22
+**Última atualização:** 2026-09-25 — Task 7, correção de revisão e gates documentais da Task 8 verificados localmente.
 **Repositório:** `Daniel-SLima/RagTest`  
 **Branch padrão:** `main`  
 **Estado validado e mesclado no main:** `0.5.24`
-**Trabalho em andamento:** implementação backend da `0.6.0` e validação manual Docker/provider concluídas na branch `feature/sessions-0.6.0`; resta decisão de integração/merge.
+**Trabalho em andamento:** revisão final de segurança/privacidade da 0.7.0-A na branch `feature/audit-0.7.0`; implementação funcional está concluída localmente até `d43873b` e a documentação foi consolidada em commits posteriores, aguardando integração autorizada.
 
 ---
 
@@ -2491,7 +2527,7 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - branch: `feature/sessions-0.6.0`;
 - commits funcionais: `dc9796d`, `aa58e4d`, `ec531a1`, `0d4a33a`, `453d3ad`, `6d72909`;
 - contratos, SQLite, contexto seguro, serviço conversacional, API REST e integração opcional do chat concluídos;
-- suíte local: 150 testes aprovados; Ruff aprovado;
+- suíte local: 149 testes aprovados; Ruff aprovado;
 - SQLite de sessões separado do Qdrant; corpus, embeddings e Expo não foram alterados;
 - versão do backend atualizada para `0.6.0`;
 - validação manual concluída em Docker: `health=ok`, `ready=ready`, API reiniciada sem perder
@@ -2511,3 +2547,164 @@ O marco seguinte era desenhar o primeiro recorte da 0.6.x; ele foi concluído po
 - branch criada: `feature/sessions-0.6.0`;
 - design escrito aprovado pelo usuário em 2026-09-22;
 - próximo passo: revisar o plano TDD antes de iniciar qualquer código funcional.
+
+### Task 1 da auditoria estruturada 0.7.0-A — 2026-09-24
+
+- commit local: `a8d9dd5` (`feat: define minimized audit event contract`);
+- implementado `AuditEvent` imutável e fechado em runtime, com `AuditEventType`, `AuditOutcome` e
+  `AuditOperation`;
+- serialização determinística com timestamp UTC, UUIDs, omissão de nulos e somente campos
+  allowlisted; durações e contagens não negativas;
+- revisão de cobertura concluída: 34 testes direcionados passaram; suíte backend: 183 passaram;
+  Ruff completo aprovado; os testes agora cobrem chaves exatas, sentinelas sensíveis, repetibilidade
+  compacta, omissão de todos os opcionais, UUIDs string, contagens negativas e atributos extras;
+- nenhuma rota, middleware, provider, CORS, Qdrant, corpus, embedding ou dependência foi alterada;
+- a fronteira de sink, middleware, integração de rotas, normalização de falhas e documentação
+  pública completa permaneceu para as Tasks seguintes; a Task 2 abaixo implementa somente a
+  fronteira de sink.
+
+### Task 2 da auditoria estruturada 0.7.0-A — 2026-09-24
+
+- implementados `AuditSink`, `JsonLogAuditSink` e `safe_emit` em `app/observability/audit.py`;
+- `JsonLogAuditSink` envia somente `AuditEvent.to_json()` ao logger `ragtest.audit`;
+- `safe_emit` captura falhas do sink, retorna `False` e registra somente diagnóstico fixo com o
+  nome do tipo da exceção no logger `ragtest.audit.internal`;
+- após revisão de cobertura: 3 testes direcionados passaram; suíte backend: 186 passaram; Ruff
+  completo aprovado;
+- nenhum provider, segredo, rota, middleware, CORS, Qdrant, corpus, embedding, retrieval ou
+  frontend foi alterado;
+- integração em app state/rotas e fallback de falhas permanecem nas Tasks seguintes;
+- próximo passo executável: Task 3, request ID/middleware e exposição CORS.
+
+#### Fix de cobertura da revisão da Task 2 — 2026-09-24
+
+- `tests/test_audit_sink.py` passou a importar diretamente `AuditSink`, `JsonLogAuditSink` e
+  `safe_emit`;
+- o caminho de sucesso verifica retorno `True` e exatamente uma chamada ao sink compatível;
+- o caminho de falha verifica logger, mensagem fixa, ausência de sentinelas, JSON, `repr(event)` e
+  qualquer registro em `ragtest.audit`;
+- nenhum arquivo de produção foi alterado.
+
+### Task 3 da auditoria estruturada 0.7.0-A — 2026-09-24
+
+- implementado `RequestContextMiddleware` em `app/observability/middleware.py`, gerando um UUID
+  backend-owned por requisição, ignorando `X-Request-ID` recebido e instalando `request_id`, início
+  monotônico, duração e marcador mínimo de auditoria no `request.state`;
+- toda resposta recebe `X-Request-ID`, inclusive respostas de validação; o middleware não lê o
+  corpo da requisição;
+- CORS preserva as origens e métodos explícitos existentes e expõe somente `X-Request-ID` em uma
+  resposta cross-origin real; preflight continua coberto por política de origem/método;
+- testes direcionados: 8 passaram; suíte backend: 191 passaram; Ruff completo aprovado;
+- nenhum provider, segredo, retrieval, corpus, embedding, Qdrant, frontend ou evento de sessão/chat
+  foi integrado nesta task;
+- o relatório operacional da task deve ser mantido no diretório SDD; próximo passo executável:
+  Task 4, normalização segura de erros.
+
+### Task 4 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- implementado `NormalizedError`/`normalize_exception` em `app/observability/errors.py`, com
+  taxonomia estável para sessões, validação, indisponibilidade de provider, erro de provider e
+  falha inesperada; detalhes públicos são fixos e não copiam `str(exc)`;
+- `POST /v1/chat` passou a usar a normalização centralizada, preservando `404`, `409` e `410` de
+  sessão e usando `503` para `LLMServiceUnavailableError` e `502` seguro para provider/erro
+  inesperado; a dependência de seleção do provider também deixou de expor a mensagem de fábrica;
+- Groq e Ollama não concatenam corpo HTTP, URL/razão de `URLError` ou campo `error` de respostas
+  200 nas exceções; logs de retry usam somente provider, modelo, status, índice e delay;
+- o fallback de decomposição continua retornando single-query, mas o aviso não inclui traceback
+  nem texto da exceção;
+- testes direcionados: 10 passaram; providers existentes junto com a nova cobertura: 25 passaram;
+  suíte backend: 201 passaram; Ruff completo aprovado;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; o fallback pré-rota continua reservado à Task 7;
+- relatório operacional: `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-4-report.md`;
+- próximo passo executável: Task 5, eventos de ciclo de vida de sessão após sucesso.
+
+#### Fix da revisão da Task 4 — 2026-09-25
+
+- providers Groq/Ollama agora levantam `LLMProviderRequestError` sanitizado para falhas de
+  provider, preservando `status_code` sem propagar `str(_RequestError)`; o status continua sendo
+  usado para manter a elegibilidade de retry e falhas não transitórias não são repetidas;
+- respostas de provider inválidas, campo `error` em HTTP 200 e vazamento de reasoning do Ollama
+  também usam o marcador explícito de provider; `RuntimeError` genérico passou a ser
+  `502/internal_error/unhandled`;
+- adicionados testes de `_RequestError`/`HTTPError` não transitórios com sentinelas, distinção
+  provider/interno, resposta pública fixa e falha de fábrica em `get_llm_provider`;
+- revisão direcionada: 30 passaram; suíte backend: 206 passaram; Ruff completo aprovado;
+- o contrato de sessão `404/409/410`, `503 provider_unavailable`, seleção, payload, retries,
+  retrieval e a reserva do fallback pré-rota para a Task 7 foram preservados.
+
+### Task 5 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- implementado um único `JsonLogAuditSink` no `lifespan`, armazenado em `app.state.audit_sink`,
+  com `get_audit_sink` como fronteira substituível para testes e futuras integrações;
+- as rotas de sessão emitem `session.created`, `session.read` e `session.deleted` somente depois
+  da operação funcional correspondente retornar com sucesso, usando `request.state.request_id`,
+  timestamp UTC e duração monotônica calculada sem nova consulta ao SQLite;
+- `session.read` leva somente `turn_count`; criação e exclusão não copiam turnos, resposta,
+  pergunta, source ou excerpt. `chat.completed`/`chat.failed` permanecem reservados às Tasks 6/7;
+- `tests/test_audit_sessions.py` usa `MemoryAuditSink` e dependency override, cobrindo os três
+  eventos, 404/410 sem evento de sucesso, correlação com `X-Request-ID`, duração não negativa e
+  sentinelas sintéticas ausentes;
+- validação local: teste direcionado `5 passed`, suíte backend `211 passed`, Ruff completo
+  aprovado e `docker compose config --quiet` aprovado; warnings de AnyIO/`.pytest_cache` e
+  indisponibilidade de versão do Qdrant permanecem não bloqueantes do ambiente;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou
+  frontend foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-5-report.md`.
+
+### Task 6 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- `POST /v1/chat` stateless e com sessão emite `chat.completed` após o resultado RAG conhecido;
+  no caminho persistido, a emissão ocorre somente depois de `ConversationService.run_turn` retornar;
+- o evento usa somente `request.state.request_id`, duração monotônica, provider/modelo allowlisted
+  quando disponíveis, `grounded` e contagens de fontes, citações, retries e queries; pergunta,
+  resposta, prompt, histórico, source/path/page/excerpt e `ChatResponse` não são serializados;
+- `request.state.audit_event_emitted` é marcado antes de `safe_emit`, reservando ownership terminal
+  para o fallback de falhas da Task 7; labels fora da allowlist são omitidos sem alterar a resposta;
+- `tests/test_audit_chat.py` cobre os dois modos, sentinelas de conteúdo, correlação por request ID,
+  ordenação pós-persistência e uma única chamada ao pipeline RAG;
+- validação local: testes direcionados `13 passed`, suíte backend `213 passed`, Ruff completo
+  `All checks passed!`; warnings ambientais de AnyIO, `.pytest_cache` e compatibilidade Qdrant
+  permanecem não bloqueantes;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-6-report.md`.
+
+### Task 7 da auditoria estruturada 0.7.0-A — 2026-09-25
+
+- implementado fallback do `RequestContextMiddleware` para `POST /v1/chat`: respostas 4xx/5xx sem
+  ownership recebem classificação por status, detalhe público fixo, `X-Request-ID` e uma única
+  emissão `chat.failed`; exceções escapando sem resposta recebem `502` seguro;
+- falhas dentro da rota agora emitem `chat.failed` normalizado antes de converter a exceção em
+  resposta HTTP, preservando `404`, `409`/`session_busy`, `410`, `503` e `502` da 0.6.0;
+- ownership é reservado antes de `safe_emit`, evitando `chat.completed` + `chat.failed`,
+  duplicatas ou alteração funcional quando o sink falha; as três rotas de sessão também foram
+  exercitadas com sink falho;
+- testes cobrem 422 pré-rota, dependências 503/inesperada, exceção sem resposta, body não lido pelo
+  middleware, IDs/status/duração, sentinelas de privacidade, `retrieval_queries=None`, labels
+  desconhecidos e paridade stateless/sessão;
+- validação local: focused de auditoria `33 passed`, regressão chat/sessões/request ID/CORS
+  `35 passed`, suíte backend `230 passed`, Ruff completo aprovado, `docker compose config --quiet`
+  aprovado e `git diff --check` limpo; warnings ambientais permanecem não bloqueantes;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-7-report.md`;
+- pendente: Task 8, revisão final e documentação pública consolidada; a reconciliação do checkpoint
+  histórico em `docs/PROMPT_RETOMADA.md` deve ser feita nessa etapa.
+
+### Correção dos blockers da revisão da Task 7 — 2026-09-25
+
+- o fallback pré-rota agora envia o status normalizado, e não o status HTTP não reconhecido
+  originalmente observado; `418` e `500` passam a responder `502` com detalhe fixo
+  `LLM provider request failed.`, alinhado ao evento `502/provider_error/provider`;
+- exceções inesperadas antes da resposta em rotas não-chat recebem resposta real `500` com detalhe
+  fixo `Internal server error.` e `X-Request-ID`; o caminho de `POST /v1/chat`, a leitura de body e
+  a emissão terminal de auditoria permanecem preservados;
+- testes RED reproduziram os dois gaps; os testes direcionados em GREEN passaram `3/3`, e a
+  regressão concentrada de auditoria/chat/sessões/request ID/CORS passou `51/51`;
+- suíte backend: `233 passed`, com warnings ambientais conhecidos; Ruff: `All checks passed!`;
+  Docker: `docker compose config --quiet` com código 0; `git diff --check` limpo;
+- nenhum provider real, `.env`, API key, CHATSCM, corpus, embedding, retrieval, Qdrant ou frontend
+  foi acessado/alterado; relatório operacional:
+  `.superpowers/sdd/2026-09-24-auditoria-estruturada-0.7.0-a/task-7-review-fix-report.md`;
+- Task 8, revisão final e documentação pública consolidada continuam pendentes.

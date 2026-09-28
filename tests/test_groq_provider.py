@@ -4,7 +4,7 @@ from urllib.error import HTTPError
 
 import pytest
 
-from app.llm.base import LLMServiceUnavailableError
+from app.llm.base import LLMProviderRequestError, LLMServiceUnavailableError
 from app.llm.groq_provider import GroqProvider, _GroqRequestError
 
 
@@ -143,12 +143,14 @@ async def test_groq_does_not_retry_invalid_api_key(monkeypatch) -> None:
     )
     monkeypatch.setattr(provider, "_post_json", request)
 
-    with pytest.raises(RuntimeError, match="unauthorized"):
+    with pytest.raises(LLMProviderRequestError) as raised:
         await provider.generate(
             system_prompt="system",
             user_prompt="user",
         )
 
+    assert raised.value.status_code == 401
+    assert str(raised.value) == "groq request failed."
     assert request.await_count == 1
 
 

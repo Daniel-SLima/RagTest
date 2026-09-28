@@ -117,6 +117,8 @@ async def run(args: argparse.Namespace) -> None:
                     f"blocks={attempt.cited_claim_blocks}/{attempt.total_claim_blocks} "
                     f"reason={attempt.reason or '-'}"
                 )
+                for block in attempt.uncited_blocks:
+                    print(f"      sem citação: {block[:200]}")
 
         generation_metrics = getattr(llm, "generation_metrics", ())
         if generation_metrics:

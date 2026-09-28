@@ -46,3 +46,15 @@ def test_cors_allows_delete_for_sessions() -> None:
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost:8081"
     assert "DELETE" in response.headers["access-control-allow-methods"]
+
+
+def test_cors_exposes_request_id_on_real_cross_origin_response() -> None:
+    with TestClient(app) as client:
+        response = client.get(
+            "/health",
+            headers={"Origin": "http://localhost:8081"},
+        )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:8081"
+    assert response.headers["access-control-expose-headers"] == "X-Request-ID, Retry-After"

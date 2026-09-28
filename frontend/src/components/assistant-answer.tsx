@@ -1,7 +1,7 @@
 import Markdown from "@ronradtke/react-native-markdown-display"
 import { StyleSheet, Text, View } from "react-native"
 
-import type { ChatApiResponse, ChatSource } from "../lib/chat-api"
+import type { ChatApiResponse, ChatDisplay, ChatSource } from "../lib/chat-api"
 
 type AssistantAnswerProps = {
   response: ChatApiResponse
@@ -25,16 +25,33 @@ function SourceCard({
         {showCitationId ? (
           <Text style={styles.citationBadge}>[{source.citation_id}]</Text>
         ) : null}
-        <Text style={styles.sourceTitle}>{sourceFilename(source.source)}</Text>
+        <Text style={styles.sourceTitle}>{source.title ?? sourceFilename(source.source)}</Text>
       </View>
       <Text style={styles.sourceMeta}>
-        {source.page === null ? "Página não informada" : `Página ${source.page}`}
+        {source.location_label ??
+          (source.page === null ? "Página não informada" : `Página ${source.page}`)}
       </Text>
       {source.excerpt ? (
         <Text numberOfLines={3} style={styles.sourceExcerpt}>
           {source.excerpt}
         </Text>
       ) : null}
+    </View>
+  )
+}
+
+const TONE_STYLES = {
+  danger: { backgroundColor: "#FDECEC" },
+  neutral: { backgroundColor: "#EEF1F5" },
+  success: { backgroundColor: "#EAF6EE" },
+  warning: { backgroundColor: "#FFF6E5" },
+} as const
+
+function DisplayCard({ display }: { display: ChatDisplay }) {
+  return (
+    <View style={[styles.groundingCard, TONE_STYLES[display.tone]]}>
+      <Text style={styles.groundingTitle}>{display.title}</Text>
+      <Text style={styles.groundingText}>{display.message}</Text>
     </View>
   )
 }
@@ -95,10 +112,14 @@ export function AssistantAnswer({ response }: AssistantAnswerProps) {
     <View style={styles.wrapper}>
       <Markdown style={markdownStyles}>{response.answer}</Markdown>
 
-      <GroundingStatus
-        grounded={response.grounded}
-        hasSources={response.sources.length > 0}
-      />
+      {response.display ? (
+        <DisplayCard display={response.display} />
+      ) : (
+        <GroundingStatus
+          grounded={response.grounded}
+          hasSources={response.sources.length > 0}
+        />
+      )}
 
       {visibleSources.length > 0 ? (
         <View style={styles.sourcesSection}>

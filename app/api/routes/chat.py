@@ -1,33 +1,116 @@
+from datetime import UTC, datetime
+from time import monotonic
 from typing import Annotated
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.api.dependencies import (
+    get_audit_sink,
     get_conversation_service,
     get_embedding_provider,
     get_llm_provider,
     get_sparse_embedding_provider,
     get_vector_store,
 )
-from app.conversation.models import (
-    SessionBusyError,
-    SessionConflictError,
-    SessionExpiredError,
-    SessionNotFoundError,
-)
+from app.catalog.services import load_catalog_or_none
 from app.conversation.service import ConversationService
 from app.core.config import Settings, get_settings
-from app.llm.base import LLMProvider, LLMServiceUnavailableError
-from app.rag.chat import answer_with_rag
+from app.llm.base import LLMProvider
+from app.observability.audit import AuditEvent, AuditSink, safe_emit
+from app.observability.errors import NormalizedError, normalize_exception
+from app.presentation import build_display, local_today, source_location_label, source_title
+from app.rag.actions import build_actions, present_action
+from app.rag.chat import ChatResult, answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
 from app.rag.vector_store import QdrantVectorStore
-from app.schemas.chat import ChatRequest, ChatResponse, ChatSource
+from app.schemas.chat import (
+    ChatAction,
+    ChatDisplay,
+    ChatRequest,
+    ChatResponse,
+    ChatSafety,
+    ChatSource,
+)
+from app.security.auth import enforce_chat_rate_limit
 
 router = APIRouter(prefix="/v1", tags=["chat"])
 
+_AUDIT_PROVIDERS = frozenset({"gemini", "groq", "ollama"})
+_AUDIT_MODELS = frozenset(
+    {
+        "gemini-3.6-flash",
+        "openai/gpt-oss-120b",
+        "qwen3:8b",
+    }
+)
 
-@router.post("/chat", response_model=ChatResponse)
+
+def _allowlisted_label(value: object, allowed: frozenset[str]) -> str | None:
+    return value if isinstance(value, str) and value in allowed else None
+
+
+def _emit_completed_event(
+    request: Request,
+    sink: AuditSink,
+    settings: Settings,
+    result: ChatResult,
+    *,
+    session_id,
+    started_at: float,
+) -> None:
+    event = AuditEvent(
+        event_id=uuid4(),
+        timestamp=datetime.now(UTC),
+        request_id=request.state.request_id,
+        event_type="chat.completed",
+        outcome="success",
+        operation="chat",
+        duration_ms=max(0, round((monotonic() - started_at) * 1000)),
+        session_id=session_id,
+        provider=_allowlisted_label(settings.llm_provider, _AUDIT_PROVIDERS),
+        model=_allowlisted_label(result.model, _AUDIT_MODELS),
+        grounded=result.grounded,
+        source_count=len(result.sources),
+        citation_count=len(result.citation_ids),
+        citation_retry_count=result.citation_retry_count,
+        retrieval_query_count=len(result.retrieval_queries or ()),
+    )
+    request.state.audit_event_emitted = True
+    safe_emit(sink, event)
+
+
+def _emit_failed_event(
+    request: Request,
+    sink: AuditSink,
+    normalized: NormalizedError,
+    *,
+    session_id,
+    started_at: float,
+) -> None:
+    event = AuditEvent(
+        event_id=uuid4(),
+        timestamp=datetime.now(UTC),
+        request_id=request.state.request_id,
+        event_type="chat.failed",
+        outcome="failure",
+        operation="chat",
+        duration_ms=max(0, round((monotonic() - started_at) * 1000)),
+        session_id=session_id,
+        status_code=normalized.status_code,
+        error_code=normalized.error_code,
+        error_type=normalized.error_type,
+    )
+    request.state.audit_event_emitted = True
+    safe_emit(sink, event)
+
+
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+    dependencies=[Depends(enforce_chat_rate_limit)],
+)
 async def chat(
     request: ChatRequest,
     embeddings: Annotated[EmbeddingProvider, Depends(get_embedding_provider)],
@@ -41,7 +124,10 @@ async def chat(
     conversation_service: Annotated[
         ConversationService, Depends(get_conversation_service)
     ],
+    http_request: Request = None,
+    audit_sink: Annotated[AuditSink | None, Depends(get_audit_sink)] = None,
 ) -> ChatResponse:
+    started_at = monotonic()
     profile = get_profile(settings.retrieval_mode)
     auto_decompose = (
         settings.retrieval_auto_decompose
@@ -61,7 +147,11 @@ async def chat(
             limit=request.limit,
             category=request.category,
             audience=request.audience,
-            min_score=request.min_score,
+            min_score=(
+                request.min_score
+                if request.min_score is not None
+                else settings.retrieval_min_score
+            ),
             candidate_multiplier=profile.candidate_multiplier,
             score_margin=profile.score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
@@ -86,26 +176,38 @@ async def chat(
             )
             result = completed.result
             response_session_id = request.session_id
-    except SessionNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Session not found.") from exc
-    except SessionBusyError as exc:
-        raise HTTPException(status_code=409, detail="Session is busy.") from exc
-    except SessionConflictError as exc:
-        raise HTTPException(status_code=409, detail="Session conflict.") from exc
-    except SessionExpiredError as exc:
-        raise HTTPException(status_code=410, detail="Session expired.") from exc
-    except LLMServiceUnavailableError as exc:
+    except Exception as exc:  # noqa: BLE001 - normalize all chat failures centrally.
+        normalized = normalize_exception(exc)
+        if http_request is not None and audit_sink is not None:
+            _emit_failed_event(
+                http_request,
+                audit_sink,
+                normalized,
+                session_id=request.session_id,
+                started_at=started_at,
+            )
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-        ) from exc
-    except RuntimeError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="LLM provider request failed.",
-        ) from exc
+            status_code=normalized.status_code,
+            detail=normalized.public_detail,
+        ) from None
+
+    if http_request is not None and audit_sink is not None:
+        _emit_completed_event(
+            http_request,
+            audit_sink,
+            settings,
+            result,
+            session_id=response_session_id,
+            started_at=started_at,
+        )
+
+    safety = result.safety
+    today = local_today(settings.app_timezone)
+    actions = [
+        present_action(action, today=today)
+        for action in build_actions(result, load_catalog_or_none(settings.source_dir))
+    ]
+    display = build_display(result)
 
     return ChatResponse(
         session_id=response_session_id,
@@ -127,7 +229,33 @@ async def chat(
                 page=hit.page,
                 chunk_count=hit.chunk_count,
                 excerpt=" ".join(hit.content.split())[:500],
+                title=source_title(hit.source),
+                location_label=source_location_label(hit.page),
             )
             for index, hit in enumerate(result.sources, start=1)
         ],
+        safety=ChatSafety(
+            triaged=bool(safety and safety.triggered),
+            rule_id=safety.rule_id if safety else None,
+            out_of_scope=result.out_of_scope,
+        ),
+        actions=[
+            ChatAction(
+                type=action.type,
+                label=action.label,
+                url=action.url,
+                service_id=action.service_id,
+                suggested_in_days=action.suggested_in_days,
+                due_date=action.due_date,
+                requires_host_app=action.requires_host_app,
+                note=action.note,
+            )
+            for action in actions
+        ],
+        display=ChatDisplay(
+            status=display.status,
+            tone=display.tone,
+            title=display.title,
+            message=display.message,
+        ),
     )

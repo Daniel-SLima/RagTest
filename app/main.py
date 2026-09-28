@@ -1,9 +1,11 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.responses import UTF8JSONResponse
+from app.api.routes.catalog import router as catalog_router
 from app.api.routes.chat import router as chat_router
 from app.api.routes.health import router as health_router
 from app.api.routes.search import router as search_router
@@ -11,6 +13,9 @@ from app.api.routes.sessions import router as sessions_router
 from app.conversation.service import ConversationService
 from app.conversation.sqlite_store import SQLiteSessionStore
 from app.core.config import get_settings
+from app.observability.audit import JsonLogAuditSink
+from app.observability.middleware import RequestContextMiddleware
+from app.security.auth import require_api_client
 from app.services.qdrant_service import QdrantService
 
 
@@ -21,6 +26,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.session_store = SQLiteSessionStore(settings.session_db_path)
     await app.state.session_store.initialize()
     app.state.conversation_service = ConversationService(app.state.session_store, settings)
+    app.state.audit_sink = JsonLogAuditSink()
     app.state.embedding_provider = None
     app.state.sparse_embedding_provider = None
     app.state.llm_provider = None
@@ -38,6 +44,7 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         description="API REST portável para o módulo RAG do RagTest.",
         lifespan=lifespan,
+        default_response_class=UTF8JSONResponse,
     )
     allowed_origins = [
         origin.strip()
@@ -49,12 +56,16 @@ def create_app() -> FastAPI:
         allow_origins=allowed_origins,
         allow_credentials=False,
         allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type"],
+        allow_headers=["Content-Type", "X-API-Key"],
+        expose_headers=["X-Request-ID", "Retry-After"],
     )
+    application.add_middleware(RequestContextMiddleware)
+    protected = [Depends(require_api_client)]
     application.include_router(health_router)
-    application.include_router(search_router)
-    application.include_router(chat_router)
-    application.include_router(sessions_router)
+    application.include_router(search_router, dependencies=protected)
+    application.include_router(chat_router, dependencies=protected)
+    application.include_router(sessions_router, dependencies=protected)
+    application.include_router(catalog_router, dependencies=protected)
 
     @application.get("/", include_in_schema=False)
     async def root() -> dict[str, str]:

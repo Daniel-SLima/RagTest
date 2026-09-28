@@ -15,8 +15,10 @@ from app.rag.prompting import (
     build_citation_repair_prompt,
     build_user_prompt,
 )
+from app.rag.refusal import is_refusal
 from app.rag.search import semantic_search
 from app.rag.vector_store import QdrantVectorStore, SearchHit
+from app.safety.triage import TRIAGE_MODEL_NAME, TriageResult, triage_message
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,6 +31,7 @@ class CitationValidationAttempt:
     uncited_claim_blocks: int
     coverage: float
     reason: str | None
+    uncited_blocks: tuple[str, ...] = ()
 
     @classmethod
     def from_coverage(
@@ -46,6 +49,7 @@ class CitationValidationAttempt:
             uncited_claim_blocks=coverage.uncited_claim_blocks,
             coverage=coverage.coverage,
             reason=coverage.reason,
+            uncited_blocks=coverage.uncited_blocks,
         )
 
 
@@ -61,7 +65,18 @@ class ChatResult:
     retrieval_queries: list[str] | None = None
     decomposition_status: str = "not-needed"
     citation_validation_attempts: tuple[CitationValidationAttempt, ...] = ()
+    safety: TriageResult | None = None
+    out_of_scope: bool = False
 
+
+OUT_OF_SCOPE_ANSWER = (
+    "Não encontrei essa informação nas cartilhas e orientações disponíveis. "
+    "Posso ajudar com exames preventivos, mamografia, pré-natal, métodos contraceptivos, "
+    "vacinação e acesso aos serviços de saúde. Para outras dúvidas sobre a sua saúde, "
+    "procure a UBS mais próxima."
+)
+
+_REFUSAL = "__refusal__"
 
 _GROUNDING_FALLBACK = (
     "Não foi possível gerar uma resposta com citações verificáveis a partir dos "
@@ -115,6 +130,9 @@ async def _generate_with_validated_citations(
         stage="initial",
     )
 
+    if is_refusal(answer):
+        return _REFUSAL, False, [], 0, (first_attempt,)
+
     if validation.valid:
         return answer, True, list(extract_citation_ids(answer)), 0, (first_attempt,)
 
@@ -147,6 +165,14 @@ async def _generate_with_validated_citations(
     )
     repaired_answer = normalize_citation_markup(repaired_answer)
     repaired_validation = validate_citation_coverage(repaired_answer, len(hits))
+    if is_refusal(repaired_answer):
+        return (
+            _REFUSAL,
+            False,
+            [],
+            1,
+            (first_attempt, CitationValidationAttempt.from_coverage(repaired_validation, stage="repair")),
+        )
 
     second_attempt = CitationValidationAttempt.from_coverage(
         repaired_validation,
@@ -208,6 +234,19 @@ async def answer_with_rag(
     retrieval_question: str | None = None,
     conversation_context: str | None = None,
 ) -> ChatResult:
+    triage = triage_message(question)
+    if triage.triggered:
+        return ChatResult(
+            answer=triage.answer,
+            sources=[],
+            model=TRIAGE_MODEL_NAME,
+            grounded=False,
+            citation_ids=[],
+            retrieval_queries=[],
+            decomposition_status="skipped-triage",
+            safety=triage,
+        )
+
     search_question = retrieval_question or question
     decomposition = await decompose_question(
         search_question,
@@ -260,10 +299,7 @@ async def answer_with_rag(
 
     if not hits:
         return ChatResult(
-            answer=(
-                "Não encontrei trechos com relevância suficiente na base documental "
-                "para responder a essa pergunta."
-            ),
+            answer=OUT_OF_SCOPE_ANSWER,
             sources=[],
             model=llm.model_name,
             grounded=False,
@@ -271,6 +307,7 @@ async def answer_with_rag(
             multi_query_used=decomposition.used,
             retrieval_queries=list(retrieval_queries),
             decomposition_status=decomposition.status,
+            out_of_scope=True,
         )
 
     (
@@ -286,6 +323,22 @@ async def answer_with_rag(
         conversation_context=conversation_context,
     )
 
+    if answer == _REFUSAL:
+        return ChatResult(
+            answer=OUT_OF_SCOPE_ANSWER,
+            sources=hits,
+            model=llm.model_name,
+            grounded=False,
+            citation_ids=[],
+            citation_retry_count=retry_count,
+            multi_query_used=decomposition.used,
+            retrieval_queries=list(retrieval_queries),
+            decomposition_status=decomposition.status,
+            citation_validation_attempts=citation_validation_attempts,
+            safety=triage,
+            out_of_scope=True,
+        )
+
     return ChatResult(
         answer=answer,
         sources=hits,
@@ -297,4 +350,5 @@ async def answer_with_rag(
         retrieval_queries=list(retrieval_queries),
         decomposition_status=decomposition.status,
         citation_validation_attempts=citation_validation_attempts,
+        safety=triage,
     )

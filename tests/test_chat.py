@@ -384,3 +384,37 @@ async def test_answer_with_rag_does_not_prune_low_coverage_after_repair() -> Non
     assert result.citation_validation_attempts[1].stage == "repair"
     assert result.citation_validation_attempts[1].coverage == pytest.approx(0.25)
     assert "Não foi possível gerar uma resposta" in result.answer
+
+
+class ExplodingLLM:
+    model_name = "exploding"
+
+    async def generate(self, *, system_prompt: str, user_prompt: str) -> str:
+        raise AssertionError("LLM must not be called for triaged messages")
+
+
+class ExplodingStore:
+    async def search(self, *args: object, **kwargs: object) -> list[SearchHit]:
+        raise AssertionError("retrieval must not run for triaged messages")
+
+    async def hybrid_search(self, *args: object, **kwargs: object) -> list[SearchHit]:
+        raise AssertionError("retrieval must not run for triaged messages")
+
+
+@pytest.mark.asyncio
+async def test_answer_with_rag_short_circuits_urgent_messages() -> None:
+    result = await answer_with_rag(
+        "estou grávida e com a visão embaçada",
+        embeddings=FakeEmbeddings(),
+        vector_store=ExplodingStore(),
+        llm=ExplodingLLM(),
+    )
+
+    assert result.safety is not None
+    assert result.safety.triggered
+    assert result.safety.rule_id == "alteracao_visual"
+    assert result.sources == []
+    assert result.grounded is False
+    assert result.model == "triagem-deterministica"
+    assert result.decomposition_status == "skipped-triage"
+    assert "maternidade" in result.answer.lower()

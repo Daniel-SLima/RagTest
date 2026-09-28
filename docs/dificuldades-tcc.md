@@ -414,3 +414,115 @@ Diagnóstico: as permissões do sandbox/Windows impediam a criação de subdiret
 Correção: a suíte foi repetida com `TEMP` e `TMP` apontando para um diretório temporário autorizado fora do código do produto; o resultado foi 150 testes aprovados.
 
 Aprendizado técnico: o ambiente de validação deve declarar um diretório temporário gravável; falhas de fixture precisam ser separadas de regressões funcionais.
+
+## 33. Script de avaliação abortou no primeiro comando do Docker no Windows PowerShell
+
+Planejado: rodar `scripts/avaliar_dominio.ps1` para sincronizar o Qdrant e avaliar o dataset v2.
+
+Observado: o script parou logo em `docker compose up -d --build` com `NativeCommandError`, mostrando
+apenas a linha de progresso `Image 00-ragtest-api Building`.
+
+Diagnóstico: o Docker escreve o progresso em stderr. No Windows PowerShell 5.1, com
+`$ErrorActionPreference = "Stop"`, qualquer linha em stderr de um programa nativo vira erro
+terminante, mesmo quando o comando está funcionando.
+
+Correção: o script passou a executar cada comando via `cmd /c "... 2>&1"`, decidir sucesso pelo
+`$LASTEXITCODE`, aguardar o `/health` em vez de um `sleep` fixo e gravar a saída em UTF-8.
+
+Aprendizado técnico: em automação no Windows, sucesso de programas nativos deve ser verificado pelo
+código de saída, não pela presença de texto em stderr.
+
+
+## 34. O modo padrão de retrieval acertou só 60% das perguntas do domínio
+
+Planejado: avaliar o dataset de domínio v2 esperando manter o `dense-rerank` (D006) como padrão.
+
+Observado: dense-rerank teve PassRate@5 0.600 no dev e 0.840 no holdout; hybrid teve 1.000 e 0.920.
+As falhas do denso eram perguntas coloquiais respondidas pelo FAQ do CHATSCM ("onde eu marco o
+preventivo", "achei um caroço no peito", "o que é o DIU e dói pra colocar?").
+
+Diagnóstico: o benchmark que escolheu o dense-rerank usava perguntas bem formadas sobre documentos
+oficiais. Perguntas de usuária dependem de termos exatos ("preventivo", "implanon") que o BM25
+recupera melhor que o modelo denso pequeno. Além disso, a calibração mostrou que o score denso não
+separa perguntas do domínio de perguntas fora de escopo.
+
+Correção: hybrid como padrão (D046); limiar de fora de escopo desligado; contexto do serviço em
+todos os chunks do catálogo (D047).
+
+Aprendizado técnico: a estratégia de retrieval precisa ser escolhida com perguntas representativas
+do público real; uma avaliação com perguntas "de especialista" pode indicar o modo errado.
+
+
+## 35. Recusa correta do modelo saiu como "citações verificadas"
+
+Planejado: perguntas fora do tema deveriam ser recusadas sem parecer respostas fundamentadas.
+
+Observado: para "quem ganhou o jogo do Bahia?", o GPT-OSS respondeu que os documentos não tinham a
+informação, mas terminou a frase com `[1]` (uma página da Caderneta da Gestante). O gate aceitou e
+a API mostrou "Citações verificadas".
+
+Diagnóstico: o gate exige citação em todo bloco informativo, inclusive na frase de recusa; o modelo
+"satisfaz" a regra citando qualquer fonte. A recusa por limiar de similaridade já tinha se mostrado
+inviável (dificuldade #34).
+
+Correção: marcador `SEM_BASE_DOCUMENTAL` no prompt e detecção determinística de recusas curtas
+(D048); a resposta vira fora de escopo, sem citações.
+
+Aprendizado técnico: guardrails de citação precisam de uma saída explícita para "não sei"; caso
+contrário, empurram o modelo a inventar suporte para a própria recusa.
+
+## 36. Pergunta de agendamento da mamografia caiu no fallback mesmo com as fontes certas
+
+Planejado: "Como eu agendo a mamografia?" deveria ser respondida com o CHATSCM e o catálogo.
+
+Observado: o retrieval trouxe as fontes certas (CHATSCM e 2 chunks do catálogo), mas as duas
+gerações foram reprovadas pelo gate (`citation_retry_count=1`, `grounded=false`).
+
+Diagnóstico: o `ragtest-chat` passou a imprimir os blocos sem citação de cada tentativa
+(`docs/resultados/diagnostico_mamografia.txt`). As afirmações de fato estavam citadas; o gate
+reprovava a **estrutura** da resposta:
+1. um título em negrito ("**Como agendar a mamografia**") contado como afirmação;
+2. o passo "1. **Procure a UBS...**", cujas citações estavam nos subitens logo abaixo;
+3. itens curtos de uma lista ("Cartão SUS", "Documento com foto") sob uma introdução já citada.
+Cobertura 4/7 na primeira tentativa e 6/8 no repair.
+
+Correção: o gate passa a reconhecer três estruturas (D050): linha só em negrito é título; um passo
+de lista sem citação é aceito quando **todos** os subitens informativos dele estão citados; itens
+curtos (até 10 palavras) herdam a citação de uma introdução citada terminada em ":". Itens longos,
+passos com subitens sem citação e introduções sem citação continuam reprovados.
+
+Aprendizado técnico: um validador estrutural precisa entender a hierarquia do Markdown que o modelo
+realmente produz; contar linhas isoladas pune respostas bem organizadas e empurra o sistema para o
+fallback.
+
+## 37. Acentos corrompidos no teste do chat pelo PowerShell
+
+Planejado: salvar as respostas reais do `/v1/chat` em JSON para análise.
+
+Observado: o arquivo ficou com "NÃ£o", "saÃºde" etc.
+
+Diagnóstico: a API respondia `application/json` sem charset; o `Invoke-RestMethod` do PowerShell 5.1
+decodifica como Latin-1 nesse caso. O mesmo acontece com o pacote `http` do Dart, usado em Flutter.
+
+Correção: `charset=utf-8` em todas as respostas JSON (D049).
+
+Aprendizado técnico: declarar o charset é parte do contrato; clientes diferentes assumem padrões
+diferentes quando ele falta.
+
+## 38. Testes passavam no computador do autor e falhavam na CI
+
+Planejado: abrir o PR da 0.7.0 com a suíte verde localmente.
+
+Observado: na CI, `test_validation_error_is_a_single_pre_route_chat_failed` e
+`test_request_id_exists_on_validation_error` receberam 503 em vez de 422.
+
+Diagnóstico: esses testes usam o app real. Localmente o `.env` tinha chave de LLM; na CI não havia,
+então a dependência do provider falhava (503) antes da validação do corpo (422). Os testes dependiam
+do ambiente da máquina.
+
+Correção: `tests/conftest.py` fixa variáveis de ambiente falsas (provider, chaves fictícias,
+`API_KEYS` vazio) antes de importar o app. Além de tornar a suíte hermética, garante que nenhum
+teste use a chave real do autor.
+
+Aprendizado técnico: rodar a suíte num ambiente limpo (como a CI) é o único jeito de provar que
+ela não depende de configuração local.

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ragtest"
-version = "0.6.0"
+version = "0.8.0"
 description = "Backend portável de RAG com FastAPI, Qdrant, OCR e múltiplos providers de LLM"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -52,9 +52,15 @@ ragtest-audit-docx-structure = "app.cli.audit_docx_structure:main"
 ragtest-audit-evaluation-labels = "app.cli.audit_evaluation_labels:main"
 ragtest-check-evaluation-v2 = "app.cli.check_evaluation_v2:main"
 ragtest-check-grounding-coverage = "app.cli.check_grounding_coverage:main"
+ragtest-audit-pii = "app.cli.audit_pii:main"
+ragtest-calibrate-scope = "app.cli.calibrate_scope:main"
+ragtest-export-openapi = "app.cli.export_openapi:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.setuptools.package-data]
+"app.evaluation" = ["datasets/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

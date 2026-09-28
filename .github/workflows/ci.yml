@@ -51,6 +51,41 @@ jobs:
         run: pytest
 
 
+  e2e-qdrant:
+    runs-on: ubuntu-latest
+
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.19.1
+        ports:
+          - 6333:6333
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
+
+      - name: Wait for Qdrant
+        run: |
+          for attempt in $(seq 1 30); do
+            curl -sf http://localhost:6333/readyz && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: End-to-end pipeline against real Qdrant
+        env:
+          RAGTEST_E2E_QDRANT_URL: http://localhost:6333
+        run: pytest tests/e2e -q
+
   frontend-test:
     runs-on: ubuntu-latest
 
@@ -75,3 +110,8 @@ jobs:
 
       - name: Frontend typecheck
         run: npm run typecheck
+
+      - name: Generated API client matches the frozen contract
+        run: |
+          npm run generate:api
+          git diff --exit-code src/lib/api-types.ts

@@ -9,6 +9,9 @@ _LEADING_MARKUP_PATTERN = re.compile(
 )
 _MARKDOWN_HEADING_PATTERN = re.compile(r"^\s*#{1,6}\s+\S")
 _LIST_ITEM_PATTERN = re.compile(r"^\s*(?:[-*+]\s+|\d+[.)]\s+)")
+_BOLD_HEADING_PATTERN = re.compile(r"^\s*\*\*[^*\[\]]+\*\*\s*:?\s*$")
+_CITATION_PATTERN = re.compile(r"\[\d+\]")
+_MAX_INHERITED_ITEM_WORDS = 10
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +50,75 @@ def _is_claim_block(line: str) -> bool:
     return True
 
 
+def _indent(line: str) -> int:
+    return len(line) - len(line.lstrip(" \t"))
+
+
+def _has_valid_citation(line: str, source_count: int) -> bool:
+    ids = extract_citation_ids(line)
+    return bool(ids) and all(1 <= citation_id <= source_count for citation_id in ids)
+
+
+def _word_count(line: str) -> int:
+    return len(_WORD_PATTERN.findall(_CITATION_PATTERN.sub("", _normalized_block(line))))
+
+
+def _children(lines: list[str], index: int) -> list[int]:
+    base = _indent(lines[index])
+    found: list[int] = []
+    for position in range(index + 1, len(lines)):
+        line = lines[position]
+        if not line.strip():
+            continue
+        if _indent(line) <= base:
+            break
+        found.append(position)
+    return found
+
+
+def _following_list_items(lines: list[str], index: int) -> list[int]:
+    found: list[int] = []
+    for position in range(index + 1, len(lines)):
+        line = lines[position]
+        if not line.strip():
+            continue
+        if not _LIST_ITEM_PATTERN.match(line):
+            break
+        found.append(position)
+    return found
+
+
+def _structural_exemptions(lines: list[str], source_count: int) -> set[int]:
+    exempt = {
+        index
+        for index, line in enumerate(lines)
+        if _BOLD_HEADING_PATTERN.match(line) and not extract_citation_ids(line)
+    }
+    for index, line in enumerate(lines):
+        if not line.strip() or index in exempt:
+            continue
+        children = _children(lines, index)
+        cited = _has_valid_citation(line, source_count)
+        if _LIST_ITEM_PATTERN.match(line) and children and not cited:
+            child_claims = [
+                child for child in children if _is_claim_block(lines[child])
+            ]
+            if child_claims and all(
+                _has_valid_citation(lines[child], source_count) for child in child_claims
+            ):
+                exempt.add(index)
+        text = _CITATION_PATTERN.sub("", _normalized_block(line)).strip()
+        if cited and text.endswith(":"):
+            followers = children or _following_list_items(lines, index)
+            for follower in followers:
+                if (
+                    not _has_valid_citation(lines[follower], source_count)
+                    and _word_count(lines[follower]) <= _MAX_INHERITED_ITEM_WORDS
+                ):
+                    exempt.add(follower)
+    return exempt
+
+
 def _is_list_intro(lines: list[str], index: int) -> bool:
     normalized = _normalized_block(lines[index])
     if not normalized.endswith(":"):
@@ -66,11 +138,12 @@ def validate_citation_coverage(
 ) -> CitationCoverage:
     syntax = validate_citations(answer, source_count)
     lines = answer.splitlines()
+    exempt = _structural_exemptions(lines, source_count)
 
     claim_blocks = [
         line.strip()
         for index, line in enumerate(lines)
-        if _is_claim_block(line) and not _is_list_intro(lines, index)
+        if _is_claim_block(line) and not _is_list_intro(lines, index) and index not in exempt
     ]
 
     if not claim_blocks:
@@ -119,10 +192,15 @@ def validate_citation_coverage(
 
 def prune_uncited_claim_blocks(answer: str, source_count: int) -> str:
     lines = answer.splitlines()
+    exempt = _structural_exemptions(lines, source_count)
     kept_lines: list[str] = []
 
     for index, line in enumerate(lines):
         if not line.strip():
+            kept_lines.append(line)
+            continue
+
+        if index in exempt:
             kept_lines.append(line)
             continue
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,26 +10,39 @@ import {
   View,
 } from "react-native"
 
+import { AnswerActions } from "./src/components/answer-actions"
 import { AssistantAnswer } from "./src/components/assistant-answer"
 import {
+  type ChatAction,
   ChatApiError,
   type ChatApiResponse,
+  createSuggestionsLoader,
+  type SuggestionsLoader,
   sendChatMessage,
 } from "./src/lib/chat-api"
+import { formatIsoDate, type Reminder, reminderFromAction } from "./src/lib/reminders"
 
 type SendChat = typeof sendChatMessage
 
 type AppProps = {
   apiBaseUrl?: string
   sendChat?: SendChat
+  openUrl?: (url: string) => Promise<unknown>
+  loadSuggestions?: SuggestionsLoader
+  apiKey?: string
 }
+
+const DEFAULT_API_KEY = process.env.EXPO_PUBLIC_RAG_API_KEY
 
 const DEFAULT_API_BASE_URL =
   process.env.EXPO_PUBLIC_RAG_API_BASE_URL ?? "http://localhost:8000"
 
 export default function App({
   apiBaseUrl = DEFAULT_API_BASE_URL,
+  apiKey = DEFAULT_API_KEY,
   sendChat = sendChatMessage,
+  openUrl = (url: string) => Linking.openURL(url),
+  loadSuggestions,
 }: AppProps) {
   const conversationRef = useRef<ScrollView>(null)
   const [draft, setDraft] = useState("")
@@ -36,6 +50,24 @@ export default function App({
   const [response, setResponse] = useState<ChatApiResponse | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const [reminders, setReminders] = useState<Reminder[]>([])
+  const [suggestions, setSuggestions] = useState<string[]>([])
+
+  useEffect(() => {
+    let active = true
+    const loader = loadSuggestions ?? createSuggestionsLoader(apiBaseUrl, apiKey)
+    loader()
+      .then((items) => {
+        if (active) {
+          setSuggestions(items)
+        }
+      })
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [apiBaseUrl, apiKey, loadSuggestions])
 
   const canSend = draft.trim().length >= 2 && !isLoading
 
@@ -51,12 +83,13 @@ export default function App({
     setQuestion(message)
     setResponse(null)
     setError(null)
+    setNotice(null)
     setIsLoading(true)
 
     try {
       const result = await sendChat(
         { message },
-        { baseUrl: apiBaseUrl },
+        apiKey ? { baseUrl: apiBaseUrl, apiKey } : { baseUrl: apiBaseUrl },
       )
       setResponse(result)
     } catch (requestError) {
@@ -78,6 +111,31 @@ export default function App({
 
     setDraft("")
     await requestAnswer(message)
+  }
+
+  function handleOpenUrl(action: ChatAction) {
+    if (action.requires_host_app) {
+      setNotice(action.note ?? null)
+      return
+    }
+    if (!action.url) {
+      return
+    }
+    setNotice(null)
+    void openUrl(action.url).catch(() =>
+      setNotice("Não foi possível abrir este atalho neste dispositivo."),
+    )
+  }
+
+  function handleScheduleReminder(action: ChatAction) {
+    const reminder = reminderFromAction(action)
+    if (!reminder) {
+      return
+    }
+    setReminders((current) =>
+      current.some((item) => item.id === reminder.id) ? current : [...current, reminder],
+    )
+    setNotice(`Lembrete criado para ${formatIsoDate(reminder.dueDate)}.`)
   }
 
   async function handleRetry() {
@@ -112,6 +170,19 @@ export default function App({
               Faça uma pergunta sobre saúde e consulte respostas fundamentadas
               nos documentos disponíveis no módulo RAG.
             </Text>
+            <View style={styles.suggestions}>
+              {suggestions.map((suggestion) => (
+                <Pressable
+                  accessibilityLabel={suggestion}
+                  accessibilityRole="button"
+                  key={suggestion}
+                  onPress={() => requestAnswer(suggestion)}
+                  style={styles.suggestion}
+                >
+                  <Text style={styles.suggestionText}>{suggestion}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         ) : (
           <View style={styles.conversation}>
@@ -131,6 +202,23 @@ export default function App({
               <View style={styles.assistantMessage}>
                 <Text style={styles.messageLabel}>Assistente</Text>
                 <AssistantAnswer response={response} />
+                <AnswerActions
+                  actions={response.actions ?? []}
+                  notice={notice}
+                  onOpenUrl={handleOpenUrl}
+                  onScheduleReminder={handleScheduleReminder}
+                />
+              </View>
+            ) : null}
+
+            {reminders.length > 0 ? (
+              <View style={styles.remindersCard}>
+                <Text style={styles.messageLabel}>Meus lembretes</Text>
+                {reminders.map((reminder) => (
+                  <Text key={reminder.id} style={styles.reminderText}>
+                    {`${reminder.label} — ${formatIsoDate(reminder.dueDate)}`}
+                  </Text>
+                ))}
               </View>
             ) : null}
 
@@ -230,6 +318,31 @@ const styles = StyleSheet.create({
   },
   conversation: {
     gap: 14,
+  },
+  suggestions: {
+    gap: 8,
+    marginTop: 4,
+  },
+  suggestion: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#D8DCE3",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  suggestionText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  remindersCard: {
+    borderRadius: 16,
+    backgroundColor: "#EEF6F0",
+    padding: 16,
+    gap: 6,
+  },
+  reminderText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   userMessage: {
     alignSelf: "flex-end",
