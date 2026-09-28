@@ -369,3 +369,18 @@ e o `grounded=true` mantém significado estrutural. Ficam explicitamente fora de
 autenticação/autorização, egress de CHATSCM, retenção/WAL/backups, criptografia/TLS, rate limits,
 headers de segurança, exposição do Qdrant, auditoria durável, governança de dependências/CLI e
 política LGPD. Não há alegação de conformidade LGPD.
+
+
+## D038 — Liberar o CHATSCM para providers externos após auditoria de dados pessoais
+
+**Data:** 2026-09-28
+**Status:** PROPOSTA — aguardando checklist manual em `docs/revisao-privacidade-chatscm.md`.
+**Decisão:** o CHATSCM é o FAQ institucional do Se Cuida Mulher e contém o núcleo do domínio do
+TCC (preventivo, mamografia, agendamento, pré-natal, sinais de urgência). Ele deixa de ser
+bloqueado para providers externos quando a auditoria automática (`ragtest-audit-pii`) não
+encontrar identificadores pessoais e o autor confirmar o checklist manual.
+**Motivo:** manter o bloqueio indefinidamente impede avaliar e demonstrar o RAG justamente no
+problema proposto pelo orientador. A auditoria automática de 2026-09-28 encontrou 0 achados
+nos 3 arquivos.
+**Impacto:** após a aprovação, o dataset de avaliação v2 e os testes reais de chat podem usar
+perguntas cujas fontes são o CHATSCM. A regra de não registrar conteúdo em logs continua.

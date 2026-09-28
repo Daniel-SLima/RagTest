@@ -52,6 +52,7 @@ ragtest-audit-docx-structure = "app.cli.audit_docx_structure:main"
 ragtest-audit-evaluation-labels = "app.cli.audit_evaluation_labels:main"
 ragtest-check-evaluation-v2 = "app.cli.check_evaluation_v2:main"
 ragtest-check-grounding-coverage = "app.cli.check_grounding_coverage:main"
+ragtest-audit-pii = "app.cli.audit_pii:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
