@@ -468,3 +468,18 @@ erros e na auditoria (`unauthorized`, `rate_limited`), e o middleware preserva `
 LLM; sem identificação e limite, qualquer cliente esgotaria a cota do provider.
 **Impacto:** limite por processo (não compartilhado entre réplicas); chaves por usuária final e
 OAuth ficam fora do escopo do TCC. O contrato OpenAPI passou a declarar o esquema `APIKeyHeader`.
+
+
+## D045 — Teste ponta a ponta do pipeline com Qdrant real e providers falsos
+
+**Data:** 2026-09-28
+**Decisão:** `tests/e2e/test_pipeline_e2e.py` percorre ingestão (catálogo + DOCX) → chunking →
+Qdrant (denso + esparso) → `/v1/chat` com autenticação, sessões, citações, ações, triagem e
+auditoria. Embeddings e LLM são falsos e determinísticos. Localmente usa o modo em memória do
+qdrant-client; na CI, o job `e2e-qdrant` roda contra um Qdrant 1.19.1 real (service container)
+via `RAGTEST_E2E_QDRANT_URL`.
+**Motivo:** os testes unitários simulavam cada camada separadamente; faltava provar que o contrato
+funciona com um banco vetorial real sem depender de rede externa, cota de LLM ou download de modelos.
+**Impacto:** regressões de integração (payload do Qdrant, `service_id` nas fontes, dependências
+da rota) passam a quebrar a CI. A qualidade semântica continua medida pela avaliação v2 com os
+modelos reais.

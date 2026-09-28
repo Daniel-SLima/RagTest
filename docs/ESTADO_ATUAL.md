@@ -15,9 +15,9 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Ordem headless — passos 2, 3 e 4 ✅ · próximo: passo 5 (teste ponta a ponta na CI) |
+| Etapa atual | Ordem headless — passos 2 a 5 ✅ · aguardando a avaliação v2 do autor |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `301 passed`, `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Testes | backend `306 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
 | Qdrant | Inalterado (767 chunks). Catálogo **não sincronizado** — o agente não tem Docker nem acesso ao HuggingFace. |
 
 **Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
@@ -44,7 +44,8 @@
    `GET /v1/suggestions`; Expo reduzido a renderizar esses campos.
 10. **Contrato congelado (D043)**: snapshot OpenAPI testado, cliente TS gerado, `GET /v1/services[/{id}]`.
 11. **Autenticação e limites (D044)**: `X-API-Key` por app integrador, rate limit no chat.
-12. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
+12. **Ponta a ponta (D045)**: ingestão → Qdrant → `/v1/chat` com auth, sessões, citações, ações e auditoria.
+13. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
    calibração, salvando em `docs/resultados/`.
 
 ## 3. Pendências que dependem do autor (Theniels)
@@ -68,8 +69,17 @@
    `GET /v1/services` e `GET /v1/services/{id}`.
 4. ✅ **Autenticação** (D044): `API_KEYS` + `X-API-Key` em `/v1/*`, limite `RATE_LIMIT_PER_MINUTE`
    no `/v1/chat`, 401/429 normalizados e auditados.
-5. **Teste ponta a ponta** (próximo) na CI com Qdrant real (service container) e embeddings/LLM
-   falsos: ingestão → sync → `/v1/chat` → citações, ações e auditoria.
+5. ✅ **Teste ponta a ponta** (D045): `tests/e2e/` (Qdrant em memória local; job `e2e-qdrant` na CI
+   com Qdrant real).
+
+**Próximas tarefas (depois da ordem headless):**
+
+6. Com a avaliação v2 em mãos: registrar métricas, analisar falhas do dev, calibrar
+   `RETRIEVAL_MIN_SCORE` e transformar os mínimos em critério de aprovação (F6 item 3).
+7. Rubrica manual das respostas (`docs/avaliacao-respostas.md`) com o provider real.
+8. `docker-compose.prod.yml` + deploy de homologação com `API_KEYS` (F6 item 4).
+9. Monografia: capítulos de arquitetura, guardrails e resultados a partir de `decisoes-tecnicas.md`
+   (D001–D045), `dificuldades-tcc.md` e `docs/resultados/`.
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
 
@@ -98,7 +108,7 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
 - **2026-09-28 (3) — Claude (Cowork)**: diretriz backend headless registrada no plano, no AGENTS.md
-  e aqui; regra de atualizar plano/estado a cada etapa. Passos 2 (D042), 3 (D043) e 4 (D044) da ordem headless concluídos.
+  e aqui; regra de atualizar plano/estado a cada etapa. Ordem headless concluída: D042 (lógica na API), D043 (contrato), D044 (auth), D045 (e2e).
 
 - **2026-09-28 — Claude (Cowork)**: análise do repositório e plano (`PLANO_FINALIZACAO_TCC.md`);
   Fase 0 parcial (`.gitattributes`, docs); Fase 1: auditoria de PII, D038 proposta, catálogo de

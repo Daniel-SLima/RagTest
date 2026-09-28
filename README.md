@@ -55,7 +55,7 @@ Avaliação completa no Windows: `scripts/avaliar_dominio.ps1` (salva em `docs/r
 
 ```bash
 python -m pip install -e ".[dev]"
-pytest && ruff check .
+pytest && ruff check .          # inclui tests/e2e (Qdrant em memória)
 cd frontend && npm test && npm run typecheck
 ```
 
@@ -66,13 +66,14 @@ cd frontend && npm test && npm run typecheck
 | `docs/ESTADO_ATUAL.md` | estado atual e próximos passos |
 | `docs/PLANO_FINALIZACAO_TCC.md` | plano por fases |
 | `docs/INTEGRACAO.md` | contrato da API para o app integrador |
-| `docs/decisoes-tecnicas.md` | decisões arquiteturais (D001–D041) |
+| `docs/contrato/openapi-v1.json` | contrato OpenAPI congelado (gera clientes) |
+| `docs/decisoes-tecnicas.md` | decisões arquiteturais (D001–D045) |
 | `docs/dificuldades-tcc.md` | problemas reais e aprendizados |
 | `docs/avaliacao-retrieval.md` | metodologia e resultados de avaliação |
 | `docs/historico/` | contexto e README anteriores à reorientação |
 
 ## Limitações
 
-Ambiente demonstrativo: sem autenticação, sem dados reais de usuárias. `grounded=true` significa
+Ambiente demonstrativo: autenticação só por chave de API (`API_KEYS`), sem dados reais de usuárias. `grounded=true` significa
 que cada afirmação tem citação válida, não que houve validação clínica. As orientações não
 substituem a avaliação de profissionais de saúde.
