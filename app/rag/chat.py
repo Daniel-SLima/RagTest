@@ -63,7 +63,15 @@ class ChatResult:
     decomposition_status: str = "not-needed"
     citation_validation_attempts: tuple[CitationValidationAttempt, ...] = ()
     safety: TriageResult | None = None
+    out_of_scope: bool = False
 
+
+OUT_OF_SCOPE_ANSWER = (
+    "Não encontrei essa informação nas cartilhas e orientações disponíveis. "
+    "Posso ajudar com exames preventivos, mamografia, pré-natal, métodos contraceptivos, "
+    "vacinação e acesso aos serviços de saúde. Para outras dúvidas sobre a sua saúde, "
+    "procure a UBS mais próxima."
+)
 
 _GROUNDING_FALLBACK = (
     "Não foi possível gerar uma resposta com citações verificáveis a partir dos "
@@ -275,10 +283,7 @@ async def answer_with_rag(
 
     if not hits:
         return ChatResult(
-            answer=(
-                "Não encontrei trechos com relevância suficiente na base documental "
-                "para responder a essa pergunta."
-            ),
+            answer=OUT_OF_SCOPE_ANSWER,
             sources=[],
             model=llm.model_name,
             grounded=False,
@@ -286,6 +291,7 @@ async def answer_with_rag(
             multi_query_used=decomposition.used,
             retrieval_queries=list(retrieval_queries),
             decomposition_status=decomposition.status,
+            out_of_scope=True,
         )
 
     (

@@ -134,7 +134,11 @@ async def chat(
             limit=request.limit,
             category=request.category,
             audience=request.audience,
-            min_score=request.min_score,
+            min_score=(
+                request.min_score
+                if request.min_score is not None
+                else settings.retrieval_min_score
+            ),
             candidate_multiplier=profile.candidate_multiplier,
             score_margin=profile.score_margin,
             merge_same_page=settings.retrieval_merge_same_page,
@@ -213,6 +217,7 @@ async def chat(
         safety=ChatSafety(
             triaged=bool(safety and safety.triggered),
             rule_id=safety.rule_id if safety else None,
+            out_of_scope=result.out_of_scope,
         ),
         actions=[
             ChatAction(

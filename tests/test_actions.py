@@ -125,7 +125,7 @@ def test_chat_endpoint_exposes_actions_and_safety(client) -> None:
 
     body = test_client.post("/v1/chat", json={"message": "como agendo a mamografia"}).json()
 
-    assert body["safety"] == {"triaged": False, "rule_id": None}
+    assert body["safety"] == {"triaged": False, "rule_id": None, "out_of_scope": False}
     assert body["actions"][0] == {
         "type": "open_link",
         "label": "Ver unidades de saúde",
@@ -156,7 +156,7 @@ def test_chat_endpoint_marks_triaged_answers(client) -> None:
 
     body = test_client.post("/v1/chat", json={"message": "estou grávida e sangrando"}).json()
 
-    assert body["safety"] == {"triaged": True, "rule_id": "sangramento"}
+    assert body["safety"] == {"triaged": True, "rule_id": "sangramento", "out_of_scope": False}
     assert body["actions"] == [
         {
             "type": "call_emergency",

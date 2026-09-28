@@ -28,6 +28,7 @@ class ChatSource(BaseModel):
 class ChatSafety(BaseModel):
     triaged: bool = False
     rule_id: str | None = None
+    out_of_scope: bool = False
 
 
 class ChatAction(BaseModel):

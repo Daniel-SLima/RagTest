@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import json
 from dataclasses import dataclass
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,11 @@ class ExplicitAggregateMetrics:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate RagTest retrieval quality.")
     parser.add_argument("--cases", type=Path, default=None)
+    parser.add_argument(
+        "--dataset",
+        default=None,
+        help="Packaged dataset name, e.g. dominio-v2-dev (app/evaluation/datasets).",
+    )
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument(
         "--mode",
@@ -65,10 +71,18 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def load_packaged_dataset(name: str) -> list[dict[str, Any]]:
+    path = files("app.evaluation").joinpath("datasets", f"{name}.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _load_cases(
     cases_path: Path | None,
     suite: str,
+    dataset: str | None = None,
 ) -> tuple[list[dict[str, Any]], str]:
+    if dataset is not None:
+        return load_packaged_dataset(dataset), f"packaged dataset {dataset}"
     if cases_path is not None:
         return json.loads(cases_path.read_text(encoding="utf-8")), "external JSON"
 
@@ -301,8 +315,9 @@ async def run(
     limit: int,
     mode: str,
     suite: str,
+    dataset: str | None = None,
 ) -> None:
-    cases, source_label = _load_cases(cases_path, suite)
+    cases, source_label = _load_cases(cases_path, suite, dataset)
     label_mode = evaluation_label_mode(cases)
     profiles = selected_profiles(mode)
     settings = get_settings()
@@ -389,7 +404,7 @@ async def run(
 
 def main() -> None:
     args = parse_args()
-    asyncio.run(run(args.cases, args.limit, args.mode, args.suite))
+    asyncio.run(run(args.cases, args.limit, args.mode, args.suite, args.dataset))
 
 
 if __name__ == "__main__":

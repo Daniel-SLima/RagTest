@@ -413,3 +413,16 @@ documento do catálogo foi **citado** numa resposta `grounded=true`; triagem ger
 modelo inventar links, mantendo o backend neutro: o app integrador executa as ações.
 **Impacto:** contrato aditivo e retrocompatível (`actions=[]` por padrão). O catálogo é lido de
 `SOURCE_DIR/servicos/catalogo_servicos.json`; se ausente ou inválido, não há ações de serviço.
+
+
+## D041 — Fora de escopo por limiar de similaridade calibrado, desligado por padrão
+
+**Data:** 2026-09-28
+**Decisão:** `RETRIEVAL_MIN_SCORE` (padrão vazio = desligado) vira o `min_score` padrão do
+`/v1/chat`. Sem trechos acima do limiar, a resposta é fixa (sem LLM), orienta a procurar a UBS e
+marca `safety.out_of_scope=true`. O valor só deve ser configurado após `ragtest-calibrate-scope`
+(scores top-1 do dataset v2 dev × `dominio-v2-fora-escopo.json`).
+**Motivo:** recusar perguntas fora do domínio sem um classificador extra, reaproveitando o
+`score_threshold` já existente no Qdrant; um limiar sem calibração poderia recusar perguntas válidas.
+**Impacto:** nenhum efeito até o limiar ser definido; `min_score` enviado na requisição continua
+tendo prioridade.

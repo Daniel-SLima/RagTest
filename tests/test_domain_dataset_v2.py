@@ -48,3 +48,20 @@ def test_out_of_scope_cases_have_no_sources() -> None:
         assert "acceptable_sources" not in case
         assert "required_sources" not in case
         assert case["expected_behavior"] == "recusar"
+
+
+def test_packaged_datasets_load_by_name() -> None:
+    from app.cli.evaluate_retrieval import _load_cases
+
+    cases, label = _load_cases(None, "dev", "dominio-v2-holdout")
+
+    assert len(cases) == 25
+    assert label == "packaged dataset dominio-v2-holdout"
+
+
+def test_blank_min_score_env_is_none(monkeypatch) -> None:
+    from app.core.config import Settings
+
+    monkeypatch.setenv("RETRIEVAL_MIN_SCORE", "")
+
+    assert Settings(_env_file=None).retrieval_min_score is None

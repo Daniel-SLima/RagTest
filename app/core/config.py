@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     retrieval_max_group_chars: int = 5000
     retrieval_auto_decompose: bool = True
     retrieval_max_subqueries: int = Field(default=3, ge=2, le=3)
+    retrieval_min_score: float | None = Field(default=None, ge=-1.0, le=1.0)
 
     session_db_path: Path = Path("data/state/sessions.sqlite3")
     session_retention_days: int = Field(default=7, ge=1, le=365)
@@ -80,7 +81,13 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @field_validator("qdrant_api_key", "gemini_api_key", "groq_api_key", mode="before")
+    @field_validator(
+        "qdrant_api_key",
+        "gemini_api_key",
+        "groq_api_key",
+        "retrieval_min_score",
+        mode="before",
+    )
     @classmethod
     def empty_secret_is_none(cls, value: object) -> object:
         if value == "":
