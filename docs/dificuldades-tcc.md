@@ -414,3 +414,20 @@ Diagnóstico: as permissões do sandbox/Windows impediam a criação de subdiret
 Correção: a suíte foi repetida com `TEMP` e `TMP` apontando para um diretório temporário autorizado fora do código do produto; o resultado foi 150 testes aprovados.
 
 Aprendizado técnico: o ambiente de validação deve declarar um diretório temporário gravável; falhas de fixture precisam ser separadas de regressões funcionais.
+
+## 33. Script de avaliação abortou no primeiro comando do Docker no Windows PowerShell
+
+Planejado: rodar `scripts/avaliar_dominio.ps1` para sincronizar o Qdrant e avaliar o dataset v2.
+
+Observado: o script parou logo em `docker compose up -d --build` com `NativeCommandError`, mostrando
+apenas a linha de progresso `Image 00-ragtest-api Building`.
+
+Diagnóstico: o Docker escreve o progresso em stderr. No Windows PowerShell 5.1, com
+`$ErrorActionPreference = "Stop"`, qualquer linha em stderr de um programa nativo vira erro
+terminante, mesmo quando o comando está funcionando.
+
+Correção: o script passou a executar cada comando via `cmd /c "... 2>&1"`, decidir sucesso pelo
+`$LASTEXITCODE`, aguardar o `/health` em vez de um `sleep` fixo e gravar a saída em UTF-8.
+
+Aprendizado técnico: em automação no Windows, sucesso de programas nativos deve ser verificado pelo
+código de saída, não pela presença de texto em stderr.

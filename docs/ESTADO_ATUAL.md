@@ -50,7 +50,7 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [ ] Rodar `scripts/avaliar_dominio.ps1` no PowerShell (Docker Desktop ligado). Se o
+- [ ] Rodar `scripts/avaliar_dominio.ps1` (corrigido em 28/09 após falha no PowerShell 5.1 — dificuldade #33) no PowerShell (Docker Desktop ligado). Se o
       PowerShell bloquear scripts: `powershell -ExecutionPolicy Bypass -File scripts/avaliar_dominio.ps1`.
 - [ ] Se a calibração sugerir um valor, colocar `RETRIEVAL_MIN_SCORE=<valor>` no `.env` e
       `docker compose up -d`.
