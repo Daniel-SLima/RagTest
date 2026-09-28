@@ -8,7 +8,9 @@ from docx import Document as DocxDocument
 from langchain_core.documents import Document
 from pypdf import PdfReader
 
-SUPPORTED_EXTENSIONS = {".pdf", ".docx"}
+from app.catalog.services import load_service_catalog, render_service_text
+
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".json"}
 
 
 @dataclass(slots=True)
@@ -169,6 +171,25 @@ def load_docx(path: Path, source_dir: Path) -> list[Document]:
     ]
 
 
+def load_service_catalog_documents(path: Path, source_dir: Path) -> list[Document]:
+    catalog = load_service_catalog(path)
+    base = _base_metadata(path, source_dir)
+    return [
+        Document(
+            page_content=render_service_text(service),
+            metadata={
+                **base,
+                "audience": service.audience,
+                "doc_type": "servico",
+                "service_id": service.id,
+                "catalog_version": catalog.versao,
+                "extraction_method": "catalog",
+            },
+        )
+        for service in catalog.servicos
+    ]
+
+
 def load_source_documents(
     source_dir: Path,
     *,
@@ -194,6 +215,8 @@ def load_source_documents(
                 )
             elif path.suffix.lower() == ".docx":
                 loaded = load_docx(path, source_dir)
+            elif path.suffix.lower() == ".json":
+                loaded = load_service_catalog_documents(path, source_dir)
             else:
                 continue
         except Exception as exc:  # noqa: BLE001 - isolate one bad source and continue corpus loading
