@@ -1,0 +1,1271 @@
+﻿
+===== build =====
+ Image 00-ragtest-api Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 539B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 934B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 1.4s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 142B done
+#4 DONE 0.0s
+
+#5 [1/7] FROM docker.io/library/python:3.12-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
+#5 resolve docker.io/library/python:3.12-slim@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 48.31kB 0.0s done
+#6 DONE 0.0s
+
+#7 [3/7] RUN apt-get update     && apt-get install -y --no-install-recommends         tesseract-ocr         tesseract-ocr-por     && rm -rf /var/lib/apt/lists/*
+#7 CACHED
+
+#8 [2/7] WORKDIR /app
+#8 CACHED
+
+#9 [4/7] RUN addgroup --gid 10001 app     && adduser --uid 10001 --gid 10001 --disabled-password --gecos "" app     && mkdir -p /app/.cache/fastembed /app/.cache/huggingface /app/state     && chown -R app:app /app/.cache /app/state /home/app
+#9 CACHED
+
+#10 [5/7] COPY pyproject.toml README.md ./
+#10 DONE 0.1s
+
+#11 [6/7] COPY app ./app
+#11 DONE 0.1s
+
+#12 [7/7] RUN pip install --no-cache-dir .
+#12 1.435 Processing /app
+#12 1.439   Installing build dependencies: started
+#12 3.846   Installing build dependencies: finished with status 'done'
+#12 3.847   Getting requirements to build wheel: started
+#12 4.372   Getting requirements to build wheel: finished with status 'done'
+#12 4.374   Preparing metadata (pyproject.toml): started
+#12 4.868   Preparing metadata (pyproject.toml): finished with status 'done'
+#12 5.203 Collecting fastapi<1.0,>=0.116 (from ragtest==0.8.0)
+#12 5.401   Downloading fastapi-0.141.1-py3-none-any.whl.metadata (27 kB)
+#12 5.487 Collecting fastembed==0.8.0 (from ragtest==0.8.0)
+#12 5.570   Downloading fastembed-0.8.0-py3-none-any.whl.metadata (10 kB)
+#12 5.850 Collecting fonttools<5.0,>=4.59 (from ragtest==0.8.0)
+#12 5.913   Downloading fonttools-4.66.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (129 kB)
+#12 6.114 Collecting google-genai<2.0,>=1.33 (from ragtest==0.8.0)
+#12 6.173   Downloading google_genai-1.75.0-py3-none-any.whl.metadata (52 kB)
+#12 6.298 Collecting langchain-core<2.0,>=1.0 (from ragtest==0.8.0)
+#12 6.357   Downloading langchain_core-1.6.5-py3-none-any.whl.metadata (4.8 kB)
+#12 6.421 Collecting langchain-text-splitters<2.0,>=1.0 (from ragtest==0.8.0)
+#12 6.482   Downloading langchain_text_splitters-1.1.2-py3-none-any.whl.metadata (3.3 kB)
+#12 6.747 Collecting pillow<13,>=11 (from ragtest==0.8.0)
+#12 6.805   Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+#12 6.875 Collecting pydantic-settings<3.0,>=2.10 (from ragtest==0.8.0)
+#12 6.933   Downloading pydantic_settings-2.15.0-py3-none-any.whl.metadata (3.9 kB)
+#12 7.109 Collecting pymupdf<2.0,>=1.26 (from ragtest==0.8.0)
+#12 7.165   Downloading pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl.metadata (26 kB)
+#12 7.247 Collecting pypdf<7.0,>=6.0 (from ragtest==0.8.0)
+#12 7.305   Downloading pypdf-6.19.0-py3-none-any.whl.metadata (7.5 kB)
+#12 7.370 Collecting pytesseract<1.0,>=0.3.13 (from ragtest==0.8.0)
+#12 7.429   Downloading pytesseract-0.3.13-py3-none-any.whl.metadata (11 kB)
+#12 7.492 Collecting python-docx<2.0,>=1.2 (from ragtest==0.8.0)
+#12 7.550   Downloading python_docx-1.2.0-py3-none-any.whl.metadata (2.0 kB)
+#12 7.628 Collecting qdrant-client==1.19.1 (from ragtest==0.8.0)
+#12 7.685   Downloading qdrant_client-1.19.1-py3-none-any.whl.metadata (11 kB)
+#12 7.774 Collecting uvicorn<1.0,>=0.35 (from uvicorn[standard]<1.0,>=0.35->ragtest==0.8.0)
+#12 7.833   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+#12 7.952 Collecting huggingface-hub<2.0,>=0.20 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 8.010   Downloading huggingface_hub-1.33.0-py3-none-any.whl.metadata (16 kB)
+#12 8.092 Collecting loguru<0.8.0,>=0.7.2 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 8.153   Downloading loguru-0.7.3-py3-none-any.whl.metadata (22 kB)
+#12 8.257 Collecting mmh3<6.0.0,>=4.1.0 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 8.314   Downloading mmh3-5.3.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (14 kB)
+#12 8.577 Collecting numpy>=1.26 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 8.646   Downloading numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+#12 8.761 Collecting onnxruntime!=1.20.0,!=1.24.0,!=1.24.1,>=1.17.0 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 8.818   Downloading onnxruntime-1.30.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (5.7 kB)
+#12 8.918 Collecting py-rust-stemmers<0.2.0,>=0.1.0 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 8.977   Downloading py_rust_stemmers-0.1.8-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (3.5 kB)
+#12 9.060 Collecting requests<3.0,>=2.31 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 9.121   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+#12 9.325 Collecting tokenizers<1.0,>=0.15 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 9.381   Downloading tokenizers-0.23.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.8 kB)
+#12 9.472 Collecting tqdm<5.0,>=4.66 (from fastembed==0.8.0->ragtest==0.8.0)
+#12 9.529   Downloading tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+#12 10.09 Collecting grpcio>=1.41.0 (from qdrant-client==1.19.1->ragtest==0.8.0)
+#12 10.15   Downloading grpcio-1.84.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.8 kB)
+#12 10.21 Collecting httpx>=0.20.0 (from httpx[http2]>=0.20.0->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 10.27   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#12 10.34 Collecting portalocker<4.0,>=2.7.0 (from qdrant-client==1.19.1->ragtest==0.8.0)
+#12 10.42   Downloading portalocker-3.2.0-py3-none-any.whl.metadata (8.7 kB)
+#12 10.61 Collecting protobuf>=3.20.0 (from qdrant-client==1.19.1->ragtest==0.8.0)
+#12 10.67   Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+#12 10.85 Collecting pydantic!=2.0.*,!=2.1.*,!=2.2.0,>=1.10.8 (from qdrant-client==1.19.1->ragtest==0.8.0)
+#12 10.91   Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+#12 11.01 Collecting urllib3<3,>=1.26.14 (from qdrant-client==1.19.1->ragtest==0.8.0)
+#12 11.07   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+#12 11.15 Collecting starlette>=0.46.0 (from fastapi<1.0,>=0.116->ragtest==0.8.0)
+#12 11.21   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+#12 11.31 Collecting typing-extensions>=4.8.0 (from fastapi<1.0,>=0.116->ragtest==0.8.0)
+#12 11.37   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#12 11.43 Collecting typing-inspection>=0.4.2 (from fastapi<1.0,>=0.116->ragtest==0.8.0)
+#12 11.49   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+#12 11.55 Collecting annotated-doc>=0.0.2 (from fastapi<1.0,>=0.116->ragtest==0.8.0)
+#12 11.61   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+#12 11.69 Collecting anyio<5.0.0,>=4.8.0 (from google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 11.75   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+#12 11.85 Collecting google-auth<3.0.0,>=2.48.1 (from google-auth[requests]<3.0.0,>=2.48.1->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 11.91   Downloading google_auth-2.58.1-py3-none-any.whl.metadata (6.0 kB)
+#12 12.05 Collecting tenacity<9.2.0,>=8.2.3 (from google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 12.11   Downloading tenacity-9.1.4-py3-none-any.whl.metadata (1.2 kB)
+#12 12.31 Collecting websockets<17.0,>=13.0.0 (from google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 12.37   Downloading websockets-16.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.8 kB)
+#12 12.44 Collecting distro<2,>=1.7.0 (from google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 12.50   Downloading distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+#12 12.56 Collecting sniffio (from google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 12.62   Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+#12 12.69 Collecting jsonpatch<2.0.0,>=1.33.0 (from langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 12.74   Downloading jsonpatch-1.33-py2.py3-none-any.whl.metadata (3.0 kB)
+#12 12.81 Collecting langchain-protocol>=0.0.17 (from langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 12.86   Downloading langchain_protocol-0.0.19-py3-none-any.whl.metadata (2.4 kB)
+#12 13.03 Collecting langsmith<1.0.0,>=0.3.45 (from langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 13.09   Downloading langsmith-0.14.1-py3-none-any.whl.metadata (22 kB)
+#12 13.17 Collecting packaging>=23.2.0 (from langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 13.23   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+#12 13.36 Collecting pyyaml<7.0.0,>=5.3.0 (from langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 13.41   Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+#12 13.59 Collecting uuid-utils<1.0,>=0.12.0 (from langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 13.65   Downloading uuid_utils-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.4 kB)
+#12 13.75 Collecting python-dotenv>=0.21.0 (from pydantic-settings<3.0,>=2.10->ragtest==0.8.0)
+#12 13.81   Downloading python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+#12 14.09 Collecting lxml>=3.1.0 (from python-docx<2.0,>=1.2->ragtest==0.8.0)
+#12 14.15   Downloading lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+#12 14.23 Collecting click>=7.0 (from uvicorn<1.0,>=0.35->uvicorn[standard]<1.0,>=0.35->ragtest==0.8.0)
+#12 14.28   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+#12 14.35 Collecting h11>=0.8 (from uvicorn<1.0,>=0.35->uvicorn[standard]<1.0,>=0.35->ragtest==0.8.0)
+#12 14.40   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#12 14.48 Collecting httptools>=0.8.0 (from uvicorn[standard]<1.0,>=0.35->ragtest==0.8.0)
+#12 14.54   Downloading httptools-0.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#12 14.63 Collecting uvloop>=0.15.1 (from uvicorn[standard]<1.0,>=0.35->ragtest==0.8.0)
+#12 14.69   Downloading uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (4.9 kB)
+#12 14.87 Collecting watchfiles>=0.20 (from uvicorn[standard]<1.0,>=0.35->ragtest==0.8.0)
+#12 14.93   Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#12 14.99 Collecting idna>=2.8 (from anyio<5.0.0,>=4.8.0->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 15.05   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#12 15.13 Collecting pyasn1-modules>=0.2.1 (from google-auth<3.0.0,>=2.48.1->google-auth[requests]<3.0.0,>=2.48.1->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 15.19   Downloading pyasn1_modules-0.4.2-py3-none-any.whl.metadata (3.5 kB)
+#12 15.43 Collecting cryptography>=38.0.3 (from google-auth<3.0.0,>=2.48.1->google-auth[requests]<3.0.0,>=2.48.1->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 15.49   Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.3 kB)
+#12 15.57 Collecting certifi (from httpx>=0.20.0->httpx[http2]>=0.20.0->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 15.63   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+#12 15.69 Collecting httpcore==1.* (from httpx>=0.20.0->httpx[http2]>=0.20.0->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 15.75   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#12 15.84 Collecting h2<5,>=3 (from httpx[http2]>=0.20.0->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 15.90   Downloading h2-4.4.1-py3-none-any.whl.metadata (3.8 kB)
+#12 15.98 Collecting filelock>=3.10.0 (from huggingface-hub<2.0,>=0.20->fastembed==0.8.0->ragtest==0.8.0)
+#12 16.04   Downloading filelock-4.0.5-py3-none-any.whl.metadata (2.0 kB)
+#12 16.11 Collecting fsspec>=2023.5.0 (from huggingface-hub<2.0,>=0.20->fastembed==0.8.0->ragtest==0.8.0)
+#12 16.17   Downloading fsspec-2026.9.0-py3-none-any.whl.metadata (10 kB)
+#12 16.28 Collecting hf-xet<2.0.0,>=1.6.0 (from huggingface-hub<2.0,>=0.20->fastembed==0.8.0->ragtest==0.8.0)
+#12 16.34   Downloading hf_xet-1.6.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+#12 16.43 Collecting jsonpointer>=1.9 (from jsonpatch<2.0.0,>=1.33.0->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 16.49   Downloading jsonpointer-3.1.1-py3-none-any.whl.metadata (2.4 kB)
+#12 16.56 Collecting httpx2<3,>=2 (from langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 16.62   Downloading httpx2-2.13.1-py3-none-any.whl.metadata (9.8 kB)
+#12 16.91 Collecting orjson>=3.9.14 (from langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 16.97   Downloading orjson-3.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (41 kB)
+#12 17.06 Collecting requests-toolbelt>=1.0.0 (from langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 17.12   Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl.metadata (14 kB)
+#12 17.44 Collecting xxhash>=3.0.0 (from langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 17.50   Downloading xxhash-4.0.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (17 kB)
+#12 17.61 Collecting zstandard>=0.23.0 (from langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 17.67   Downloading zstandard-0.25.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.3 kB)
+#12 17.74 Collecting flatbuffers (from onnxruntime!=1.20.0,!=1.24.0,!=1.24.1,>=1.17.0->fastembed==0.8.0->ragtest==0.8.0)
+#12 17.80   Downloading flatbuffers-25.12.19-py2.py3-none-any.whl.metadata (1.0 kB)
+#12 17.89 Collecting annotated-types>=0.6.0 (from pydantic!=2.0.*,!=2.1.*,!=2.2.0,>=1.10.8->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 17.95   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#12 18.69 Collecting pydantic-core==2.46.5 (from pydantic!=2.0.*,!=2.1.*,!=2.2.0,>=1.10.8->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 18.75   Downloading pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+#12 18.91 Collecting charset_normalizer<4,>=2 (from requests<3.0,>=2.31->fastembed==0.8.0->ragtest==0.8.0)
+#12 18.97   Downloading charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (45 kB)
+#12 19.21 Collecting cffi>=2.0.0 (from cryptography>=38.0.3->google-auth<3.0.0,>=2.48.1->google-auth[requests]<3.0.0,>=2.48.1->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 19.27   Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+#12 19.34 Collecting hyperframe<7,>=6.1 (from h2<5,>=3->httpx[http2]>=0.20.0->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 19.40   Downloading hyperframe-6.1.0-py3-none-any.whl.metadata (4.3 kB)
+#12 19.46 Collecting hpack<5,>=4.2 (from h2<5,>=3->httpx[http2]>=0.20.0->qdrant-client==1.19.1->ragtest==0.8.0)
+#12 19.52   Downloading hpack-4.2.0-py3-none-any.whl.metadata (3.3 kB)
+#12 19.59 Collecting httpcore2==2.13.1 (from httpx2<3,>=2->langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 19.65   Downloading httpcore2-2.13.1-py3-none-any.whl.metadata (26 kB)
+#12 19.72 Collecting truststore>=0.10 (from httpx2<3,>=2->langsmith<1.0.0,>=0.3.45->langchain-core<2.0,>=1.0->ragtest==0.8.0)
+#12 19.78   Downloading truststore-0.10.4-py3-none-any.whl.metadata (4.4 kB)
+#12 19.87 Collecting pyasn1<0.7.0,>=0.6.1 (from pyasn1-modules>=0.2.1->google-auth<3.0.0,>=2.48.1->google-auth[requests]<3.0.0,>=2.48.1->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 19.93   Downloading pyasn1-0.6.4-py3-none-any.whl.metadata (8.4 kB)
+#12 20.02 Collecting pycparser (from cffi>=2.0.0->cryptography>=38.0.3->google-auth<3.0.0,>=2.48.1->google-auth[requests]<3.0.0,>=2.48.1->google-genai<2.0,>=1.33->ragtest==0.8.0)
+#12 20.08   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+#12 20.15 Downloading fastembed-0.8.0-py3-none-any.whl (116 kB)
+#12 20.22 Downloading qdrant_client-1.19.1-py3-none-any.whl (406 kB)
+#12 20.35 Downloading fastapi-0.141.1-py3-none-any.whl (131 kB)
+#12 20.42 Downloading fonttools-4.66.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.4 MB)
+#12 20.70    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.4/5.4 MB 20.1 MB/s eta 0:00:00
+#12 20.76 Downloading google_genai-1.75.0-py3-none-any.whl (793 kB)
+#12 20.79    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 793.7/793.7 kB 28.5 MB/s eta 0:00:00
+#12 20.85 Downloading langchain_core-1.6.5-py3-none-any.whl (572 kB)
+#12 20.89    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 572.1/572.1 kB 12.0 MB/s eta 0:00:00
+#12 20.95 Downloading langchain_text_splitters-1.1.2-py3-none-any.whl (35 kB)
+#12 21.01 Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+#12 21.58    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 12.0 MB/s eta 0:00:00
+#12 21.64 Downloading pydantic_settings-2.15.0-py3-none-any.whl (69 kB)
+#12 21.71 Downloading pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl (25.8 MB)
+#12 23.06    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25.8/25.8 MB 19.0 MB/s eta 0:00:00
+#12 23.12 Downloading pypdf-6.19.0-py3-none-any.whl (395 kB)
+#12 23.21 Downloading pytesseract-0.3.13-py3-none-any.whl (14 kB)
+#12 23.27 Downloading python_docx-1.2.0-py3-none-any.whl (252 kB)
+#12 23.34 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+#12 23.41 Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+#12 23.46 Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+#12 23.53 Downloading click-8.5.0-py3-none-any.whl (125 kB)
+#12 23.59 Downloading distro-1.9.0-py3-none-any.whl (20 kB)
+#12 23.66 Downloading google_auth-2.58.1-py3-none-any.whl (262 kB)
+#12 23.72 Downloading grpcio-1.84.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (7.2 MB)
+#12 24.13    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.2/7.2 MB 17.8 MB/s eta 0:00:00
+#12 24.18 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#12 24.24 Downloading httptools-0.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (523 kB)
+#12 24.32 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#12 24.39 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#12 24.45 Downloading huggingface_hub-1.33.0-py3-none-any.whl (846 kB)
+#12 24.47    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 846.4/846.4 kB 49.0 MB/s eta 0:00:00
+#12 24.53 Downloading jsonpatch-1.33-py2.py3-none-any.whl (12 kB)
+#12 24.59 Downloading langchain_protocol-0.0.19-py3-none-any.whl (7.3 kB)
+#12 24.65 Downloading langsmith-0.14.1-py3-none-any.whl (812 kB)
+#12 24.67    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 812.1/812.1 kB 40.7 MB/s eta 0:00:00
+#12 24.73 Downloading loguru-0.7.3-py3-none-any.whl (61 kB)
+#12 24.79 Downloading lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+#12 24.98    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 27.2 MB/s eta 0:00:00
+#12 25.04 Downloading mmh3-5.3.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (103 kB)
+#12 25.11 Downloading numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.7 MB)
+#12 26.13    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.7/16.7 MB 16.2 MB/s eta 0:00:00
+#12 26.19 Downloading onnxruntime-1.30.0-cp312-cp312-manylinux_2_28_x86_64.whl (23.6 MB)
+#12 27.39    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 23.6/23.6 MB 19.8 MB/s eta 0:00:00
+#12 27.44 Downloading packaging-26.3-py3-none-any.whl (129 kB)
+#12 27.52 Downloading portalocker-3.2.0-py3-none-any.whl (22 kB)
+#12 27.58 Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+#12 27.65 Downloading py_rust_stemmers-0.1.8-cp312-cp312-manylinux_2_28_x86_64.whl (323 kB)
+#12 27.73 Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+#12 27.82 Downloading pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+#12 27.89    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 33.3 MB/s eta 0:00:00
+#12 27.95 Downloading python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+#12 28.01 Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+#12 28.04    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 41.9 MB/s eta 0:00:00
+#12 28.09 Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+#12 28.15 Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+#12 28.22 Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+#12 28.28 Downloading tenacity-9.1.4-py3-none-any.whl (28 kB)
+#12 28.34 Downloading tokenizers-0.23.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.4 MB)
+#12 28.58    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 13.4 MB/s eta 0:00:00
+#12 28.64 Downloading tqdm-4.70.1-py3-none-any.whl (80 kB)
+#12 28.70 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#12 28.76 Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+#12 28.82 Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+#12 28.89 Downloading uuid_utils-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (323 kB)
+#12 28.95 Downloading uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.4 MB)
+#12 29.21    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 17.3 MB/s eta 0:00:00
+#12 29.27 Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+#12 29.35 Downloading websockets-16.1.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (187 kB)
+#12 29.42 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#12 29.48 Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+#12 29.55 Downloading charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (248 kB)
+#12 29.62 Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl (4.7 MB)
+#12 29.85    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 20.6 MB/s eta 0:00:00
+#12 29.90 Downloading filelock-4.0.5-py3-none-any.whl (108 kB)
+#12 29.97 Downloading fsspec-2026.9.0-py3-none-any.whl (221 kB)
+#12 30.04 Downloading h2-4.4.1-py3-none-any.whl (62 kB)
+#12 30.10 Downloading hf_xet-1.6.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.5 MB)
+#12 30.31    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 21.0 MB/s eta 0:00:00
+#12 30.37 Downloading httpx2-2.13.1-py3-none-any.whl (95 kB)
+#12 30.43 Downloading httpcore2-2.13.1-py3-none-any.whl (83 kB)
+#12 30.50 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#12 30.55 Downloading jsonpointer-3.1.1-py3-none-any.whl (7.7 kB)
+#12 30.62 Downloading orjson-3.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (131 kB)
+#12 30.68 Downloading pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)
+#12 30.75 Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl (54 kB)
+#12 30.82 Downloading xxhash-4.0.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (261 kB)
+#12 30.89 Downloading zstandard-0.25.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.5 MB)
+#12 31.11    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 24.1 MB/s eta 0:00:00
+#12 31.18 Downloading flatbuffers-25.12.19-py2.py3-none-any.whl (26 kB)
+#12 31.24 Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+#12 31.30 Downloading hpack-4.2.0-py3-none-any.whl (34 kB)
+#12 31.36 Downloading hyperframe-6.1.0-py3-none-any.whl (13 kB)
+#12 31.42 Downloading pyasn1-0.6.4-py3-none-any.whl (84 kB)
+#12 31.48 Downloading truststore-0.10.4-py3-none-any.whl (18 kB)
+#12 31.54 Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+#12 31.87 Building wheels for collected packages: ragtest
+#12 31.87   Building wheel for ragtest (pyproject.toml): started
+#12 32.47   Building wheel for ragtest (pyproject.toml): finished with status 'done'
+#12 32.47   Created wheel for ragtest: filename=ragtest-0.8.0-py3-none-any.whl size=115251 sha256=59178fb00df77c70c6540b675781b6992c6492e9affd82fdf46b8467cea453b9
+#12 32.47   Stored in directory: /tmp/pip-ephem-wheel-cache-e7boh121/wheels/54/1b/b7/aa63e25c8f14f4f2ae7b04e6097bdecb770e455c5c1ee0a600
+#12 32.48 Successfully built ragtest
+#12 32.63 Installing collected packages: flatbuffers, zstandard, xxhash, websockets, uvloop, uuid-utils, urllib3, typing-extensions, truststore, tqdm, tenacity, sniffio, pyyaml, python-dotenv, pypdf, pymupdf, pycparser, pyasn1, py-rust-stemmers, protobuf, portalocker, pillow, packaging, orjson, numpy, mmh3, lxml, loguru, jsonpointer, idna, hyperframe, httptools, hpack, hf-xet, h11, fsspec, fonttools, filelock, distro, click, charset_normalizer, certifi, annotated-types, annotated-doc, uvicorn, typing-inspection, requests, python-docx, pytesseract, pydantic-core, pyasn1-modules, onnxruntime, langchain-protocol, jsonpatch, httpcore2, httpcore, h2, grpcio, cffi, anyio, watchfiles, starlette, requests-toolbelt, pydantic, httpx2, httpx, cryptography, pydantic-settings, langsmith, huggingface-hub, google-auth, fastapi, tokenizers, qdrant-client, langchain-core, langchain-text-splitters, google-genai, fastembed, ragtest
+#12 44.68 Successfully installed annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 certifi-2026.7.22 cffi-2.1.1 charset_normalizer-3.5.1 click-8.5.0 cryptography-50.0.1 distro-1.9.0 fastapi-0.141.1 fastembed-0.8.0 filelock-4.0.5 flatbuffers-25.12.19 fonttools-4.66.0 fsspec-2026.9.0 google-auth-2.58.1 google-genai-1.75.0 grpcio-1.84.0 h11-0.16.0 h2-4.4.1 hf-xet-1.6.0 hpack-4.2.0 httpcore-1.0.9 httpcore2-2.13.1 httptools-0.8.0 httpx-0.28.1 httpx2-2.13.1 huggingface-hub-1.33.0 hyperframe-6.1.0 idna-3.20 jsonpatch-1.33 jsonpointer-3.1.1 langchain-core-1.6.5 langchain-protocol-0.0.19 langchain-text-splitters-1.1.2 langsmith-0.14.1 loguru-0.7.3 lxml-6.1.3 mmh3-5.3.0 numpy-2.5.3 onnxruntime-1.30.0 orjson-3.12.0 packaging-26.3 pillow-12.3.0 portalocker-3.2.0 protobuf-7.36.2 py-rust-stemmers-0.1.8 pyasn1-0.6.4 pyasn1-modules-0.4.2 pycparser-3.0 pydantic-2.13.5 pydantic-core-2.46.5 pydantic-settings-2.15.0 pymupdf-1.28.2 pypdf-6.19.0 pytesseract-0.3.13 python-docx-1.2.0 python-dotenv-1.2.3 pyyaml-6.0.3 qdrant-client-1.19.1 ragtest-0.8.0 requests-2.34.2 requests-toolbelt-1.0.0 sniffio-1.3.1 starlette-1.7.0 tenacity-9.1.4 tokenizers-0.23.2 tqdm-4.70.1 truststore-0.10.4 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uuid-utils-0.17.1 uvicorn-0.54.0 uvloop-0.22.1 watchfiles-1.3.0 websockets-16.1.1 xxhash-4.0.1 zstandard-0.25.0
+#12 44.68 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#12 44.93 
+#12 44.93 [notice] A new release of pip is available: 25.0.1 -> 26.2.1
+#12 44.93 [notice] To update, run: pip install --upgrade pip
+#12 DONE 47.4s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 15.4s done
+#13 exporting manifest sha256:e1a665f25e978a7c6a847a6118adc3f0d35e621e2854ca32bdd15120e4df3a8b 0.0s done
+#13 exporting config sha256:e679e3513205327573ff222e53dbeda272758002b0422209b20d57cdf6116b33 0.0s done
+#13 exporting attestation manifest sha256:4cfe62b2e1b0c607618ffb02cec05b384421fcbe8fdc35785a9fd8ab1283ce26 0.0s done
+#13 exporting manifest list sha256:106b370147feddc91587961d2274ac4d9d76229f22af6612d86ad8c694a17b2f 0.0s done
+#13 naming to docker.io/library/00-ragtest-api:latest
+#13 naming to docker.io/library/00-ragtest-api:latest done
+#13 unpacking to docker.io/library/00-ragtest-api:latest
+#13 unpacking to docker.io/library/00-ragtest-api:latest 3.8s done
+#13 DONE 19.4s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s
+ Image 00-ragtest-api Built 
+ Container 00-ragtest-qdrant-1 Running 
+ Container 00-ragtest-api-1 Recreate 
+ Container 00-ragtest-api-1 Recreated 
+ Container 00-ragtest-api-1 Starting 
+ Container 00-ragtest-api-1 Started 
+
+===== aguardando a API =====
+API pronta
+
+===== ready =====
+{"status":"ready","dependencies":{"qdrant":"ok"}}
+
+===== plano de sincronizacao =====
+RagTest ingestion sync plan
+Source files       : 19
+Files loaded       : 19/19
+Current chunks     : 773
+Indexed points     : 773
+Current sources    : 19
+Indexed sources    : 19
+Missing points     : 0
+Stale points       : 0
+Orphan sources     : 0
+In sync            : yes
+
+Read-only plan: no Qdrant points were changed.
+
+===== sincronizacao =====
+RagTest ingestion sync
+Mode               : apply
+Source files       : 19
+Files loaded       : 19/19
+Current chunks     : 773
+Indexed points     : 773
+Missing points     : 0
+Stale points       : 0
+Orphan sources     : 0
+In sync before     : yes
+
+No changes required. Qdrant was not modified.
+
+===== avaliacao dev =====
+RagTest retrieval benchmark
+Dataset: dominio-v2-dev | Cases: 15 | k=5 | source=packaged dataset dominio-v2-dev
+Label semantics: explicit
+Metrics: PassRate/MRR + AcceptableHitRate for OR alternatives + RequiredRecall/RequiredNDCG for AND-required sources.
+
+=== mode=dense ===
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5145 rank=0.5145
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.4280 rank=0.4280
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.4274 rank=0.4274
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4141 rank=0.4141
+    5. servicos/catalogo_servicos.json retrieval=0.4065 rank=0.4065
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7817 rank=0.7817
+    2. chatscm/chatscm.docx retrieval=0.7300 rank=0.7300
+    3. servicos/catalogo_servicos.json retrieval=0.6587 rank=0.6587
+    4. chatscm/chatscm.docx retrieval=0.6500 rank=0.6500
+    5. chatscm/chatscm.docx retrieval=0.5805 rank=0.5805
+[FAIL] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5711 rank=0.5711
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5652 rank=0.5652
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.5358 rank=0.5358
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:59 retrieval=0.5100 rank=0.5100
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:61 retrieval=0.5092 rank=0.5092
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto não faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7584 rank=0.7584
+    2. chatscm/chatscm.docx retrieval=0.6938 rank=0.6938
+    3. chatscm/chatscm.docx retrieval=0.6928 rank=0.6928
+    4. servicos/catalogo_servicos.json retrieval=0.6679 rank=0.6679
+    5. chatscm/chatscm.docx retrieval=0.6612 rank=0.6612
+[FAIL] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6502 rank=0.6502
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.5805 rank=0.5805
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.5571 rank=0.5571
+    4. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.5414 rank=0.5414
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5343 rank=0.5343
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo dói? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5889 rank=0.5889
+    2. chatscm/chatscm_gestante.docx retrieval=0.5437 rank=0.5437
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.5357 rank=0.5357
+    4. chatscm/chatscm.docx retrieval=0.5259 rank=0.5259
+    5. servicos/catalogo_servicos.json retrieval=0.5207 rank=0.5207
+[FAIL] 7. [v2-dev-descobri-gravidez] descobri que tô grávida, o que faço primeiro? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5741 rank=0.5741
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5665 rank=0.5665
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5497 rank=0.5497
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5471 rank=0.5471
+    5. chatscm/chatscm.docx retrieval=0.5339 rank=0.5339
+[FAIL] 8. [v2-dev-preventivo-gestante] grávida pode fazer preventivo? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.7328 rank=0.7328
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.7115 rank=0.7115
+    3. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.7102 rank=0.7102
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7041 rank=0.7041
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6917 rank=0.6917
+[PASS] 9. [v2-dev-semanas-meses] tô com 20 semanas, quantos meses são? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.7073 rank=0.7073
+    2. chatscm/chatscm_gestante.docx retrieval=0.7023 rank=0.7023
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6551 rank=0.6551
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.4908 rank=0.4908
+[PASS] 10. [v2-dev-visao-embacada] estou grávida e com a vista embaçada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5657 rank=0.5657
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5596 rank=0.5596
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5394 rank=0.5394
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5320 rank=0.5320
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4904 rank=0.4904
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas não sinto contração | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3527 rank=0.3527
+    2. chatscm/chatscm_gestante.docx retrieval=0.3435 rank=0.3435
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3218 rank=0.3218
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:63 retrieval=0.3144 rank=0.3144
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:25 retrieval=0.3115 rank=0.3115
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.7871 rank=0.7871
+    2. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.7531 rank=0.7531
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.7123 rank=0.7123
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:49 retrieval=0.6614 rank=0.6614
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:34 retrieval=0.6246 rank=0.6246
+[FAIL] 13. [v2-dev-caroco-mama] achei um caroço no peito, o que eu faço | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4550 rank=0.4550
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4548 rank=0.4548
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.4144 rank=0.4144
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3959 rank=0.3959
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3795 rank=0.3795
+[FAIL] 14. [v2-dev-diu-dor] o que é o DIU e dói pra colocar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.4678 rank=0.4678
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4606 rank=0.4606
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4436 rank=0.4436
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4064 rank=0.4064
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.4028 rank=0.4028
+[PASS] 15. [v2-dev-teste-rapido] onde faço teste rápido de sífilis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.7575 rank=0.7575
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.6262 rank=0.6262
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.5520 rank=0.5520
+    4. medicamentos/relacao_nacional_medicamentos_2024.pdf:240 retrieval=0.5455 rank=0.5455
+
+PassRate@5: 0.600 (9/15)
+MRR@5: 0.533
+AcceptableHitRate@5: 0.600
+
+=== mode=dense-rerank ===
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5145 rank=0.5445
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.4280 rank=0.4380
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4141 rank=0.4341
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.4274 rank=0.4274
+    5. servicos/catalogo_servicos.json retrieval=0.4065 rank=0.4165
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7817 rank=0.8102
+    2. chatscm/chatscm.docx retrieval=0.7300 rank=0.7514
+    3. servicos/catalogo_servicos.json retrieval=0.6587 rank=0.6802
+    4. chatscm/chatscm.docx retrieval=0.6500 rank=0.6572
+    5. chatscm/chatscm.docx retrieval=0.5805 rank=0.6019
+[FAIL] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5711 rank=0.5711
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5652 rank=0.5652
+    3. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.5358 rank=0.5525
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:59 retrieval=0.5100 rank=0.5100
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:61 retrieval=0.5092 rank=0.5092
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto não faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7584 rank=0.7709
+    2. chatscm/chatscm.docx retrieval=0.6928 rank=0.7115
+    3. chatscm/chatscm.docx retrieval=0.6938 rank=0.7063
+    4. servicos/catalogo_servicos.json retrieval=0.6679 rank=0.6929
+    5. chatscm/chatscm.docx retrieval=0.6612 rank=0.6799
+[FAIL] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6502 rank=0.6502
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.5805 rank=0.5805
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.5571 rank=0.5785
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.5343 rank=0.5486
+    5. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.5414 rank=0.5485
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo dói? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5889 rank=0.6222
+    2. chatscm/chatscm_gestante.docx retrieval=0.5437 rank=0.5604
+    3. chatscm/chatscm.docx retrieval=0.5259 rank=0.5593
+    4. servicos/catalogo_servicos.json retrieval=0.5207 rank=0.5540
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.5357 rank=0.5524
+[FAIL] 7. [v2-dev-descobri-gravidez] descobri que tô grávida, o que faço primeiro? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5665 rank=0.5915
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5497 rank=0.5872
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5741 rank=0.5866
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5471 rank=0.5846
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.5293 rank=0.5543
+[FAIL] 8. [v2-dev-preventivo-gestante] grávida pode fazer preventivo? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.7328 rank=0.7703
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.7115 rank=0.7365
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7041 rank=0.7166
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.7102 rank=0.7102
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6917 rank=0.7042
+[PASS] 9. [v2-dev-semanas-meses] tô com 20 semanas, quantos meses são? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.7073 rank=0.7573
+    2. chatscm/chatscm_gestante.docx retrieval=0.7023 rank=0.7523
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6551 rank=0.6718
+[PASS] 10. [v2-dev-visao-embacada] estou grávida e com a vista embaçada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5596 rank=0.5971
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5657 rank=0.5782
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5320 rank=0.5570
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5394 rank=0.5519
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4904 rank=0.5029
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas não sinto contração | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante.docx retrieval=0.3435 rank=0.3721
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3527 rank=0.3670
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3218 rank=0.3433
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:25 retrieval=0.3115 rank=0.3258
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:63 retrieval=0.3144 rank=0.3215
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.7531 rank=0.9031
+    2. chatscm/chatscm_gestante.docx retrieval=0.7871 rank=0.8996
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.7123 rank=0.8123
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:49 retrieval=0.6614 rank=0.7489
+    5. vacinacao/calendario_nacional_vacinacao_gestante.pdf:2 retrieval=0.5899 rank=0.7274
+[FAIL] 13. [v2-dev-caroco-mama] achei um caroço no peito, o que eu faço | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4550 rank=0.4675
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4548 rank=0.4673
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.4144 rank=0.4269
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3959 rank=0.4084
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3795 rank=0.3795
+[FAIL] 14. [v2-dev-diu-dor] o que é o DIU e dói pra colocar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.4678 rank=0.4678
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4606 rank=0.4606
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4436 rank=0.4436
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4064 rank=0.4064
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.4028 rank=0.4028
+[PASS] 15. [v2-dev-teste-rapido] onde faço teste rápido de sífilis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.7575 rank=0.7992
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.6262 rank=0.6679
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.5520 rank=0.5853
+
+PassRate@5: 0.600 (9/15)
+MRR@5: 0.567
+AcceptableHitRate@5: 0.600
+
+=== mode=hybrid ===
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8633
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5200
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.3333 rank=0.3433
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:20 retrieval=0.3125 rank=0.3425
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.2526 rank=0.2726
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7500 rank=0.7786
+    2. chatscm/chatscm.docx retrieval=0.6667 rank=0.6881
+    3. chatscm/chatscm.docx retrieval=0.6667 rank=0.6881
+    4. chatscm/chatscm.docx retrieval=0.3667 rank=0.3738
+    5. servicos/catalogo_servicos.json retrieval=0.3333 rank=0.3548
+[PASS] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5333
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3667
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3333 rank=0.3333
+    5. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.2500 rank=0.2667
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto não faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7000 rank=0.7250
+    2. servicos/catalogo_servicos.json retrieval=0.6429 rank=0.6554
+    3. chatscm/chatscm.docx retrieval=0.5000 rank=0.5188
+    4. chatscm/chatscm.docx retrieval=0.5000 rank=0.5188
+    5. chatscm/chatscm.docx retrieval=0.5000 rank=0.5125
+[PASS] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5286
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.4167 rank=0.4452
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.3750 rank=0.3964
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.3333 rank=0.3333
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo dói? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. servicos/catalogo_servicos.json retrieval=0.5909 rank=0.6242
+    2. chatscm/chatscm.docx retrieval=0.5526 rank=0.6026
+    3. chatscm/chatscm.docx retrieval=0.4500 rank=0.4833
+    4. servicos/catalogo_servicos.json retrieval=0.3667 rank=0.4000
+    5. chatscm/chatscm_gestante.docx retrieval=0.3788 rank=0.3955
+[PASS] 7. [v2-dev-descobri-gravidez] descobri que tô grávida, o que faço primeiro? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5714 rank=0.5839
+    2. chatscm/chatscm_gestante.docx retrieval=0.5323 rank=0.5448
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4583 rank=0.4833
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3929 rank=0.4304
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3922 rank=0.4172
+[PASS] 8. [v2-dev-preventivo-gestante] grávida pode fazer preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.5909 rank=0.6284
+    2. chatscm/chatscm_gestante.docx retrieval=0.4167 rank=0.4542
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.3333 rank=0.3583
+    4. chatscm/chatscm.docx retrieval=0.2500 rank=0.2750
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.2500 rank=0.2500
+[PASS] 9. [v2-dev-semanas-meses] tô com 20 semanas, quantos meses são? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=1.0000 rank=1.0500
+    2. chatscm/chatscm_gestante.docx retrieval=0.6667 rank=0.7167
+    3. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.2778 rank=0.3111
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.2870 rank=0.3037
+    5. chatscm/chatscm_gestante.docx retrieval=0.2500 rank=0.3000
+[PASS] 10. [v2-dev-visao-embacada] estou grávida e com a vista embaçada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6667 rank=0.7042
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5000 rank=0.5125
+    3. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5125
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.2500 rank=0.2625
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.2000 rank=0.2125
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas não sinto contração | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.6667 rank=0.6810
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5429
+    3. chatscm/chatscm_gestante.docx retrieval=0.4333 rank=0.4619
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3409 rank=0.3695
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:30 retrieval=0.3333 rank=0.3548
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.1125
+    2. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.3833 rank=0.5333
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.3667 rank=0.4667
+    4. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.4458
+    5. chatscm/chatscm.docx retrieval=0.3214 rank=0.3589
+[PASS] 13. [v2-dev-caroco-mama] achei um caroço no peito, o que eu faço | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6250 rank=0.6375
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5250
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.5000 rank=0.5125
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4333 rank=0.4458
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:47 retrieval=0.3333 rank=0.3458
+[PASS] 14. [v2-dev-diu-dor] o que é o DIU e dói pra colocar? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5375
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3708
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3333 rank=0.3333
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.2500 rank=0.2750
+[PASS] 15. [v2-dev-teste-rapido] onde faço teste rápido de sífilis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8750
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.5833 rank=0.6250
+    3. chatscm/chatscm.docx retrieval=0.5000 rank=0.5417
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.3929 rank=0.4262
+    5. chatscm/chatscm_gestante.docx retrieval=0.3250 rank=0.3583
+
+PassRate@5: 1.000 (15/15)
+MRR@5: 0.833
+AcceptableHitRate@5: 1.000
+
+=== summary ===
+MODE            PASSRATE      MRR  ACCEPT_HIT  REQ_RECALL  REQ_NDCG
+dense              0.600    0.533       0.600           -         -
+dense-rerank       0.600    0.567       0.600           -         -
+hybrid             1.000    0.833       1.000           -         -
+
+===== avaliacao holdout v3 (congelado) =====
+RagTest retrieval benchmark
+Dataset: dominio-v3-holdout | Cases: 25 | k=5 | source=packaged dataset dominio-v3-holdout
+Label semantics: explicit
+Metrics: PassRate/MRR + AcceptableHitRate for OR alternatives + RequiredRecall/RequiredNDCG for AND-required sources.
+
+=== mode=dense ===
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+[PASS] 1. [v3-holdout-preventivo-papanicolau] papanicolau é a mesma coisa que preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:45 retrieval=0.5980 rank=0.5980
+    2. chatscm/chatscm.docx retrieval=0.5817 rank=0.5817
+    3. chatscm/chatscm.docx retrieval=0.5716 rank=0.5716
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:2 retrieval=0.5684 rank=0.5684
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.5531 rank=0.5531
+[FAIL] 2. [v3-holdout-preventivo-70-anos] tenho 70 anos, ainda preciso fazer preventivo? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:22 retrieval=0.4644 rank=0.4644
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.4569 rank=0.4569
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:21 retrieval=0.4427 rank=0.4427
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:19 retrieval=0.4417 rank=0.4417
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.4336 rank=0.4336
+[PASS] 3. [v3-holdout-mamografia-45] com 45 anos já posso fazer mamografia? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7322 rank=0.7322
+    2. chatscm/chatscm.docx retrieval=0.7164 rank=0.7164
+    3. chatscm/chatscm.docx retrieval=0.6305 rank=0.6305
+    4. servicos/catalogo_servicos.json retrieval=0.6237 rank=0.6237
+    5. servicos/catalogo_servicos.json retrieval=0.5485 rank=0.5485
+[PASS] 4. [v3-holdout-ubs-faz-mamografia] a unidade de saúde faz a mamografia lá mesmo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.6700 rank=0.6700
+    2. chatscm/chatscm.docx retrieval=0.6650 rank=0.6650
+    3. servicos/catalogo_servicos.json retrieval=0.6258 rank=0.6258
+    4. chatscm/chatscm.docx retrieval=0.6130 rank=0.6130
+    5. chatscm/chatscm.docx retrieval=0.6111 rank=0.6111
+[PASS] 5. [v3-holdout-pedido-mamografia] preciso de pedido do médico pra fazer mamografia? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.7537 rank=0.7537
+    2. servicos/catalogo_servicos.json retrieval=0.7221 rank=0.7221
+    3. chatscm/chatscm.docx retrieval=0.6361 rank=0.6361
+    4. servicos/catalogo_servicos.json retrieval=0.6138 rank=0.6138
+    5. chatscm/chatscm.docx retrieval=0.5339 rank=0.5339
+[PASS] 6. [v3-holdout-preventivo-menstruada] posso fazer o preventivo menstruada? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=5
+    1. servicos/catalogo_servicos.json retrieval=0.6699 rank=0.6699
+    2. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.6423 rank=0.6423
+    3. chatscm/chatscm.docx retrieval=0.6201 rank=0.6201
+    4. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:5 retrieval=0.5193 rank=0.5193
+    5. chatscm/chatscm_gestante.docx retrieval=0.5023 rank=0.5023
+[PASS] 7. [v3-holdout-dna-hpv] o que é esse teste de DNA-HPV? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.5936 rank=0.5936
+    2. chatscm/chatscm.docx retrieval=0.4185 rank=0.4185
+    3. chatscm/chatscm.docx retrieval=0.4147 rank=0.4147
+    4. chatscm/chatscm.docx retrieval=0.4142 rank=0.4142
+    5. chatscm/chatscm.docx retrieval=0.3972 rank=0.3972
+[PASS] 8. [v3-holdout-ultrassom-sus] como marco ultrassom pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. servicos/catalogo_servicos.json retrieval=0.5801 rank=0.5801
+    2. chatscm/chatscm.docx retrieval=0.5747 rank=0.5747
+    3. chatscm/chatscm.docx retrieval=0.5371 rank=0.5371
+    4. chatscm/chatscm.docx retrieval=0.4726 rank=0.4726
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.4657 rank=0.4657
+[FAIL] 9. [v3-holdout-onde-prenatal] to gravida, onde eu faço o pre natal | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5905 rank=0.5905
+    2. chatscm/chatscm.docx retrieval=0.5685 rank=0.5685
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5556 rank=0.5556
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5464 rank=0.5464
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.5409 rank=0.5409
+[PASS] 10. [v3-holdout-morfologico] quantas ultrassons morfológicas tenho que fazer na gravidez | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.6655 rank=0.6655
+    2. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6185 rank=0.6185
+    3. chatscm/chatscm_gestante.docx retrieval=0.5923 rank=0.5923
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:38 retrieval=0.5790 rank=0.5790
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5785 rank=0.5785
+[FAIL] 11. [v3-holdout-bebe-mexer] quando começo a sentir o bebê mexer | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.7049 rank=0.7049
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6927 rank=0.6927
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6725 rank=0.6725
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:42 retrieval=0.6719 rank=0.6719
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:39 retrieval=0.6536 rank=0.6536
+[PASS] 12. [v3-holdout-pintar-cabelo] posso pintar o cabelo grávida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=1
+    1. chatscm/chatscm_gestante.docx retrieval=0.6897 rank=0.6897
+[FAIL] 13. [v3-holdout-cerveja] grávida pode beber cerveja de vez em quando? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:42 retrieval=0.4407 rank=0.4407
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4254 rank=0.4254
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:49 retrieval=0.4172 rank=0.4172
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:9 retrieval=0.4015 rank=0.4015
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.3968 rank=0.3968
+[PASS] 14. [v3-holdout-peso-gravidez] quantos quilos é normal engordar na gravidez | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:20 retrieval=0.6787 rank=0.6787
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6639 rank=0.6639
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:26 retrieval=0.6438 rank=0.6438
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:18 retrieval=0.5533 rank=0.5533
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5257 rank=0.5257
+[PASS] 15. [v3-holdout-sexo-bebe] quando dá pra saber se é menino ou menina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4291 rank=0.4291
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.4287 rank=0.4287
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:9 retrieval=0.3788 rank=0.3788
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:40 retrieval=0.3780 rank=0.3780
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3748 rank=0.3748
+[PASS] 16. [v3-holdout-enjoo] enjoo e vômito na gravidez é normal? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.8079 rank=0.8079
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6487 rank=0.6487
+    3. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6077 rank=0.6077
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.6025 rank=0.6025
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5891 rank=0.5891
+[PASS] 17. [v3-holdout-tampao] o tampão saiu, é trabalho de parto? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante.docx retrieval=0.6525 rank=0.6525
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.5750 rank=0.5750
+    3. chatscm/chatscm.docx retrieval=0.5614 rank=0.5614
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5288 rank=0.5288
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.5212 rank=0.5212
+[PASS] 18. [v3-holdout-contracoes] estou tendo contrações fortes e seguidas | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3903 rank=0.3903
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3728 rank=0.3728
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.3410 rank=0.3410
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3390 rank=0.3390
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3372 rank=0.3372
+[PASS] 19. [v3-holdout-dor-cabeca] estou com dor de cabeça muito forte e tô grávida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5300 rank=0.5300
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.4658 rank=0.4658
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4620 rank=0.4620
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4614 rank=0.4614
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4570 rank=0.4570
+[PASS] 20. [v3-holdout-febre-manchas] estou grávida com febre e manchas vermelhas no corpo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5476 rank=0.5476
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5146 rank=0.5146
+    3. chatscm/chatscm.docx retrieval=0.5122 rank=0.5122
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5072 rank=0.5072
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:2 retrieval=0.4889 rank=0.4889
+[PASS] 21. [v3-holdout-sifilis-cura] sífilis tem cura? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.6613 rank=0.6613
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.6480 rank=0.6480
+    3. chatscm/chatscm.docx retrieval=0.5609 rank=0.5609
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.5363 rank=0.5363
+[PASS] 22. [v3-holdout-camisinha-feminina] como usa a camisinha feminina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.6035 rank=0.6035
+    2. chatscm/chatscm.docx retrieval=0.5387 rank=0.5387
+    3. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:3 retrieval=0.5375 rank=0.5375
+    4. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:4 retrieval=0.5374 rank=0.5374
+    5. saude_sexual_reprodutiva/implante_ministerio_saude.pdf:1 retrieval=0.5198 rank=0.5198
+[FAIL] 23. [v3-holdout-primeira-relacao] dá pra engravidar na primeira vez? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=1
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.4304 rank=0.4304
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4248 rank=0.4248
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:39 retrieval=0.4185 rank=0.4185
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:33 retrieval=0.4070 rank=0.4070
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.3765 rank=0.3765
+[FAIL] 24. [v3-holdout-anticoncepcional-libido] o anticoncepcional diminui a vontade de transar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:1 retrieval=0.7044 rank=0.7044
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.7033 rank=0.7033
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.6854 rank=0.6854
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.6788 rank=0.6788
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.6671 rank=0.6671
+[PASS] 25. [v3-holdout-vacina-hpv-onde] onde eu tomo a vacina do hpv | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.6372 rank=0.6372
+    2. vacinacao/calendario_nacional_vacinacao_adolescentes_jovens.pdf:1 retrieval=0.6022 rank=0.6022
+    3. medicamentos/relacao_nacional_medicamentos_2024.pdf:81 retrieval=0.5810 rank=0.5810
+    4. chatscm/chatscm.docx retrieval=0.5571 rank=0.5571
+    5. vacinacao/calendario_nacional_vacinacao_idoso.pdf:1 retrieval=0.5458 rank=0.5458
+
+PassRate@5: 0.760 (19/25)
+MRR@5: 0.648
+AcceptableHitRate@5: 0.760
+
+=== mode=dense-rerank ===
+[PASS] 1. [v3-holdout-preventivo-papanicolau] papanicolau é a mesma coisa que preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.5817 rank=0.6067
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:45 retrieval=0.5980 rank=0.5980
+    3. chatscm/chatscm.docx retrieval=0.5716 rank=0.5966
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:2 retrieval=0.5684 rank=0.5684
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.5531 rank=0.5531
+[FAIL] 2. [v3-holdout-preventivo-70-anos] tenho 70 anos, ainda preciso fazer preventivo? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:22 retrieval=0.4644 rank=0.4727
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.4569 rank=0.4652
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:19 retrieval=0.4417 rank=0.4584
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:21 retrieval=0.4427 rank=0.4510
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:20 retrieval=0.4127 rank=0.4377
+[PASS] 3. [v3-holdout-mamografia-45] com 45 anos já posso fazer mamografia? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7322 rank=0.7572
+    2. chatscm/chatscm.docx retrieval=0.7164 rank=0.7414
+    3. chatscm/chatscm.docx retrieval=0.6305 rank=0.6430
+    4. servicos/catalogo_servicos.json retrieval=0.6237 rank=0.6362
+    5. chatscm/chatscm.docx retrieval=0.5461 rank=0.5836
+[PASS] 4. [v3-holdout-ubs-faz-mamografia] a unidade de saúde faz a mamografia lá mesmo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6650 rank=0.6950
+    2. servicos/catalogo_servicos.json retrieval=0.6700 rank=0.6900
+    3. servicos/catalogo_servicos.json retrieval=0.6258 rank=0.6558
+    4. chatscm/chatscm.docx retrieval=0.6130 rank=0.6330
+    5. chatscm/chatscm.docx retrieval=0.6111 rank=0.6311
+[PASS] 5. [v3-holdout-pedido-mamografia] preciso de pedido do médico pra fazer mamografia? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.7537 rank=0.7703
+    2. servicos/catalogo_servicos.json retrieval=0.7221 rank=0.7387
+    3. chatscm/chatscm.docx retrieval=0.6361 rank=0.6445
+    4. servicos/catalogo_servicos.json retrieval=0.6138 rank=0.6221
+[PASS] 6. [v3-holdout-preventivo-menstruada] posso fazer o preventivo menstruada? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.6699 rank=0.7074
+    2. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.6423 rank=0.6548
+    3. chatscm/chatscm.docx retrieval=0.6201 rank=0.6451
+    4. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:5 retrieval=0.5193 rank=0.5318
+    5. chatscm/chatscm.docx retrieval=0.5017 rank=0.5267
+[PASS] 7. [v3-holdout-dna-hpv] o que é esse teste de DNA-HPV? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.5936 rank=0.6311
+    2. chatscm/chatscm.docx retrieval=0.4142 rank=0.4267
+    3. chatscm/chatscm.docx retrieval=0.4185 rank=0.4185
+    4. chatscm/chatscm.docx retrieval=0.4147 rank=0.4147
+[PASS] 8. [v3-holdout-ultrassom-sus] como marco ultrassom pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. servicos/catalogo_servicos.json retrieval=0.5801 rank=0.6051
+    2. chatscm/chatscm.docx retrieval=0.5747 rank=0.5872
+    3. chatscm/chatscm.docx retrieval=0.5371 rank=0.5371
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:16 retrieval=0.4657 rank=0.4907
+    5. chatscm/chatscm.docx retrieval=0.4726 rank=0.4851
+[PASS] 9. [v3-holdout-onde-prenatal] to gravida, onde eu faço o pre natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5905 rank=0.6005
+    2. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.5556 rank=0.5856
+    3. chatscm/chatscm.docx retrieval=0.5685 rank=0.5785
+    4. servicos/catalogo_servicos.json retrieval=0.5274 rank=0.5674
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5464 rank=0.5664
+[PASS] 10. [v3-holdout-morfologico] quantas ultrassons morfológicas tenho que fazer na gravidez | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=0.6655 rank=0.6822
+    2. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.6185 rank=0.6352
+    3. chatscm/chatscm_gestante.docx retrieval=0.5923 rank=0.6089
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5785 rank=0.5868
+    5. chatscm/chatscm.docx retrieval=0.5673 rank=0.5839
+[PASS] 11. [v3-holdout-bebe-mexer] quando começo a sentir o bebê mexer | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.7049 rank=0.7249
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6927 rank=0.7227
+    3. chatscm/chatscm_gestante.docx retrieval=0.6500 rank=0.7000
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:42 retrieval=0.6719 rank=0.6919
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6725 rank=0.6825
+[PASS] 12. [v3-holdout-pintar-cabelo] posso pintar o cabelo grávida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=1
+    1. chatscm/chatscm_gestante.docx retrieval=0.6897 rank=0.7397
+[FAIL] 13. [v3-holdout-cerveja] grávida pode beber cerveja de vez em quando? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:42 retrieval=0.4407 rank=0.4573
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4254 rank=0.4337
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.3968 rank=0.4302
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:49 retrieval=0.4172 rank=0.4172
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:9 retrieval=0.4015 rank=0.4098
+[PASS] 14. [v3-holdout-peso-gravidez] quantos quilos é normal engordar na gravidez | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6639 rank=0.6939
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:20 retrieval=0.6787 rank=0.6787
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:26 retrieval=0.6438 rank=0.6438
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:18 retrieval=0.5533 rank=0.5533
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5257 rank=0.5457
+[PASS] 15. [v3-holdout-sexo-bebe] quando dá pra saber se é menino ou menina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4291 rank=0.4391
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.4287 rank=0.4287
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3748 rank=0.3948
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:9 retrieval=0.3788 rank=0.3788
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:40 retrieval=0.3780 rank=0.3780
+[PASS] 16. [v3-holdout-enjoo] enjoo e vômito na gravidez é normal? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.8079 rank=0.8579
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.6487 rank=0.6737
+[PASS] 17. [v3-holdout-tampao] o tampão saiu, é trabalho de parto? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante.docx retrieval=0.6525 rank=0.7025
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.5750 rank=0.6125
+    3. chatscm/chatscm.docx retrieval=0.5614 rank=0.5614
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5288 rank=0.5538
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.5212 rank=0.5462
+[PASS] 18. [v3-holdout-contracoes] estou tendo contrações fortes e seguidas | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3903 rank=0.3903
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3728 rank=0.3828
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3390 rank=0.3790
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3372 rank=0.3572
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.3410 rank=0.3510
+[PASS] 19. [v3-holdout-dor-cabeca] estou com dor de cabeça muito forte e tô grávida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5300 rank=0.5634
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4614 rank=0.5030
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.4658 rank=0.4824
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4570 rank=0.4736
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4620 rank=0.4704
+[PASS] 20. [v3-holdout-febre-manchas] estou grávida com febre e manchas vermelhas no corpo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5476 rank=0.5893
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5146 rank=0.5313
+    3. chatscm/chatscm.docx retrieval=0.5122 rank=0.5289
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.5072 rank=0.5155
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:2 retrieval=0.4889 rank=0.5056
+[PASS] 21. [v3-holdout-sifilis-cura] sífilis tem cura? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.6613 rank=0.7113
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.6480 rank=0.6814
+    3. chatscm/chatscm.docx retrieval=0.5609 rank=0.5776
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.5363 rank=0.5530
+[PASS] 22. [v3-holdout-camisinha-feminina] como usa a camisinha feminina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.6035 rank=0.6368
+    2. chatscm/chatscm.docx retrieval=0.5387 rank=0.5720
+    3. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:4 retrieval=0.5374 rank=0.5707
+    4. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:3 retrieval=0.5375 rank=0.5542
+    5. chatscm/chatscm.docx retrieval=0.5175 rank=0.5342
+[FAIL] 23. [v3-holdout-primeira-relacao] dá pra engravidar na primeira vez? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=1
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:39 retrieval=0.4185 rank=0.4435
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.4304 rank=0.4429
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.4248 rank=0.4373
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:33 retrieval=0.4070 rank=0.4070
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.3765 rank=0.3890
+[FAIL] 24. [v3-holdout-anticoncepcional-libido] o anticoncepcional diminui a vontade de transar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=2
+    1. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:1 retrieval=0.7044 rank=0.7294
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.6788 rank=0.7038
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.7033 rank=0.7033
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.6854 rank=0.6854
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.6671 rank=0.6796
+[PASS] 25. [v3-holdout-vacina-hpv-onde] onde eu tomo a vacina do hpv | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. vacinacao/calendario_nacional_vacinacao_adolescentes_jovens.pdf:1 retrieval=0.6022 rank=0.6772
+    2. chatscm/chatscm.docx retrieval=0.6372 rank=0.6747
+    3. vacinacao/calendario_nacional_vacinacao_idoso.pdf:1 retrieval=0.5458 rank=0.6208
+    4. chatscm/chatscm.docx retrieval=0.5571 rank=0.6071
+    5. medicamentos/relacao_nacional_medicamentos_2024.pdf:81 retrieval=0.5810 rank=0.5935
+
+PassRate@5: 0.840 (21/25)
+MRR@5: 0.677
+AcceptableHitRate@5: 0.840
+
+=== mode=hybrid ===
+[PASS] 1. [v3-holdout-preventivo-papanicolau] papanicolau é a mesma coisa que preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5833 rank=0.6083
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5250
+    3. chatscm/chatscm.docx retrieval=0.4762 rank=0.5012
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:45 retrieval=0.5000 rank=0.5000
+    5. servicos/catalogo_servicos.json retrieval=0.2750 rank=0.3000
+[PASS] 2. [v3-holdout-preventivo-70-anos] tenho 70 anos, ainda preciso fazer preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:17 retrieval=0.5000 rank=0.5250
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:22 retrieval=0.5000 rank=0.5083
+    3. servicos/catalogo_servicos.json retrieval=0.3333 rank=0.3583
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.3333 rank=0.3500
+    5. chatscm/chatscm.docx retrieval=0.3000 rank=0.3250
+[PASS] 3. [v3-holdout-mamografia-45] com 45 anos já posso fazer mamografia? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.8333 rank=0.8583
+    2. chatscm/chatscm.docx retrieval=0.6429 rank=0.6804
+    3. chatscm/chatscm.docx retrieval=0.5333 rank=0.5583
+    4. chatscm/chatscm.docx retrieval=0.5000 rank=0.5125
+    5. servicos/catalogo_servicos.json retrieval=0.2500 rank=0.2625
+[PASS] 4. [v3-holdout-ubs-faz-mamografia] a unidade de saúde faz a mamografia lá mesmo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8633
+    2. servicos/catalogo_servicos.json retrieval=0.5833 rank=0.6133
+    3. servicos/catalogo_servicos.json retrieval=0.5833 rank=0.6033
+    4. chatscm/chatscm.docx retrieval=0.3667 rank=0.3867
+    5. chatscm/chatscm.docx retrieval=0.3269 rank=0.3469
+[PASS] 5. [v3-holdout-pedido-mamografia] preciso de pedido do médico pra fazer mamografia? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.6429 rank=0.6595
+    2. chatscm/chatscm.docx retrieval=0.5909 rank=0.6159
+    3. servicos/catalogo_servicos.json retrieval=0.5333 rank=0.5500
+    4. chatscm/chatscm.docx retrieval=0.4167 rank=0.4250
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:45 retrieval=0.3577 rank=0.3827
+[PASS] 6. [v3-holdout-preventivo-menstruada] posso fazer o preventivo menstruada? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.6000 rank=0.6375
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5250
+    3. chatscm/chatscm.docx retrieval=0.4762 rank=0.5012
+    4. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.4048 rank=0.4173
+    5. chatscm/chatscm.docx retrieval=0.2756 rank=0.2881
+[PASS] 7. [v3-holdout-dna-hpv] o que é esse teste de DNA-HPV? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. servicos/catalogo_servicos.json retrieval=1.0000 rank=1.0375
+    2. chatscm/chatscm.docx retrieval=0.5333 rank=0.5458
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3333
+    4. chatscm/chatscm_gestante.docx retrieval=0.2857 rank=0.2982
+    5. chatscm/chatscm.docx retrieval=0.2500 rank=0.2625
+[PASS] 8. [v3-holdout-ultrassom-sus] como marco ultrassom pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5250
+    2. medicamentos/relacao_nacional_medicamentos_2024.pdf:9 retrieval=0.5000 rank=0.5250
+    3. chatscm/chatscm.docx retrieval=0.4500 rank=0.4625
+    4. chatscm/chatscm.docx retrieval=0.4444 rank=0.4569
+    5. chatscm/chatscm.docx retrieval=0.3333 rank=0.3458
+[PASS] 9. [v3-holdout-onde-prenatal] to gravida, onde eu faço o pre natal | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=5
+    1. servicos/catalogo_servicos.json retrieval=0.6000 rank=0.6400
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5714 rank=0.5814
+    3. chatscm/chatscm.docx retrieval=0.3810 rank=0.3910
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.3333 rank=0.3733
+    5. chatscm/chatscm_gestante.docx retrieval=0.3214 rank=0.3514
+[PASS] 10. [v3-holdout-morfologico] quantas ultrassons morfológicas tenho que fazer na gravidez | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante.docx retrieval=0.5909 rank=0.6326
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5167
+    3. chatscm/chatscm_gestante.docx retrieval=0.3788 rank=0.4121
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.3333 rank=0.3500
+    5. chatscm/chatscm_gestante.docx retrieval=0.2526 rank=0.2693
+[PASS] 11. [v3-holdout-bebe-mexer] quando começo a sentir o bebê mexer | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante.docx retrieval=0.5435 rank=0.5935
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.5667 rank=0.5867
+    3. chatscm/chatscm_gestante.docx retrieval=0.4762 rank=0.5262
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.4167 rank=0.4467
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.2540 rank=0.2840
+[PASS] 12. [v3-holdout-pintar-cabelo] posso pintar o cabelo grávida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.0500
+    2. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.3833
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.3333 rank=0.3333
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.3000 rank=0.3125
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:11 retrieval=0.2540 rank=0.2790
+[PASS] 13. [v3-holdout-cerveja] grávida pode beber cerveja de vez em quando? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:42 retrieval=0.7500 rank=0.7667
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.5556 rank=0.5806
+    3. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.3500
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3333 rank=0.3417
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:12 retrieval=0.2540 rank=0.2790
+[PASS] 14. [v3-holdout-peso-gravidez] quantos quilos é normal engordar na gravidez | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.8333 rank=0.8633
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:20 retrieval=0.5000 rank=0.5000
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:10 retrieval=0.3333 rank=0.3533
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3095 rank=0.3295
+    5. chatscm/chatscm_gestante.docx retrieval=0.2976 rank=0.3176
+[PASS] 15. [v3-holdout-sexo-bebe] quando dá pra saber se é menino ou menina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.5278 rank=0.5378
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:45 retrieval=0.5000 rank=0.5100
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3533
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:5 retrieval=0.3333 rank=0.3333
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3095 rank=0.3295
+[PASS] 16. [v3-holdout-enjoo] enjoo e vômito na gravidez é normal? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=1.0000 rank=1.0500
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5833 rank=0.6083
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:12 retrieval=0.3627 rank=0.4002
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.2476 rank=0.2726
+    5. gestacao/cartilha_saude_bucal_gestante.pdf:3 retrieval=0.2500 rank=0.2625
+[PASS] 17. [v3-holdout-tampao] o tampão saiu, é trabalho de parto? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.0500
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.6667 rank=0.7042
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:35 retrieval=0.3095 rank=0.3345
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.2540 rank=0.2790
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.2526 rank=0.2776
+[PASS] 18. [v3-holdout-contracoes] estou tendo contrações fortes e seguidas | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.7000 rank=0.7400
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5000 rank=0.5000
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.3667 rank=0.3867
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:14 retrieval=0.3333 rank=0.3533
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3333 rank=0.3433
+[PASS] 19. [v3-holdout-dor-cabeca] estou com dor de cabeça muito forte e tô grávida | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6250 rank=0.6583
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:14 retrieval=0.5833 rank=0.6167
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4500 rank=0.4917
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:43 retrieval=0.4444 rank=0.4611
+    5. servicos/catalogo_servicos.json retrieval=0.3333 rank=0.3667
+[PASS] 20. [v3-holdout-febre-manchas] estou grávida com febre e manchas vermelhas no corpo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.8333 rank=0.8750
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:14 retrieval=0.5000 rank=0.5333
+    3. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3333 rank=0.3500
+    4. chatscm/chatscm.docx retrieval=0.2744 rank=0.2911
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.2667 rank=0.2833
+[PASS] 21. [v3-holdout-sifilis-cura] sífilis tem cura? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=1.0000 rank=1.0500
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.5833 rank=0.6167
+    3. chatscm/chatscm.docx retrieval=0.5833 rank=0.6000
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.4000 rank=0.4167
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.1667 rank=0.1833
+[PASS] 22. [v3-holdout-camisinha-feminina] como usa a camisinha feminina | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. chatscm/chatscm.docx retrieval=1.0000 rank=1.0333
+    2. chatscm/chatscm.docx retrieval=0.5333 rank=0.5667
+    3. chatscm/chatscm.docx retrieval=0.4242 rank=0.4576
+    4. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:4 retrieval=0.3667 rank=0.4000
+    5. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:3 retrieval=0.2955 rank=0.3121
+[PASS] 23. [v3-holdout-primeira-relacao] dá pra engravidar na primeira vez? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:29 retrieval=0.5625 rank=0.5750
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5250
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:45 retrieval=0.4444 rank=0.4569
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:39 retrieval=0.3929 rank=0.4179
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3333 rank=0.3458
+[FAIL] 24. [v3-holdout-anticoncepcional-libido] o anticoncepcional diminui a vontade de transar? | acceptable_hit=no | required_recall=- | required_ndcg=- | unique_sources=3
+    1. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:1 retrieval=0.6250 rank=0.6500
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:13 retrieval=0.3333 rank=0.3708
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:32 retrieval=0.3333 rank=0.3333
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.3000 rank=0.3250
+    5. saude_sexual_reprodutiva/contracepcao_ministerio_saude.pdf:2 retrieval=0.2770 rank=0.3020
+[PASS] 25. [v3-holdout-vacina-hpv-onde] onde eu tomo a vacina do hpv | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8708
+    2. chatscm/chatscm.docx retrieval=0.7000 rank=0.7500
+    3. vacinacao/calendario_nacional_vacinacao_adolescentes_jovens.pdf:1 retrieval=0.3750 rank=0.4500
+    4. servicos/catalogo_servicos.json retrieval=0.3250 rank=0.3500
+    5. medicamentos/relacao_nacional_medicamentos_2024.pdf:81 retrieval=0.2870 rank=0.2995
+
+PassRate@5: 0.960 (24/25)
+MRR@5: 0.801
+AcceptableHitRate@5: 0.960
+
+=== summary ===
+MODE            PASSRATE      MRR  ACCEPT_HIT  REQ_RECALL  REQ_NDCG
+dense              0.760    0.648       0.760           -         -
+dense-rerank       0.840    0.677       0.840           -         -
+hybrid             0.960    0.801       0.960           -         -
+
+===== criterio de aprovacao (dev, hybrid) =====
+RagTest retrieval benchmark
+Dataset: dominio-v2-dev | Cases: 15 | k=5 | source=packaged dataset dominio-v2-dev
+Label semantics: explicit
+Metrics: PassRate/MRR + AcceptableHitRate for OR alternatives + RequiredRecall/RequiredNDCG for AND-required sources.
+
+=== mode=hybrid ===
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+[PASS] 1. [v2-dev-idade-preventivo] com quantos anos tenho que fazer o papanicolau? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8633
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5200
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=0.3333 rank=0.3433
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:20 retrieval=0.3125 rank=0.3425
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.2526 rank=0.2726
+[PASS] 2. [v2-dev-idade-mamografia] a partir de que idade posso fazer mamografia pelo sus | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7500 rank=0.7786
+    2. chatscm/chatscm.docx retrieval=0.6667 rank=0.6881
+    3. chatscm/chatscm.docx retrieval=0.6667 rank=0.6881
+    4. chatscm/chatscm.docx retrieval=0.3667 rank=0.3738
+    5. servicos/catalogo_servicos.json retrieval=0.3333 rank=0.3548
+[PASS] 3. [v2-dev-onde-agendar-preventivo] onde eu marco o preventivo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5333
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:60 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3667
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.3333 rank=0.3333
+    5. direitos_saude/carta_direitos_deveres_pessoa_usuaria_saude.pdf:20 retrieval=0.2500 rank=0.2667
+[PASS] 4. [v2-dev-vaga-mamografia] como consigo vaga pra mamografia se o posto não faz o exame | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=2
+    1. servicos/catalogo_servicos.json retrieval=0.7000 rank=0.7250
+    2. servicos/catalogo_servicos.json retrieval=0.6429 rank=0.6554
+    3. chatscm/chatscm.docx retrieval=0.5000 rank=0.5188
+    4. chatscm/chatscm.docx retrieval=0.5000 rank=0.5188
+    5. chatscm/chatscm.docx retrieval=0.5000 rank=0.5125
+[PASS] 5. [v2-dev-resultado-preventivo] quanto tempo demora pra sair o resultado do preventivo | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5286
+    2. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.4167 rank=0.4452
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:2 retrieval=0.3750 rank=0.3964
+    5. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:47 retrieval=0.3333 rank=0.3333
+[PASS] 6. [v2-dev-preventivo-dor] o exame preventivo dói? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. servicos/catalogo_servicos.json retrieval=0.5909 rank=0.6242
+    2. chatscm/chatscm.docx retrieval=0.5526 rank=0.6026
+    3. chatscm/chatscm.docx retrieval=0.4500 rank=0.4833
+    4. servicos/catalogo_servicos.json retrieval=0.3667 rank=0.4000
+    5. chatscm/chatscm_gestante.docx retrieval=0.3788 rank=0.3955
+[PASS] 7. [v2-dev-descobri-gravidez] descobri que tô grávida, o que faço primeiro? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.5714 rank=0.5839
+    2. chatscm/chatscm_gestante.docx retrieval=0.5323 rank=0.5448
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:6 retrieval=0.4583 rank=0.4833
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3929 rank=0.4304
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3922 rank=0.4172
+[PASS] 8. [v2-dev-preventivo-gestante] grávida pode fazer preventivo? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:48 retrieval=0.5909 rank=0.6284
+    2. chatscm/chatscm_gestante.docx retrieval=0.4167 rank=0.4542
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.3333 rank=0.3583
+    4. chatscm/chatscm.docx retrieval=0.2500 rank=0.2750
+    5. saude_sexual_reprodutiva/diu_cobre_ministerio_saude.pdf:3 retrieval=0.2500 rank=0.2500
+[PASS] 9. [v2-dev-semanas-meses] tô com 20 semanas, quantos meses são? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:15 retrieval=1.0000 rank=1.0500
+    2. chatscm/chatscm_gestante.docx retrieval=0.6667 rank=0.7167
+    3. vacinacao/calendario_nacional_vacinacao_crianca.pdf:4 retrieval=0.2778 rank=0.3111
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.2870 rank=0.3037
+    5. chatscm/chatscm_gestante.docx retrieval=0.2500 rank=0.3000
+[PASS] 10. [v2-dev-visao-embacada] estou grávida e com a vista embaçada | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6667 rank=0.7042
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:4 retrieval=0.5000 rank=0.5125
+    3. servicos/catalogo_servicos.json retrieval=0.5000 rank=0.5125
+    4. gestacao/cartilha_saude_bucal_gestante.pdf:12 retrieval=0.2500 rank=0.2625
+    5. chatscm/chatscm_gestante_parte_2.docx retrieval=0.2000 rank=0.2125
+[PASS] 11. [v2-dev-bolsa-sem-contracao] minha bolsa estourou mas não sinto contração | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.6667 rank=0.6810
+    2. chatscm/chatscm_gestante.docx retrieval=0.5000 rank=0.5429
+    3. chatscm/chatscm_gestante.docx retrieval=0.4333 rank=0.4619
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.3409 rank=0.3695
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:30 retrieval=0.3333 rank=0.3548
+[PASS] 12. [v2-dev-vacinas-gestante] quais vacinas a gestante precisa tomar | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante.docx retrieval=1.0000 rank=1.1125
+    2. vacinacao/calendario_nacional_vacinacao_gestante.pdf:1 retrieval=0.3833 rank=0.5333
+    3. gestacao/caderneta_gestante_8ed_rev.pdf:19 retrieval=0.3667 rank=0.4667
+    4. chatscm/chatscm_gestante.docx retrieval=0.3333 rank=0.4458
+    5. chatscm/chatscm.docx retrieval=0.3214 rank=0.3589
+[PASS] 13. [v2-dev-caroco-mama] achei um caroço no peito, o que eu faço | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm_gestante_parte_2.docx retrieval=0.6250 rank=0.6375
+    2. chatscm/chatscm.docx retrieval=0.5000 rank=0.5250
+    3. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:52 retrieval=0.5000 rank=0.5125
+    4. chatscm/chatscm_gestante_parte_2.docx retrieval=0.4333 rank=0.4458
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:47 retrieval=0.3333 rank=0.3458
+[PASS] 14. [v2-dev-diu-dor] o que é o DIU e dói pra colocar? | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=3
+    1. chatscm/chatscm.docx retrieval=0.5000 rank=0.5375
+    2. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:42 retrieval=0.5000 rank=0.5000
+    3. chatscm/chatscm.docx retrieval=0.3333 rank=0.3708
+    4. gestacao/caderneta_gestante_8ed_rev.pdf:7 retrieval=0.3333 rank=0.3333
+    5. gestacao/caderneta_gestante_8ed_rev.pdf:44 retrieval=0.2500 rank=0.2750
+[PASS] 15. [v2-dev-teste-rapido] onde faço teste rápido de sífilis e HIV | acceptable_hit=yes | required_recall=- | required_ndcg=- | unique_sources=4
+    1. chatscm/chatscm.docx retrieval=0.8333 rank=0.8750
+    2. gestacao/caderneta_gestante_8ed_rev.pdf:18 retrieval=0.5833 rank=0.6250
+    3. chatscm/chatscm.docx retrieval=0.5000 rank=0.5417
+    4. pessoa_idosa/caderneta_saude_pessoa_idosa_5ed_1re.pdf:56 retrieval=0.3929 rank=0.4262
+    5. chatscm/chatscm_gestante.docx retrieval=0.3250 rank=0.3583
+
+PassRate@5: 1.000 (15/15)
+MRR@5: 0.833
+AcceptableHitRate@5: 1.000
+
+=== quality gate ===
+PASS
+
+===== calibracao fora de escopo =====
+RagTest scope calibration | split=dev
+/usr/local/lib/python3.12/site-packages/app/rag/embeddings/fastembed_provider.py:28: UserWarning: The model sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 now uses mean pooling instead of CLS embedding. In order to preserve the previous behaviour, consider either pinning fastembed version to 0.5.1 or using `add_custom_model` functionality.
+  self._model = TextEmbedding(
+  in  0.5145  v2-dev-idade-preventivo
+  in  0.7817  v2-dev-idade-mamografia
+  in  0.5711  v2-dev-onde-agendar-preventivo
+  in  0.7584  v2-dev-vaga-mamografia
+  in  0.6502  v2-dev-resultado-preventivo
+  in  0.5889  v2-dev-preventivo-dor
+  in  0.5741  v2-dev-descobri-gravidez
+  in  0.7328  v2-dev-preventivo-gestante
+  in  0.7073  v2-dev-semanas-meses
+  in  0.5657  v2-dev-visao-embacada
+  in  0.3527  v2-dev-bolsa-sem-contracao
+  in  0.7871  v2-dev-vacinas-gestante
+  in  0.4550  v2-dev-caroco-mama
+  in  0.4678  v2-dev-diu-dor
+  in  0.7575  v2-dev-teste-rapido
+  out 0.3274  v2-oos-clima
+  out 0.3229  v2-oos-futebol
+  out 0.4492  v2-oos-emagrecer
+  out 0.6233  v2-oos-plano-saude
+
+min in-scope      : 0.3527
+max out-of-scope  : 0.6233
+Sem separação limpa: 8 pergunta(s) do domínio ficam abaixo do pior fora de escopo. Não configure o limiar sem analisar os casos.
+
+Concluido. Resultado salvo em docs/resultados/avaliacao_2026-09-28_1604.txt

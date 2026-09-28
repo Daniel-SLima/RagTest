@@ -43,4 +43,22 @@ Casos especiais:
 
 ## Resultados
 
-Ainda não executado.
+### Execução 1 — 2026-09-28 (`docs/resultados/respostas_modelo.csv`, Groq GPT-OSS 120B, hybrid)
+
+Métricas automáticas (a rubrica manual ainda não foi preenchida):
+
+| Grupo | Resultado |
+|---|---|
+| Perguntas do domínio respondidas pelo LLM (13) | 11 `verified` (84,6%), 2 fallback `unverified` |
+| Sinais de alarme (2) | 2 triados sem LLM (100%) |
+| Fora de escopo (4) | 4 recusados corretamente (100%, D048) |
+| Repair necessário | 2 de 13 |
+
+Fallbacks: "onde eu marco o preventivo" e "como consigo vaga pra mamografia se o posto não faz o
+exame" — ambos de agendamento, com as fontes certas recuperadas. Diagnóstico pendente: a coleta
+passou a registrar os blocos sem citação (`blocos_sem_citacao`).
+
+Latência: **não usar esta execução como medida de desempenho**. A cota gratuita da Groq (8 mil
+tokens/minuto) gerou 429 em quase todas as perguntas e os retries somaram até 37 s. Execuções
+futuras usam `--pause-seconds 15` (padrão). Sem limite de cota, as chamadas medidas pelo
+`ragtest-chat` levaram 0,7–0,8 s por geração.

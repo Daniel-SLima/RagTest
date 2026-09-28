@@ -31,6 +31,34 @@ def test_answer_row_flattens_result_and_leaves_rubric_blank() -> None:
     assert row["latency_ms"] == 1234
     assert row["sources"] == "[1] chatscm/chatscm.docx p.3"
     assert all(row[column] == "" for column in RUBRIC_COLUMNS)
+    assert row["blocos_sem_citacao"] == ""
+
+
+def test_answer_row_lists_uncited_blocks_from_all_attempts() -> None:
+    from app.rag.chat import CitationValidationAttempt
+
+    attempt = CitationValidationAttempt(
+        stage="initial", valid=False, syntax_valid=True, total_claim_blocks=2,
+        cited_claim_blocks=1, uncited_claim_blocks=1, coverage=0.5,
+        reason="x", uncited_blocks=("Bloco sem fonte.",),
+    )
+    result = ChatResult(
+        answer="fallback", sources=[], model="m", grounded=False, citation_ids=[],
+        citation_validation_attempts=(attempt,),
+    )
+
+    row = answer_row({"id": "a", "query": "q"}, result, 1.0)
+
+    assert row["blocos_sem_citacao"] == "initial: Bloco sem fonte."
+
+
+def test_select_cases_filters_by_id() -> None:
+    from app.cli.collect_answers import select_cases
+
+    cases = [{"id": "a"}, {"id": "b"}, {"id": "c"}]
+
+    assert select_cases(cases, ["c", "a"]) == [{"id": "a"}, {"id": "c"}]
+    assert select_cases(cases, None) == cases
 
 
 def test_answer_row_marks_triage() -> None:

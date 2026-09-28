@@ -345,7 +345,20 @@ Decisão: `RETRIEVAL_MIN_SCORE` continua desligado; recusa por limiar de similar
 viável neste corpus (ver D041). Alternativa futura: classificador de domínio leve ou regra de palavras-chave.
 
 
-## Holdout v3 (congelado em 2026-09-28, ainda não executado)
+## Holdout v3 — primeira e única execução (2026-09-28, `docs/resultados/avaliacao_2026-09-28_1604.txt`)
+
+| Modo | PassRate@5 | MRR@5 |
+|---|---|---|
+| dense | 0.760 (19/25) | 0.648 |
+| dense-rerank | 0.840 (21/25) | 0.677 |
+| **hybrid** | **0.960 (24/25)** | **0.801** |
+
+Medida independente (perguntas escritas antes da execução, nenhum ajuste feito depois). Confirma o
+hybrid como padrão. Única falha do hybrid: "o anticoncepcional diminui a vontade de transar?"
+(a resposta está no CHATSCM como "libido"; sinônimo coloquial sem sobreposição lexical).
+Critério de aprovação (dev, hybrid, PassRate ≥ 0.90 e MRR ≥ 0.75): **PASS** (1.000 / 0.833).
+
+## Holdout v3 (definição)
 
 `app/evaluation/datasets/dominio-v3-holdout.json`: 25 perguntas novas (sem repetir o v2), escritas
 antes de qualquer execução para substituir o holdout v2, que deixou de ser independente após a D047.

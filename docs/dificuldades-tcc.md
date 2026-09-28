@@ -530,3 +530,22 @@ teste use a chave real do autor.
 
 Aprendizado técnico: rodar a suíte num ambiente limpo (como a CI) é o único jeito de provar que
 ela não depende de configuração local.
+
+
+## 39. Limite por minuto da Groq distorceu a latência da coleta de respostas
+
+Planejado: medir a latência das respostas junto com a rubrica.
+
+Observado: 16 das 19 perguntas receberam HTTP 429 e esperaram retries de 2 a 22 s; latências de
+até 37 s, contra 0,7–0,8 s por geração quando não há fila.
+
+Diagnóstico: o plano gratuito limita 8 mil tokens por minuto e cada pergunta usa cerca de 2 mil
+(prompt com 5 trechos), às vezes o dobro com repair. A coleta disparava as perguntas em sequência
+sem pausa.
+
+Correção: `ragtest-collect-answers --pause-seconds` (padrão 15 s) e nota metodológica: latência só
+é reportada de execuções sem 429. O retry de aplicação (D019) funcionou: nenhuma pergunta falhou
+por indisponibilidade.
+
+Aprendizado técnico: métricas de desempenho precisam separar o tempo do sistema do tempo de espera
+imposto por cotas externas.
