@@ -7,6 +7,19 @@
 
 ---
 
+## 0. Decisões do autor que valem para todo o projeto
+
+| Data | Decisão |
+|---|---|
+| 28/09 | Não refazer o projeto; reorientar para o domínio do orientador (`PLANO_FINALIZACAO_TCC.md`). |
+| 28/09 | Corpus = apenas os documentos de `data/source`; sem fontes externas sem pedido explícito. |
+| 28/09 | CHATSCM liberado para desenvolvimento e avaliação (D038). |
+| 28/09 | **Backend headless**: o produto é a API; o Expo é cliente de referência congelado; toda regra e texto de exibição ficam no backend (D042). |
+| 28/09 | Stack do orientador mantida (FastAPI, Qdrant, LangChain, React Native via REST, Docker). |
+| 28/09 | Documentação atualizada a cada etapa (este arquivo + status no plano). |
+| 28/09 | Divisão de trabalho autor × agente e fluxo de branches/PRs: ver `AGENTS.md`. |
+| 28/09 | Metodologia: ajustes só com o dev; holdouts são rodados uma vez e nunca usados para ajustar (v2 consumido, v3 independente). |
+
 ## 1. Onde estamos
 
 > **Diretriz vigente: backend headless.** O produto é a API; o Expo é cliente de referência congelado.
