@@ -510,3 +510,28 @@ serviço, falhando em "o que evitar antes do preventivo".
 **Impacto:** os pontos do catálogo mudam (id depende do conteúdo); `ragtest-sync-ingestion --apply`
 troca os chunks afetados sem recriar a collection. Mudança motivada por falha do holdout v2 — ver
 a nota metodológica em `avaliacao-retrieval.md`.
+
+
+## D048 — Recusa explícita do modelo vira "fora de escopo", sem citação falsa
+
+**Data:** 2026-09-28
+**Mudança:** o prompt pede que, sem informação nos trechos, o modelo responda só
+`SEM_BASE_DOCUMENTAL`. `app/rag/refusal.py` detecta esse marcador ou uma recusa curta em
+linguagem natural ("não contêm informação", "não é possível responder"), sem listas e com até 500
+caracteres. Nesses casos o chat devolve a resposta fixa de fora de escopo (`out_of_scope=true`,
+`grounded=false`, sem citações) sem acionar o repair.
+**Motivo:** no teste real, "quem ganhou o jogo do Bahia?" gerou uma recusa correta, mas o gate de
+citações exigiu citação e o modelo citou uma página qualquer; a resposta saiu como "Citações
+verificadas". A recusa por limiar de similaridade não era viável (D041).
+**Impacto:** respostas parciais ("responda a parte encontrada e diga o que falta") continuam
+passando pelo gate normal. Menos chamadas de repair em perguntas fora do tema.
+
+
+## D049 — Respostas JSON declaram `charset=utf-8`
+
+**Data:** 2026-09-28
+**Mudança:** a API usa `application/json; charset=utf-8` como tipo padrão de resposta (também no
+fallback de erros do middleware). Contrato OpenAPI e cliente TS regenerados.
+**Motivo:** clientes que assumem Latin-1 quando o charset falta (PowerShell 5.1, e o pacote `http`
+do Dart/Flutter) corrompiam os acentos.
+**Impacto:** nenhuma mudança de schema; só o media type declarado.

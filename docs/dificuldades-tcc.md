@@ -451,3 +451,50 @@ todos os chunks do catálogo (D047).
 
 Aprendizado técnico: a estratégia de retrieval precisa ser escolhida com perguntas representativas
 do público real; uma avaliação com perguntas "de especialista" pode indicar o modo errado.
+
+
+## 35. Recusa correta do modelo saiu como "citações verificadas"
+
+Planejado: perguntas fora do tema deveriam ser recusadas sem parecer respostas fundamentadas.
+
+Observado: para "quem ganhou o jogo do Bahia?", o GPT-OSS respondeu que os documentos não tinham a
+informação, mas terminou a frase com `[1]` (uma página da Caderneta da Gestante). O gate aceitou e
+a API mostrou "Citações verificadas".
+
+Diagnóstico: o gate exige citação em todo bloco informativo, inclusive na frase de recusa; o modelo
+"satisfaz" a regra citando qualquer fonte. A recusa por limiar de similaridade já tinha se mostrado
+inviável (dificuldade #34).
+
+Correção: marcador `SEM_BASE_DOCUMENTAL` no prompt e detecção determinística de recusas curtas
+(D048); a resposta vira fora de escopo, sem citações.
+
+Aprendizado técnico: guardrails de citação precisam de uma saída explícita para "não sei"; caso
+contrário, empurram o modelo a inventar suporte para a própria recusa.
+
+## 36. Pergunta de agendamento da mamografia caiu no fallback mesmo com as fontes certas
+
+Planejado: "Como eu agendo a mamografia?" deveria ser respondida com o CHATSCM e o catálogo.
+
+Observado: o retrieval trouxe as fontes certas (CHATSCM e 2 chunks do catálogo), mas as duas
+gerações foram reprovadas pelo gate (`citation_retry_count=1`, `grounded=false`).
+
+Diagnóstico: pendente. A API não expõe os blocos reprovados; o CLI `ragtest-chat` passou a
+imprimir os blocos sem citação de cada tentativa para permitir o diagnóstico.
+
+Correção: pendente de reprodução com `ragtest-chat`.
+
+Aprendizado técnico: (a registrar após o diagnóstico).
+
+## 37. Acentos corrompidos no teste do chat pelo PowerShell
+
+Planejado: salvar as respostas reais do `/v1/chat` em JSON para análise.
+
+Observado: o arquivo ficou com "NÃ£o", "saÃºde" etc.
+
+Diagnóstico: a API respondia `application/json` sem charset; o `Invoke-RestMethod` do PowerShell 5.1
+decodifica como Latin-1 nesse caso. O mesmo acontece com o pacote `http` do Dart, usado em Flutter.
+
+Correção: `charset=utf-8` em todas as respostas JSON (D049).
+
+Aprendizado técnico: declarar o charset é parte do contrato; clientes diferentes assumem padrões
+diferentes quando ele falta.

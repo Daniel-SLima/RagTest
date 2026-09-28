@@ -312,6 +312,31 @@ cabeçalho `Serviço: <nome>`.
 execução do holdout v2 **não é mais independente** para essa mudança; o dev continua válido e um
 holdout v3 com perguntas novas deve ser congelado antes da próxima rodada.
 
+### Segunda execução — 2026-09-28 (`docs/resultados/avaliacao_2026-09-28_1503.txt`)
+
+Após D047 (contexto do serviço nos chunks do catálogo), 773 chunks, sync com 2 inserções e 2 remoções.
+
+| Modo | Dev PassRate | Dev MRR | Holdout PassRate* | Holdout MRR* |
+|---|---|---|---|---|
+| dense | 0.600 | 0.533 | 0.760 | 0.660 |
+| dense-rerank | 0.600 | 0.567 | 0.840 | 0.750 |
+| **hybrid** | **1.000** | **0.833** | **0.960 (24/25)** | **0.861** |
+
+\* Holdout não independente para a D047 (ver nota acima). Falha restante do hybrid: "de quanto em
+quanto tempo repito o preventivo se deu normal" (o chunk da periodicidade não aparece no top 5).
+
+### Teste do chat com provider real — 2026-09-28 (`docs/resultados/teste_chat.json`, Groq GPT-OSS 120B)
+
+| Pergunta | Resultado |
+|---|---|
+| Como eu agendo a mamografia? | ❌ `grounded=false` após repair (fontes corretas: CHATSCM + catálogo). Causa em investigação — dificuldade #36 |
+| Com quantos anos faço o preventivo? | ✅ grounded, cita o catálogo, ações do preventivo com `due_date` |
+| estou grávida e sangrando | ✅ triagem determinística, sem LLM, ação 192 |
+| quem ganhou o jogo do bahia? | ❌ recusa com citação falsa `[1]` marcada como verificada → corrigido pela D048 |
+
+O arquivo aparece com acentos corrompidos porque o PowerShell 5.1 decodificava a resposta sem
+charset como Latin-1; corrigido pela D049.
+
 ### Calibração de fora de escopo (dev × fora de escopo)
 
 Menor score top-1 do domínio: 0.3527 (bolsa estourou). Maior fora de escopo: 0.6233 ("melhor plano

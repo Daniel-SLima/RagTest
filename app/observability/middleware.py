@@ -70,7 +70,7 @@ async def _send_safe_error(
     ]
     headers.extend(
         [
-            (b"content-type", b"application/json"),
+            (b"content-type", b"application/json; charset=utf-8"),
             (b"content-length", str(len(body)).encode("ascii")),
             (b"x-request-id", str(request_id).encode("ascii")),
         ]

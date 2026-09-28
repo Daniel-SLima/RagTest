@@ -582,7 +582,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["HealthResponse"];
                 };
             };
         };
@@ -602,7 +602,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReadinessResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["ReadinessResponse"];
                 };
             };
         };
@@ -626,7 +626,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChatResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["ChatResponse"];
                 };
             };
             /** @description Validation Error */
@@ -659,7 +659,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SemanticSearchResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["SemanticSearchResponse"];
                 };
             };
             /** @description Validation Error */
@@ -688,7 +688,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ServicesResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["ServicesResponse"];
                 };
             };
         };
@@ -710,7 +710,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ServiceDetail"];
+                    "application/json; charset=utf-8": components["schemas"]["ServiceDetail"];
                 };
             };
             /** @description Validation Error */
@@ -739,7 +739,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["SessionResponse"];
                 };
             };
         };
@@ -761,7 +761,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["SessionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -819,7 +819,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SuggestionsResponse"];
+                    "application/json; charset=utf-8": components["schemas"]["SuggestionsResponse"];
                 };
             };
         };

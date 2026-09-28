@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.responses import UTF8JSONResponse
 from app.api.routes.catalog import router as catalog_router
 from app.api.routes.chat import router as chat_router
 from app.api.routes.health import router as health_router
@@ -43,6 +44,7 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         description="API REST portável para o módulo RAG do RagTest.",
         lifespan=lifespan,
+        default_response_class=UTF8JSONResponse,
     )
     allowed_origins = [
         origin.strip()

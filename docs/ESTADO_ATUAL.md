@@ -15,11 +15,12 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Avaliação v2 executada (28/09): hybrid virou padrão (D046), contexto nos chunks do catálogo (D047) · aguardando nova sincronização |
+| Etapa atual | Avaliação v2 + teste real do chat feitos (28/09). Corrigidos: recusa com citação falsa (D048) e charset (D049). Em aberto: agendamento da mamografia cai no fallback (dificuldade #36) |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `307 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
-| Avaliação v2 | hybrid: dev 15/15 (MRR 0.833), holdout 23/25 (MRR 0.853) · dense-rerank: 9/15 e 21/25 — ver `docs/avaliacao-retrieval.md` |
-| Qdrant | 773 chunks sincronizados em 28/09 (catálogo incluído). A D047 muda 2–4 chunks do catálogo: precisa de nova sincronização. |
+| Testes | backend `316 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Avaliação v2 | hybrid: dev 15/15 (MRR 0.833), holdout 24/25 após D047 (não independente) · dense-rerank: 9/15 e 21/25 — ver `docs/avaliacao-retrieval.md` |
+| Qdrant | 773 chunks, sincronizado em 28/09 após a D047 |
+| GitHub | `feature/audit-0.7.0` e `feature/dominio-0.8.0` enviadas em 28/09 (até `59b35ab`); commits posteriores só locais |
 
 **Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
 **Stack do orientador:** FastAPI ✅ · Qdrant ✅ · LangChain ✅ (uso seletivo) · React Native via REST ✅ · Docker Compose ✅.
@@ -51,13 +52,13 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [x] Rodar `scripts/avaliar_dominio.ps1` (28/09, resultado em `docs/resultados/`).
-- [ ] **Rodar o script de novo** para sincronizar os chunks alterados do catálogo (D047) e recriar a
-      API com `RETRIEVAL_MODE=hybrid` (o `.env` local já foi alterado pelo agente, só essa linha).
-      O holdout dessa rodada não conta como independente.
-- [ ] (Opcional) Teste do chat com o provider real — comandos no histórico da conversa / seção 5.
+- [x] Avaliação v2 (2 rodadas) e teste do chat com provider real (28/09).
+- [x] Push das branches (28/09).
+- [ ] `git push` de novo (commits novos) e abrir os PRs: `audit-0.7.0` → `main`, depois `dominio-0.8.0` → `main`.
+- [ ] Reconstruir a API (`docker compose up -d --build`) e rodar o diagnóstico da dificuldade #36:
+      `docker compose exec api ragtest-chat "Como eu agendo a mamografia?"` e salvar a saída em
+      `docs/resultados/diagnostico_mamografia.txt`.
 - [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env`.
-- [ ] `git push -u origin feature/audit-0.7.0 feature/dominio-0.8.0` e abrir os PRs (seção 6).
 
 ## 4. Próxima tarefa para o agente (ordem headless)
 
@@ -75,12 +76,15 @@
 
 **Próximas tarefas (depois da ordem headless):**
 
-6. ✅ Avaliação v2 registrada; hybrid padrão (D046); calibração sem separação (limiar desligado).
+6. **Dificuldade #36** (prioridade): com a saída do `ragtest-chat`, ver quais blocos ficaram sem
+   citação e corrigir (prompt, classificador de blocos ou catálogo). Depois repetir o teste do chat.
+7. ✅ Avaliação v2 registrada; hybrid padrão (D046); calibração sem separação (limiar desligado);
+   recusas viram fora de escopo (D048).
    Próximo: congelar **holdout v3** (perguntas novas) e transformar mínimos em critério de
    aprovação (`--min-passrate`), usando o dev v2 como referência.
-7. Rubrica manual das respostas (`docs/avaliacao-respostas.md`) com o provider real.
-8. `docker-compose.prod.yml` + deploy de homologação com `API_KEYS` (F6 item 4).
-9. Monografia: capítulos de arquitetura, guardrails e resultados a partir de `decisoes-tecnicas.md`
+8. Rubrica manual das respostas (`docs/avaliacao-respostas.md`) com o provider real.
+9. `docker-compose.prod.yml` + deploy de homologação com `API_KEYS` (F6 item 4).
+10. Monografia: capítulos de arquitetura, guardrails e resultados a partir de `decisoes-tecnicas.md`
    (D001–D045), `dificuldades-tcc.md` e `docs/resultados/`.
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
@@ -109,6 +113,8 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-09-28 (4) — Claude (Cowork)**: avaliação v2 analisada (hybrid padrão, D046/D047); teste real do
+  chat revelou recusa com citação falsa (D048), charset ausente (D049) e fallback na mamografia (#36).
 - **2026-09-28 (3) — Claude (Cowork)**: diretriz backend headless registrada no plano, no AGENTS.md
   e aqui; regra de atualizar plano/estado a cada etapa. Ordem headless concluída: D042 (lógica na API), D043 (contrato), D044 (auth), D045 (e2e).
 
