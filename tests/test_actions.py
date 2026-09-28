@@ -132,9 +132,13 @@ def test_chat_endpoint_exposes_actions_and_safety(client) -> None:
         "url": "seucuida://unidades",
         "service_id": "mamografia",
         "suggested_in_days": None,
+        "due_date": None,
+        "requires_host_app": True,
+        "note": "Este atalho abre a tela correspondente no app Se Cuida Mulher.",
     }
     assert body["actions"][1]["type"] == "schedule_reminder"
     assert body["actions"][1]["suggested_in_days"] == 730
+    assert body["actions"][1]["due_date"] is not None
 
 
 def test_chat_endpoint_marks_triaged_answers(client) -> None:
@@ -164,5 +168,8 @@ def test_chat_endpoint_marks_triaged_answers(client) -> None:
             "url": "tel:192",
             "service_id": None,
             "suggested_in_days": None,
+            "due_date": None,
+            "requires_host_app": False,
+            "note": None,
         }
     ]

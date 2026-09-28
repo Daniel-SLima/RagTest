@@ -51,10 +51,16 @@ class ServiceEntry(BaseModel):
         return value
 
 
+class Suggestion(BaseModel):
+    texto: str = Field(min_length=3)
+    topico: str | None = None
+
+
 class ServiceCatalog(BaseModel):
     versao: str
     revisado_em: str
     aviso: str | None = None
+    sugestoes: list[Suggestion] = Field(default_factory=list)
     servicos: list[ServiceEntry]
 
     def get(self, service_id: str) -> ServiceEntry:

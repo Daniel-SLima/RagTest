@@ -8,6 +8,7 @@ from app.api.routes.chat import router as chat_router
 from app.api.routes.health import router as health_router
 from app.api.routes.search import router as search_router
 from app.api.routes.sessions import router as sessions_router
+from app.api.routes.suggestions import router as suggestions_router
 from app.conversation.service import ConversationService
 from app.conversation.sqlite_store import SQLiteSessionStore
 from app.core.config import get_settings
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     application.include_router(search_router)
     application.include_router(chat_router)
     application.include_router(sessions_router)
+    application.include_router(suggestions_router)
 
     @application.get("/", include_in_schema=False)
     async def root() -> dict[str, str]:

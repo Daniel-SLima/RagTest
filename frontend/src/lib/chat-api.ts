@@ -49,6 +49,8 @@ export type ChatSource = {
   page: number | null
   chunk_count: number
   excerpt: string
+  title?: string | null
+  location_label?: string | null
 }
 
 export type ChatSafety = {
@@ -63,6 +65,16 @@ export type ChatAction = {
   url: string | null
   service_id: string | null
   suggested_in_days: number | null
+  due_date?: string | null
+  requires_host_app?: boolean
+  note?: string | null
+}
+
+export type ChatDisplay = {
+  status: "emergency" | "out_of_scope" | "verified" | "unverified" | "no_sources"
+  tone: "danger" | "neutral" | "success" | "warning"
+  title: string
+  message: string
 }
 
 export type ChatApiResponse = {
@@ -77,6 +89,7 @@ export type ChatApiResponse = {
   sources: ChatSource[]
   safety?: ChatSafety
   actions?: ChatAction[]
+  display?: ChatDisplay | null
 }
 
 export function buildChatRequest(input: ChatRequestInput): ChatApiRequest {
@@ -135,4 +148,17 @@ export async function sendChatMessage(
   }
 
   return body as ChatApiResponse
+}
+
+export type SuggestionsLoader = () => Promise<string[]>
+
+export function createSuggestionsLoader(baseUrl: string): SuggestionsLoader {
+  return async () => {
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/suggestions`)
+    if (!response.ok) {
+      return []
+    }
+    const body = (await response.json()) as { suggestions?: { text: string }[] }
+    return (body.suggestions ?? []).map((item) => item.text)
+  }
 }

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     qdrant_collection: str = "ragtest_documents"
 
     source_dir: Path = Path("data/source")
+    app_timezone: str = "America/Sao_Paulo"
     chunk_size: int = 1000
     chunk_overlap: int = 200
 

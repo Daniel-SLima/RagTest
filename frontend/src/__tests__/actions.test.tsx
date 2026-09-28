@@ -16,6 +16,7 @@ function response(overrides: Partial<ChatApiResponse>): ChatApiResponse {
     sources: [],
     safety: { triaged: false, rule_id: null, out_of_scope: false },
     actions: [],
+    display: { status: "verified", tone: "success", title: "Citações verificadas", message: "ok" },
     ...overrides,
   }
 }
@@ -35,7 +36,8 @@ describe("structured actions", () => {
         citation_ids: [],
         model: "triagem-deterministica",
         safety: { triaged: true, rule_id: "sangramento", out_of_scope: false },
-        actions: [{ type: "call_emergency", label: "Ligar para o SAMU (192)", url: "tel:192", service_id: null, suggested_in_days: null }],
+        display: { status: "emergency", tone: "danger", title: "Sinal de alerta", message: "Procure atendimento agora." },
+        actions: [{ type: "call_emergency", label: "Ligar para o SAMU (192)", url: "tel:192", service_id: null, suggested_in_days: null, due_date: null, requires_host_app: false, note: null }],
       }),
     )
 
@@ -52,13 +54,13 @@ describe("structured actions", () => {
     const sendChat = jest.fn().mockResolvedValue(
       response({
         actions: [
-          { type: "open_link", label: "Ver unidades de saúde", url: "seucuida://unidades", service_id: "mamografia", suggested_in_days: null },
-          { type: "schedule_reminder", label: "Mamografia de rastreamento: a cada 2 anos", url: null, service_id: "mamografia", suggested_in_days: 730 },
+          { type: "open_link", label: "Ver unidades de saúde", url: "seucuida://unidades", service_id: "mamografia", suggested_in_days: null, due_date: null, requires_host_app: true, note: "Este atalho abre a tela correspondente no app Se Cuida Mulher." },
+          { type: "schedule_reminder", label: "Mamografia de rastreamento: a cada 2 anos", url: null, service_id: "mamografia", suggested_in_days: 730, due_date: "2028-09-27", requires_host_app: false, note: null },
         ],
       }),
     )
 
-    await render(<App sendChat={sendChat} now={() => new Date(2026, 8, 28)} />)
+    await render(<App sendChat={sendChat} />)
     await ask("como agendo a mamografia")
 
     await waitFor(() =>
@@ -77,7 +79,7 @@ describe("structured actions", () => {
     const sendChat = jest.fn().mockResolvedValue(
       response({
         actions: [
-          { type: "open_link", label: "Ver unidades de saúde", url: "seucuida://unidades", service_id: "preventivo", suggested_in_days: null },
+          { type: "open_link", label: "Ver unidades de saúde", url: "seucuida://unidades", service_id: "preventivo", suggested_in_days: null, due_date: null, requires_host_app: true, note: "Este atalho abre a tela correspondente no app Se Cuida Mulher." },
         ],
       }),
     )
@@ -92,10 +94,14 @@ describe("structured actions", () => {
     expect(screen.getByText("Este atalho abre a tela correspondente no app Se Cuida Mulher.")).toBeTruthy()
   })
 
-  it("sends a suggested question from the welcome screen", async () => {
+  it("sends a suggested question loaded from the API", async () => {
     const sendChat = jest.fn().mockResolvedValue(response({}))
+    const loadSuggestions = jest.fn().mockResolvedValue(["Quando devo fazer o preventivo?"])
 
-    await render(<App sendChat={sendChat} />)
+    await render(<App sendChat={sendChat} loadSuggestions={loadSuggestions} />)
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Quando devo fazer o preventivo?" })).toBeTruthy(),
+    )
     await fireEvent.press(screen.getByRole("button", { name: "Quando devo fazer o preventivo?" }))
 
     await waitFor(() =>
@@ -110,6 +116,7 @@ describe("structured actions", () => {
     const legacy = response({})
     delete (legacy as Partial<ChatApiResponse>).safety
     delete (legacy as Partial<ChatApiResponse>).actions
+    delete (legacy as Partial<ChatApiResponse>).display
     const sendChat = jest.fn().mockResolvedValue(legacy)
 
     await render(<App sendChat={sendChat} />)

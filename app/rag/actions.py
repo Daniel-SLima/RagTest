@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date, timedelta
 from typing import Literal
 
 from app.catalog.services import ServiceCatalog
@@ -8,6 +9,8 @@ ActionType = Literal["open_link", "schedule_reminder", "call_emergency"]
 
 EMERGENCY_LABEL = "Ligar para o SAMU (192)"
 EMERGENCY_URL = "tel:192"
+HOST_APP_SCHEME = "seucuida://"
+HOST_APP_NOTE = "Este atalho abre a tela correspondente no app Se Cuida Mulher."
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,3 +71,34 @@ def build_actions(result: ChatResult, catalog: ServiceCatalog | None) -> list[Su
             for reminder in service.lembretes
         )
     return actions
+
+
+@dataclass(frozen=True, slots=True)
+class PresentedAction:
+    type: ActionType
+    label: str
+    url: str | None
+    service_id: str | None
+    suggested_in_days: int | None
+    due_date: date | None
+    requires_host_app: bool
+    note: str | None
+
+
+def present_action(action: SuggestedAction, *, today: date) -> PresentedAction:
+    requires_host_app = bool(action.url and action.url.startswith(HOST_APP_SCHEME))
+    due_date = (
+        today + timedelta(days=action.suggested_in_days)
+        if action.type == "schedule_reminder" and action.suggested_in_days is not None
+        else None
+    )
+    return PresentedAction(
+        type=action.type,
+        label=action.label,
+        url=action.url,
+        service_id=action.service_id,
+        suggested_in_days=action.suggested_in_days,
+        due_date=due_date,
+        requires_host_app=requires_host_app,
+        note=HOST_APP_NOTE if requires_host_app else None,
+    )

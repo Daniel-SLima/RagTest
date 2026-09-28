@@ -305,7 +305,7 @@ memória, sugestões). O trabalho passa a ser no contrato:
 | F2 | Avaliação v2 | 🟡 dataset pronto; falta executar |
 | F3 | Triagem de urgência + fora de escopo | ✅ (limiar a calibrar) |
 | F4 | Ações estruturadas | ✅ |
-| F5 | Backend headless | ⏳ em andamento |
+| F5 | Backend headless | 🟡 passo 2 ✅ (D042); falta contrato congelado |
 | F6 | Robustez e integração | ⏳ |
 | F7 | Usabilidade + monografia | ⏳ |
 

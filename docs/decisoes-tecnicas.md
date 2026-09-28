@@ -426,3 +426,16 @@ marca `safety.out_of_scope=true`. O valor só deve ser configurado após `ragtes
 `score_threshold` já existente no Qdrant; um limiar sem calibração poderia recusar perguntas válidas.
 **Impacto:** nenhum efeito até o limiar ser definido; `min_score` enviado na requisição continua
 tendo prioridade.
+
+
+## D042 — Backend headless: textos de exibição, datas e sugestões vêm da API
+
+**Data:** 2026-09-28
+**Decisão:** o `/v1/chat` passa a entregar `display` (status, tom, título, mensagem), rótulos das
+fontes (`title`, `location_label`) e ações com `due_date`, `requires_host_app` e `note`; novo
+`GET /v1/suggestions` (lista editável no catálogo). O cliente Expo foi reduzido a renderizar esses
+campos e fica congelado como cliente de referência.
+**Motivo:** o autor definiu que o produto é o backend e que o app final (Se Cuida Mulher) será
+reescrito; qualquer regra no front teria de ser duplicada em cada cliente.
+**Impacto:** contrato aditivo (campos novos opcionais para clientes antigos). `due_date` usa
+`APP_TIMEZONE` (fallback UTC−3 sem depender de tzdata).

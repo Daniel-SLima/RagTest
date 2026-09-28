@@ -15,9 +15,9 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Ordem headless — passo 2 (mover lógica de apresentação para a API) |
+| Etapa atual | Ordem headless — passo 2 ✅ concluído · próximo: passo 3 (contrato congelado) |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `280 passed`, `ruff` limpo · frontend Jest `18 passed`, `tsc` ok (28/09) |
+| Testes | backend `290 passed`, `ruff` limpo · frontend Jest `18 passed`, `tsc` ok (28/09) |
 | Qdrant | Inalterado (767 chunks). Catálogo **não sincronizado** — o agente não tem Docker nem acesso ao HuggingFace. |
 
 **Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
@@ -40,7 +40,9 @@
    `call_emergency` a partir do serviço **citado**; campo `actions` no `/v1/chat`.
 8. **Frontend**: cartão "Sinal de alerta", botões de ação, lembretes em memória ("Meus lembretes"
    com data), aviso para links `seucuida://`, perguntas sugeridas. Compatível com respostas antigas.
-9. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
+9. **Headless (D042)**: `display`, rótulos de fontes, ações com `due_date`/`requires_host_app`/`note`,
+   `GET /v1/suggestions`; Expo reduzido a renderizar esses campos.
+10. `scripts/avaliar_dominio.ps1`: sobe o Docker, sincroniza o Qdrant, roda dev/holdout e a
    calibração, salvando em `docs/resultados/`.
 
 ## 3. Pendências que dependem do autor (Theniels)
@@ -56,11 +58,10 @@
 
 1. ~~Rodar a avaliação v2~~ → depende do autor (seção 3). Quando existir `docs/resultados/avaliacao_*.txt`,
    registrar as métricas em `docs/avaliacao-retrieval.md` e analisar falhas só do dev.
-2. **Lógica de apresentação na API** (em andamento): `due_date` nos lembretes, `safety.severity/title/message`,
-   `requires_host_app` nas ações, `GET /v1/suggestions`, `display_status`. Depois simplificar o Expo
-   para só renderizar esses campos.
-3. **Contrato congelado**: `docs/contrato/openapi-v1.json` + teste de snapshot, cliente TS gerado,
-   `GET /v1/services`.
+2. ✅ **Lógica de apresentação na API** (D042): `display`, `sources[].title/location_label`,
+   `actions[].due_date/requires_host_app/note`, `GET /v1/suggestions`. Expo só renderiza.
+3. **Contrato congelado** (próximo): `docs/contrato/openapi-v1.json` + teste de snapshot, cliente TS
+   gerado a partir dele, `GET /v1/services` e `GET /v1/services/{id}`.
 4. **Autenticação** `X-API-Key` + rate limit por chave (desligável em desenvolvimento).
 5. **Teste ponta a ponta** na CI com Qdrant real (service container) e embeddings/LLM falsos.
 
@@ -89,7 +90,7 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
 - **2026-09-28 (3) — Claude (Cowork)**: diretriz backend headless registrada no plano, no AGENTS.md
-  e aqui; regra de atualizar plano/estado a cada etapa. Início da ordem headless.
+  e aqui; regra de atualizar plano/estado a cada etapa. Passo 2 da ordem headless concluído (D042).
 
 - **2026-09-28 — Claude (Cowork)**: análise do repositório e plano (`PLANO_FINALIZACAO_TCC.md`);
   Fase 0 parcial (`.gitattributes`, docs); Fase 1: auditoria de PII, D038 proposta, catálogo de

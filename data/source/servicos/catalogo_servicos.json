@@ -2,6 +2,28 @@
   "versao": "2026-09-28-v1",
   "revisado_em": "2026-09-28",
   "aviso": "Catálogo de demonstração. Onde e como agendar são orientações genéricas da Atenção Primária; substituir pelos fluxos reais do município ao integrar no Se Cuida Mulher.",
+  "sugestoes": [
+    {
+      "texto": "Quando devo fazer o preventivo?",
+      "topico": "rastreamento"
+    },
+    {
+      "texto": "Com que idade faço a mamografia?",
+      "topico": "rastreamento"
+    },
+    {
+      "texto": "Como agendo a mamografia?",
+      "topico": "agendamento"
+    },
+    {
+      "texto": "Estou grávida, e agora?",
+      "topico": "gestacao"
+    },
+    {
+      "texto": "Quais métodos contraceptivos o SUS oferece?",
+      "topico": "contracepcao"
+    }
+  ],
   "servicos": [
     {
       "id": "preventivo",

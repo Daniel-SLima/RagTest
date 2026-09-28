@@ -19,12 +19,20 @@ from app.core.config import Settings, get_settings
 from app.llm.base import LLMProvider
 from app.observability.audit import AuditEvent, AuditSink, safe_emit
 from app.observability.errors import NormalizedError, normalize_exception
-from app.rag.actions import build_actions
+from app.presentation import build_display, local_today, source_location_label, source_title
+from app.rag.actions import build_actions, present_action
 from app.rag.chat import ChatResult, answer_with_rag
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.retrieval_profiles import get_profile
 from app.rag.vector_store import QdrantVectorStore
-from app.schemas.chat import ChatAction, ChatRequest, ChatResponse, ChatSafety, ChatSource
+from app.schemas.chat import (
+    ChatAction,
+    ChatDisplay,
+    ChatRequest,
+    ChatResponse,
+    ChatSafety,
+    ChatSource,
+)
 
 router = APIRouter(prefix="/v1", tags=["chat"])
 
@@ -189,7 +197,12 @@ async def chat(
         )
 
     safety = result.safety
-    actions = build_actions(result, load_catalog_or_none(settings.source_dir))
+    today = local_today(settings.app_timezone)
+    actions = [
+        present_action(action, today=today)
+        for action in build_actions(result, load_catalog_or_none(settings.source_dir))
+    ]
+    display = build_display(result)
 
     return ChatResponse(
         session_id=response_session_id,
@@ -211,6 +224,8 @@ async def chat(
                 page=hit.page,
                 chunk_count=hit.chunk_count,
                 excerpt=" ".join(hit.content.split())[:500],
+                title=source_title(hit.source),
+                location_label=source_location_label(hit.page),
             )
             for index, hit in enumerate(result.sources, start=1)
         ],
@@ -226,7 +241,16 @@ async def chat(
                 url=action.url,
                 service_id=action.service_id,
                 suggested_in_days=action.suggested_in_days,
+                due_date=action.due_date,
+                requires_host_app=action.requires_host_app,
+                note=action.note,
             )
             for action in actions
         ],
+        display=ChatDisplay(
+            status=display.status,
+            tone=display.tone,
+            title=display.title,
+            message=display.message,
+        ),
     )

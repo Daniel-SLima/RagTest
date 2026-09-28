@@ -16,9 +16,11 @@ import {
   type ChatAction,
   ChatApiError,
   type ChatApiResponse,
+  createSuggestionsLoader,
+  type SuggestionsLoader,
   sendChatMessage,
 } from "./src/lib/chat-api"
-import { formatDate, type Reminder, reminderFromAction } from "./src/lib/reminders"
+import { formatIsoDate, type Reminder, reminderFromAction } from "./src/lib/reminders"
 
 type SendChat = typeof sendChatMessage
 
@@ -26,16 +28,8 @@ type AppProps = {
   apiBaseUrl?: string
   sendChat?: SendChat
   openUrl?: (url: string) => Promise<unknown>
-  now?: () => Date
+  loadSuggestions?: SuggestionsLoader
 }
-
-const SUGGESTED_QUESTIONS = [
-  "Quando devo fazer o preventivo?",
-  "Como agendo a mamografia?",
-  "Estou grávida, e agora?",
-]
-
-const APP_ONLY_LINK_NOTICE = "Este atalho abre a tela correspondente no app Se Cuida Mulher."
 
 const DEFAULT_API_BASE_URL =
   process.env.EXPO_PUBLIC_RAG_API_BASE_URL ?? "http://localhost:8000"
@@ -44,7 +38,7 @@ export default function App({
   apiBaseUrl = DEFAULT_API_BASE_URL,
   sendChat = sendChatMessage,
   openUrl = (url: string) => Linking.openURL(url),
-  now = () => new Date(),
+  loadSuggestions,
 }: AppProps) {
   const conversationRef = useRef<ScrollView>(null)
   const [draft, setDraft] = useState("")
@@ -54,6 +48,22 @@ export default function App({
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [reminders, setReminders] = useState<Reminder[]>([])
+  const [suggestions, setSuggestions] = useState<string[]>([])
+
+  useEffect(() => {
+    let active = true
+    const loader = loadSuggestions ?? createSuggestionsLoader(apiBaseUrl)
+    loader()
+      .then((items) => {
+        if (active) {
+          setSuggestions(items)
+        }
+      })
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [apiBaseUrl, loadSuggestions])
 
   const canSend = draft.trim().length >= 2 && !isLoading
 
@@ -99,24 +109,29 @@ export default function App({
     await requestAnswer(message)
   }
 
-  function handleOpenUrl(url: string) {
-    if (url.startsWith("seucuida://")) {
-      setNotice(APP_ONLY_LINK_NOTICE)
+  function handleOpenUrl(action: ChatAction) {
+    if (action.requires_host_app) {
+      setNotice(action.note ?? null)
+      return
+    }
+    if (!action.url) {
       return
     }
     setNotice(null)
-    void openUrl(url).catch(() => setNotice("Não foi possível abrir este atalho neste dispositivo."))
+    void openUrl(action.url).catch(() =>
+      setNotice("Não foi possível abrir este atalho neste dispositivo."),
+    )
   }
 
   function handleScheduleReminder(action: ChatAction) {
-    const reminder = reminderFromAction(action, now())
+    const reminder = reminderFromAction(action)
     if (!reminder) {
       return
     }
     setReminders((current) =>
       current.some((item) => item.id === reminder.id) ? current : [...current, reminder],
     )
-    setNotice(`Lembrete criado para ${formatDate(reminder.dueDate)}.`)
+    setNotice(`Lembrete criado para ${formatIsoDate(reminder.dueDate)}.`)
   }
 
   async function handleRetry() {
@@ -152,7 +167,7 @@ export default function App({
               nos documentos disponíveis no módulo RAG.
             </Text>
             <View style={styles.suggestions}>
-              {SUGGESTED_QUESTIONS.map((suggestion) => (
+              {suggestions.map((suggestion) => (
                 <Pressable
                   accessibilityLabel={suggestion}
                   accessibilityRole="button"
@@ -188,7 +203,6 @@ export default function App({
                   notice={notice}
                   onOpenUrl={handleOpenUrl}
                   onScheduleReminder={handleScheduleReminder}
-                  safety={response.safety}
                 />
               </View>
             ) : null}
@@ -198,7 +212,7 @@ export default function App({
                 <Text style={styles.messageLabel}>Meus lembretes</Text>
                 {reminders.map((reminder) => (
                   <Text key={reminder.id} style={styles.reminderText}>
-                    {`${reminder.label} — ${formatDate(reminder.dueDate)}`}
+                    {`${reminder.label} — ${formatIsoDate(reminder.dueDate)}`}
                   </Text>
                 ))}
               </View>
