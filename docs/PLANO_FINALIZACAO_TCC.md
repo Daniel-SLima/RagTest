@@ -1,9 +1,35 @@
 # Plano de Finalização — RagTest / Módulo RAG "Se Cuida Mulher"
 
-> Análise feita em 28/09/2026 sobre o GitHub (`Daniel-SLima/RagTest`) e sobre a pasta local `00-RagTest`.
+> Criado em 28/09/2026; atualizado a cada etapa. Análise inicial feita sobre o GitHub (`Daniel-SLima/RagTest`) e sobre a pasta local `00-RagTest`.
 > Objetivo: terminar o TCC sem perder a lógica da proposta do professor, com o menor retrabalho possível.
 
 ---
+
+## 0. Diretriz vigente — backend headless (definida pelo autor em 28/09/2026)
+
+- O **produto é o backend**. O módulo é experimental e o frontend atual (Expo) é só um
+  **cliente de referência**: prova que o contrato funciona, mas não recebe novas features.
+- A meta é que o futuro app (Se Cuida Mulher, em Flutter ou React Native) **só precise desenhar
+  telas**: toda regra (triagem, textos de segurança, datas de lembrete, links, sugestões, estados
+  de exibição) vem pronta da API.
+- Regra prática: se dois apps diferentes teriam que repetir a mesma lógica, ela pertence ao backend.
+- Ordem de trabalho a partir de 28/09:
+  1. rodar a avaliação v2 (autor, via `scripts/avaliar_dominio.ps1`);
+  2. mover para a API a lógica de apresentação que ficou no front;
+  3. contrato congelado: snapshot do OpenAPI testado + cliente gerado + `GET /v1/services`;
+  4. autenticação por chave de API e limite de requisições;
+  5. teste ponta a ponta com Qdrant real na CI (LLM e embeddings falsos).
+- Toda etapa concluída atualiza este plano (status) e o `docs/ESTADO_ATUAL.md`.
+
+### Aderência à stack sugerida pelo orientador
+
+| Sugestão | Situação |
+|---|---|
+| Python + FastAPI (API REST e orquestração) | ✅ |
+| Qdrant ou ChromaDB | ✅ Qdrant (vetores densos + esparsos) |
+| LangChain ou LlamaIndex | ✅ LangChain, uso seletivo: `Document`, `RecursiveCharacterTextSplitter`, `PromptTemplate`. A orquestração do fluxo (gate de citações, repair, triagem) é código próprio, decisão a justificar na monografia |
+| Flutter ou React Native, via REST ou WebSocket | ✅ React Native (Expo) via REST — cliente de referência |
+| Docker + Docker Compose | ✅ |
 
 ## 1. Veredito (resumo)
 
@@ -217,32 +243,28 @@ Mantém a decisão já tomada: **o backend sugere, o app integrador executa.**
 
 **Pronto quando:** "quero marcar o preventivo" devolve a resposta citada + `open_link` + `schedule_reminder`.
 
-### Fase 5 — Interface (semanas 5–6)
+### Fase 5 — Backend headless (substitui "Interface") — semanas 5–6
 
-No Expo existente (sem reescrever):
+O Expo fica congelado como cliente de referência (o que já existe: alerta, ações, lembretes em
+memória, sugestões). O trabalho passa a ser no contrato:
 
-1. **Chips de ação** abaixo da resposta, renderizados a partir de `actions`.
-2. **Lembretes reais** com `expo-notifications` (notificação local agendada) + tela "Meus lembretes"
-   (AsyncStorage). No web, fallback para arquivo `.ics`.
-3. **Links**: `Linking.openURL`; os links `seucuida://` mostram um aviso "disponível no app integrado".
-4. Cartão de **urgência** destacado (vermelho, botão 192) quando `safety.triaged=true`.
-5. Sugestões iniciais ("Quando fazer o preventivo?", "Como agendar mamografia?", "Estou grávida").
-6. Acessibilidade: tamanho de fonte, contraste AA, `accessibilityLabel` e linguagem simples.
-7. (Opcional) streaming via SSE para melhorar a latência percebida; o REST continua como padrão.
-8. (Opcional, para a defesa) reaproveitar da sidequest o painel "como funciona" (etapas do pipeline).
+1. Lógica de apresentação na API: `due_date` nos lembretes, `safety.severity/title/message`,
+   `requires_host_app` nas ações, `GET /v1/suggestions`, `display_status` do grounding.
+2. `GET /v1/services` e `GET /v1/services/{id}` (catálogo para o app montar telas próprias).
+3. Snapshot versionado do OpenAPI (`docs/contrato/openapi-v1.json`) + teste que falha se o contrato
+   mudar sem atualização explícita; cliente TypeScript gerado a partir dele.
 
-**Pronto quando:** o fluxo "pergunta → resposta citada → criar lembrete → notificação" funciona no Android (Expo Go) e na web.
+**Pronto quando:** o Expo não contém nenhuma regra de negócio além de renderizar a resposta.
 
-### Fase 6 — Pronto para integrar no Se Cuida Mulher (semana 7)
+### Fase 6 — Robustez e prontidão para integração (semana 7)
 
-1. `docs/INTEGRACAO.md`: contrato OpenAPI (`/docs`), autenticação, sessões, ações, códigos de erro,
-   exemplo em React Native **e** Flutter (o app real pode ser qualquer um dos dois).
-2. Pacote cliente TypeScript (`frontend/src/lib/chat-api.ts` extraído) para copiar para o app.
-3. `docker-compose.prod.yml` + deploy de **homologação** (VPS/Render/Railway) com HTTPS, para o professor testar.
-4. Script de resumo dos logs de auditoria → métricas operacionais (volume, grounded %, erros por provider).
-5. Tag `v1.0.0`.
+1. Autenticação por `X-API-Key` (uma chave por app integrador) e limite de requisições por chave.
+2. Teste ponta a ponta com Qdrant real na CI (service container), embeddings e LLM falsos.
+3. Avaliação como critério de aprovação da versão (métricas mínimas do dataset v2).
+4. `docs/INTEGRACAO.md` completo (já iniciado), `docker-compose.prod.yml` e deploy de homologação.
+5. (Opcional) streaming SSE sem quebrar o REST.
 
-**Pronto quando:** alguém de fora consegue integrar lendo só o `INTEGRACAO.md`.
+**Pronto quando:** alguém de fora integra lendo só o `INTEGRACAO.md` e o OpenAPI.
 
 ### Fase 7 — Validação com usuárias e monografia (semanas 7–8, em paralelo)
 
@@ -274,23 +296,21 @@ No Expo existente (sem reescrever):
 
 ---
 
-## 6. Cronograma
+## 6. Cronograma e status
 
-| Semana | Fase | Versão |
+| Fase | Conteúdo | Status (28/09) |
 |---|---|---|
-| 0 (2 dias) | F0 Consolidar | 0.7.0 |
-| 1 | F1 Corpus de domínio | 0.8.0 |
-| 2 | F2 Avaliação v2 (baseline) | 0.8.x |
-| 3–4 | F3 Segurança de domínio | 0.9.0 |
-| 4–5 | F4 Ações (links/lembretes) | 0.9.x |
-| 5–6 | F5 Interface | 0.10.0 |
-| 7 | F6 Integração + homologação | 1.0.0 |
-| 7–8 | F7 Usabilidade + monografia | — |
+| F0 | Consolidar repositório | 🟡 feito localmente; falta push/PRs |
+| F1 | Corpus de domínio (catálogo, CHATSCM liberado) | ✅ código; falta sincronizar Qdrant |
+| F2 | Avaliação v2 | 🟡 dataset pronto; falta executar |
+| F3 | Triagem de urgência + fora de escopo | ✅ (limiar a calibrar) |
+| F4 | Ações estruturadas | ✅ |
+| F5 | Backend headless | ⏳ em andamento |
+| F6 | Robustez e integração | ⏳ |
+| F7 | Usabilidade + monografia | ⏳ |
 
-Se o prazo apertar, a ordem de corte é: F5 itens 7–8 → F6 item 3 (deploy) → F2 RAGAS (fica só a rubrica manual).
-**Não corte** F1, F3 item 1 (urgência) nem F4 — são exatamente o que o professor pediu.
-
----
+Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RAGAS (fica a rubrica manual).
+**Não corte** triagem, ações, contrato congelado nem autenticação.
 
 ## 7. Riscos
 
@@ -304,10 +324,6 @@ Se o prazo apertar, a ordem de corte é: F5 itens 7–8 → F6 item 3 (deploy) �
 
 ---
 
-## 8. Próximas 5 ações (hoje)
+## 8. Próximas ações
 
-1. Apagar `.git/index.lock`, criar `.gitattributes`, rodar `git add --renormalize .` e commitar.
-2. Push de `feature/audit-0.7.0`, abrir o PR, esperar a CI e fazer o merge.
-3. Rodar o checklist de privacidade no CHATSCM e registrar a D038.
-4. Baixar as 3 diretrizes do INCA/MS de rastreamento para `data/source/rastreamento/`.
-5. Rascunhar `data/services/servicos.yaml` com preventivo, mamografia e pré-natal.
+Ver a seção 4 de `docs/ESTADO_ATUAL.md` (sempre atualizada).

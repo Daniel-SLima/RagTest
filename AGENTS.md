@@ -14,6 +14,9 @@ detalhe histórico; não atualize esses arquivos.
 
 ## Foco do projeto
 
+**Backend headless:** o produto é a API. O frontend Expo é cliente de referência congelado; não
+adicione features nele. Regra de negócio e textos de exibição ficam no backend.
+
 Módulo RAG para o app **Se Cuida Mulher**: letramento em saúde da mulher e orientação de
 agendamento (preventivo, mamografia, pré-natal, urgência). Toda tarefa deve aproximar o projeto
 dos objetivos da proposta do orientador (ver plano). **Não abra novas frentes de hardening,
@@ -24,8 +27,9 @@ providers ou modos de retrieval** sem que o `ESTADO_ATUAL.md` peça.
 - Mudança de contrato da API, segurança ou guardrail: especificar → TDD → revisão → documentar.
 - Demais mudanças: TDD (RED → GREEN), suíte completa, lint, commit pequeno.
 - Uma versão por fase do plano (0.8 domínio, 0.9 segurança + ações, 0.10 interface, 1.0 integração).
-- **Ao terminar cada tarefa (ou antes de encerrar a sessão), atualize `docs/ESTADO_ATUAL.md`**:
-  o que foi feito, evidência (saída de teste/comando), e a próxima tarefa exata.
+- **Regra obrigatória: ao terminar cada etapa, atualize `docs/ESTADO_ATUAL.md` e o status em
+  `docs/PLANO_FINALIZACAO_TCC.md`** (o que foi feito, evidência de teste/comando, próxima tarefa exata).
+  Não acumule várias etapas sem atualizar.
 
 ## Git
 
