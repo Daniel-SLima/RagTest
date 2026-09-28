@@ -110,3 +110,8 @@ async def enforce_chat_rate_limit(
             detail=RATE_LIMITED_DETAIL,
             headers={"Retry-After": str(decision.retry_after_seconds)},
         )
+
+
+def ensure_production_security(settings: Settings) -> None:
+    if settings.environment == "production" and not parse_api_keys(settings.api_keys):
+        raise RuntimeError("API_KEYS é obrigatório quando ENVIRONMENT=production.")

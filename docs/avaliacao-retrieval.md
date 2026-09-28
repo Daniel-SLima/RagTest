@@ -343,3 +343,17 @@ Menor score top-1 do domínio: 0.3527 (bolsa estourou). Maior fora de escopo: 0.
 de saúde particular"). **Sem separação limpa** (8 perguntas do domínio abaixo de 0.6233).
 Decisão: `RETRIEVAL_MIN_SCORE` continua desligado; recusa por limiar de similaridade densa não é
 viável neste corpus (ver D041). Alternativa futura: classificador de domínio leve ou regra de palavras-chave.
+
+
+## Holdout v3 (congelado em 2026-09-28, ainda não executado)
+
+`app/evaluation/datasets/dominio-v3-holdout.json`: 25 perguntas novas (sem repetir o v2), escritas
+antes de qualquer execução para substituir o holdout v2, que deixou de ser independente após a D047.
+Tópicos: rastreamento, agendamento, gestação, urgência, prevenção e contracepção.
+**Regra:** rodar uma vez por configuração final; não ajustar parâmetros olhando as falhas dele.
+
+## Critério de aprovação (D052)
+
+`ragtest-evaluate-retrieval --dataset dominio-v2-dev --mode hybrid --min-pass-rate 0.9 --min-mrr 0.75`
+termina com código 1 se o modo padrão cair abaixo desses mínimos no dev. Valores escolhidos a partir
+da execução de 28/09 (hybrid 1.000 / 0.833), com margem para variação de uma pergunta.

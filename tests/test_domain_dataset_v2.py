@@ -65,3 +65,17 @@ def test_blank_min_score_env_is_none(monkeypatch) -> None:
     monkeypatch.setenv("RETRIEVAL_MIN_SCORE", "")
 
     assert Settings(_env_file=None).retrieval_min_score is None
+
+
+def test_holdout_v3_is_fresh_and_valid() -> None:
+    v3 = _load("dominio-v3-holdout.json")
+    previous = _load("dominio-v2-dev.json") + _load("dominio-v2-holdout.json")
+
+    assert len(v3) == 25
+    assert {case["query"].lower() for case in v3}.isdisjoint(
+        {case["query"].lower() for case in previous}
+    )
+    for case in v3:
+        judgments = parse_source_judgments(case)
+        for source in judgments.acceptable_sources:
+            assert (SOURCE_DIR / source).is_file(), f"{case['id']}: {source}"

@@ -1,0 +1,40 @@
+
+Retrieval mode: hybrid
+Decomposition status: not-needed
+Multi-query used: no
+Retrieval queries: ['Como eu agendo a mamografia?']
+Grounded: yes
+Citation ids: [4]
+Citation retries: 1
+Citation validation attempts:
+  [1] stage=initial valid=no syntax=no coverage=0.000 blocks=0/5 reason=answer does not contain a verifiable source citation
+      sem cita├º├úo: 1. **Procure a UBS ou USF mais pr├│xima** ÔÇô DirijaÔÇæse ├á Unidade B├ísica de Sa├║de (UBS) ou ├á Unidade de Sa├║de da Fam├¡lia (USF) da sua regi├úo.
+      sem cita├º├úo: 2. **Verifique na recep├º├úo a disponibilidade** ÔÇô Na recep├º├úo, solicite a verifica├º├úo de vaga para mamografia. A pr├│pria UBS/USF n├úo realiza o exame, mas a equipe da recep├º├úo consulta o sistema e infor
+      sem cita├º├úo: 3. **Leve a documenta├º├úo necess├íria** ÔÇô Apresente o Cart├úo Nacional de Sa├║de (Cart├úo SUS), um documento de identifica├º├úo com foto e, quando exigido, a solicita├º├úo do exame emitida pelo profissional de
+      sem cita├º├úo: 4. **Observe o preparo** ÔÇô No dia do exame, evite usar desodorante, talco ou creme nas mamas e nas axilasÒÇÉ3ÔÇáL5-L7ÒÇæÒÇÉ4ÔÇáL17-L18ÒÇæ.
+      sem cita├º├úo: Essas etapas garantem o agendamento da mamografia no SUS.
+  [2] stage=repair valid=yes syntax=yes coverage=1.000 blocks=4/4 reason=-
+LLM generation metrics:
+  [1] total=0.67s load=- prompt_tokens=1746 prompt=0.08s output_tokens=280 output=0.59s rate=477.76 tok/s done_reason=stop
+  [2] total=0.84s load=- prompt_tokens=2430 prompt=0.15s output_tokens=330 output=0.69s rate=478.54 tok/s done_reason=stop
+Groq rate limits:
+  requests_rpd: 998/1000 reset=2m52.8s
+  tokens_tpm: 3401/8000 reset=34.492s
+Answer:
+**Como agendar a mamografia**
+
+1. **Procure a UBS ou a USF mais pr├│xima** ÔÇô DirijaÔÇæse ├á Unidade B├ísica de Sa├║de (UBS) ou ├á Unidade de Sa├║de da Fam├¡lia (USF) da sua regi├úo e solicite o agendamento.ÔÇ»[4]
+
+2. **Verifique na recep├º├úo a disponibilidade** ÔÇô Na recep├º├úo, pe├ºa que seja consultado o sistema para saber se h├í vaga para mamografia e em qual servi├ºo de imagem o exame ser├í realizado; a UBS/USF n├úo realiza o exame, apenas informa a vaga.ÔÇ»[4]
+
+3. **Leve a documenta├º├úo necess├íria** ÔÇô Apresente o Cart├úo Nacional de Sa├║de (Cart├úo SUS), um documento de identifica├º├úo com foto e, quando exigido, a solicita├º├úo do exame emitida pelo profissional de sa├║de.ÔÇ»[4]
+
+4. **Observe o preparo** ÔÇô No dia do exame, evite usar desodorante, talco ou creme nas mamas e nas axilas.ÔÇ»[4]
+
+Model: openai/gpt-oss-120b
+Sources:
+[1] chatscm/chatscm.docx (retrieval=0.6667, audience=-, grouped_chunks=1)
+[2] chatscm/chatscm.docx (retrieval=0.6250, audience=-, grouped_chunks=1)
+[3] servicos/catalogo_servicos.json (retrieval=0.5333, audience=mulher, grouped_chunks=1)
+[4] servicos/catalogo_servicos.json (retrieval=0.5333, audience=mulher, grouped_chunks=1)
+[5] chatscm/chatscm.docx (retrieval=0.4167, audience=-, grouped_chunks=1)

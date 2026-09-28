@@ -300,15 +300,15 @@ memória, sugestões). O trabalho passa a ser no contrato:
 
 | Fase | Conteúdo | Status (28/09) |
 |---|---|---|
-| F0 | Consolidar repositório | 🟡 feito localmente; falta push/PRs |
+| F0 | Consolidar repositório | ✅ 0.8.0 no `main` (PR #22) |
 | F1 | Corpus de domínio (catálogo, CHATSCM liberado) | ✅ código; falta sincronizar Qdrant |
 | F2 | Avaliação v2 | ✅ executada; hybrid 15/15 dev, 23/25 holdout (D046) |
 | F3 | Triagem de urgência + fora de escopo | ✅ (limiar a calibrar) |
 | F4 | Ações estruturadas | ✅ |
 | F5 | Backend headless | ✅ lógica na API (D042) + contrato congelado (D043) |
 
-| F6 | Robustez e integração | 🟡 auth + rate limit (D044) e e2e com Qdrant real (D045) ✅; faltam critério de avaliação e deploy |
-| F7 | Usabilidade + monografia | ⏳ |
+| F6 | Robustez e integração | ✅ auth (D044), e2e (D045), critério de avaliação (D052), homologação (D053, deploy real pendente) |
+| F7 | Usabilidade + monografia | 🟡 rubrica de respostas pronta para rodar; esqueleto da monografia criado |
 
 Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RAGAS (fica a rubrica manual).
 **Não corte** triagem, ações, contrato congelado nem autenticação.

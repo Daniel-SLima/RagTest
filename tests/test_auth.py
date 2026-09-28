@@ -135,3 +135,12 @@ def test_chat_rate_limit_per_client(make_client) -> None:
     assert blocked.headers["retry-after"] == "60"
     assert blocked.json()["detail"] == "Too many requests."
     assert any(event.error_code == "rate_limited" for event in sink.events)
+
+
+def test_production_requires_api_keys() -> None:
+    from app.security.auth import ensure_production_security
+
+    with pytest.raises(RuntimeError):
+        ensure_production_security(Settings(_env_file=None, environment="production", api_keys=None))
+    ensure_production_security(Settings(_env_file=None, environment="production", api_keys="a:b"))
+    ensure_production_security(Settings(_env_file=None, environment="development", api_keys=None))

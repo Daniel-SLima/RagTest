@@ -9,21 +9,18 @@
 
 ## 1. Onde estamos
 
-> **Diretriz vigente (28/09): backend headless.** O produto é a API; o Expo é cliente de referência
-> congelado. Detalhes na seção 0 do `PLANO_FINALIZACAO_TCC.md`.
+> **Diretriz vigente: backend headless.** O produto é a API; o Expo é cliente de referência congelado.
 
 | Item | Valor |
 |---|---|
-| Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Avaliação v2 + teste real do chat feitos (28/09). Corrigidos: recusa com citação falsa (D048) e charset (D049). Fallback da mamografia diagnosticado e corrigido (D050) — falta repetir o teste real |
-| Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `322 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
-| Avaliação v2 | hybrid: dev 15/15 (MRR 0.833), holdout 24/25 após D047 (não independente) · dense-rerank: 9/15 e 21/25 — ver `docs/avaliacao-retrieval.md` |
-| Qdrant | 773 chunks, sincronizado em 28/09 após a D047 |
-| GitHub | `feature/audit-0.7.0` e `feature/dominio-0.8.0` enviadas em 28/09 (até `59b35ab`); commits posteriores só locais |
+| Versão | **0.8.0** no `main` (PR #22 mesclado em 28/09) · trabalho novo em `feature/qualidade-0.9.0` |
+| Branch de trabalho | `feature/qualidade-0.9.0` (a partir do `main`), **não enviada ao GitHub** |
+| Testes | backend `332 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · holdout v2 24/25 (não independente) · **holdout v3 congelado, não executado** |
+| Teste real | mamografia agora `grounded=true` (D050/D051) — `docs/resultados/diagnostico_mamografia_2.txt` |
+| Qdrant | 773 chunks, sincronizado em 28/09 |
 
-**Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
-**Stack do orientador:** FastAPI ✅ · Qdrant ✅ · LangChain ✅ (uso seletivo) · React Native via REST ✅ · Docker Compose ✅.
+**Escopo do corpus:** só `data/source`. **Stack do orientador:** FastAPI ✅ · Qdrant ✅ · LangChain ✅ (uso seletivo) · React Native via REST ✅ · Docker Compose ✅.
 
 ## 2. O que já foi feito (verificado por teste)
 
@@ -52,46 +49,27 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [x] Avaliação v2, teste do chat, diagnóstico da mamografia e push inicial (28/09).
-- [ ] `git push`, criar o PR `feature/dominio-0.8.0` → `main` (ele já contém a 0.7.0), esperar a CI
-      verde e fazer o merge. O PR #21 (draft da 0.7.0) é fechado automaticamente como merged.
-      Depois `git switch main` e `git pull`. (CI da 0.7.0 falhava por testes dependentes do `.env` — dificuldade #38.)
-- [ ] Repetir o teste real: `docker compose up -d --build` e
-      `docker compose exec api ragtest-chat "Como eu agendo a mamografia?" > docs\resultados\diagnostico_mamografia_2.txt`.
+- [ ] `git push -u origin feature/qualidade-0.9.0`, abrir PR para `main`, esperar CI verde e fazer merge.
+- [ ] Rodar de novo `powershell -ExecutionPolicy Bypass -File scripts/avaliar_dominio.ps1`
+      (agora roda o **holdout v3** e o **critério de aprovação**).
+- [ ] Gerar a planilha da rubrica: ver `docs/avaliacao-respostas.md` (3 comandos) e pontuar as colunas.
+- [ ] (Quando quiser homologar) seguir `docs/DEPLOY.md` num servidor com domínio.
 - [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env`.
 
-## 4. Próxima tarefa para o agente (ordem headless)
+## 4. Próxima tarefa para o agente
 
-1. ~~Rodar a avaliação v2~~ → depende do autor (seção 3). Quando existir `docs/resultados/avaliacao_*.txt`,
-   registrar as métricas em `docs/avaliacao-retrieval.md` e analisar falhas só do dev.
-2. ✅ **Lógica de apresentação na API** (D042): `display`, `sources[].title/location_label`,
-   `actions[].due_date/requires_host_app/note`, `GET /v1/suggestions`. Expo só renderiza.
-3. ✅ **Contrato congelado** (D043): `docs/contrato/openapi-v1.json` + `tests/test_contract.py`,
-   `ragtest-export-openapi`, cliente TS gerado (`npm run generate:api`, checado na CI),
-   `GET /v1/services` e `GET /v1/services/{id}`.
-4. ✅ **Autenticação** (D044): `API_KEYS` + `X-API-Key` em `/v1/*`, limite `RATE_LIMIT_PER_MINUTE`
-   no `/v1/chat`, 401/429 normalizados e auditados.
-5. ✅ **Teste ponta a ponta** (D045): `tests/e2e/` (Qdrant em memória local; job `e2e-qdrant` na CI
-   com Qdrant real).
-
-**Próximas tarefas (depois da ordem headless):**
-
-6. ✅ Dificuldade #36 corrigida (D050). Conferir `diagnostico_mamografia_2.txt` quando existir.
-   Depois do merge, trabalhar em branch nova a partir da `main` (ex.: `feature/qualidade-0.9.0`).
-7. ✅ Avaliação v2 registrada; hybrid padrão (D046); calibração sem separação (limiar desligado);
-   recusas viram fora de escopo (D048).
-   Próximo: congelar **holdout v3** (perguntas novas) e transformar mínimos em critério de
-   aprovação (`--min-passrate`), usando o dev v2 como referência.
-8. Rubrica manual das respostas (`docs/avaliacao-respostas.md`) com o provider real.
-9. `docker-compose.prod.yml` + deploy de homologação com `API_KEYS` (F6 item 4).
-10. Monografia: capítulos de arquitetura, guardrails e resultados a partir de `decisoes-tecnicas.md`
-   (D001–D045), `dificuldades-tcc.md` e `docs/resultados/`.
+1. Quando existir o novo `docs/resultados/avaliacao_*.txt`: registrar holdout v3 e o resultado do
+   critério em `docs/avaliacao-retrieval.md` (sem ajustar nada olhando o v3).
+2. Quando existir `docs/resultados/respostas_modelo.csv` pontuado: calcular médias, taxas e
+   latência e preencher "Resultados" em `docs/avaliacao-respostas.md`.
+3. Falha conhecida do retrieval: "de quanto em quanto tempo repito o preventivo" (holdout v2).
+   Só investigar com perguntas do **dev**; considerar criar um caso dev equivalente.
+4. Monografia: usar `docs/monografia/ESQUELETO.md` como índice de evidências.
+5. Opcional (defesa): adaptador `BaseRetriever` do LangChain sobre o retriever próprio.
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
-
-**Observação para agentes em ambiente remoto:** `pytest tests -p no:cacheprovider --ignore=.pytest_cache`
-(a pasta `.pytest_cache` pode estar bloqueada); o frontend precisa de `npm install` próprio fora da
-pasta do usuário se o `node_modules` dela for do Windows.
+Ambiente remoto: `pytest tests -p no:cacheprovider --ignore=.pytest_cache`; o `tests/conftest.py`
+isola o `.env` local (chaves falsas).
 
 ## 5. Como rodar (resumo)
 
@@ -103,6 +81,10 @@ pasta do usuário se o `node_modules` dela for do Windows.
 
 ## 6. Push / GitHub
 
+0.8.0 mesclada no `main` pelo PR #22 (28/09); o PR #21 da 0.7.0 foi absorvido por ele.
+
+### Histórico
+
 Em 28/09 o agente **não conseguiu fazer push**: o ambiente dele não tem credencial do GitHub, e o
 terminal do Windows só aceita cliques. O autor deve rodar no PowerShell, na pasta do projeto:
 
@@ -113,6 +95,9 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-09-28 (6) — Claude (Cowork)**: 0.8.0 mesclada; branch `feature/qualidade-0.9.0`: citações
+  【n†L】 (D051), critério mínimo + holdout v3 (D052), homologação com Caddy (D053), coleta de
+  respostas para rubrica, esqueleto da monografia.
 - **2026-09-28 (5) — Claude (Cowork)**: diagnóstico da mamografia → gate entende títulos em negrito e
   hierarquia de listas (D050).
 - **2026-09-28 (4) — Claude (Cowork)**: avaliação v2 analisada (hybrid padrão, D046/D047); teste real do

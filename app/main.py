@@ -15,13 +15,14 @@ from app.conversation.sqlite_store import SQLiteSessionStore
 from app.core.config import get_settings
 from app.observability.audit import JsonLogAuditSink
 from app.observability.middleware import RequestContextMiddleware
-from app.security.auth import require_api_client
+from app.security.auth import ensure_production_security, require_api_client
 from app.services.qdrant_service import QdrantService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
+    ensure_production_security(settings)
     app.state.qdrant = QdrantService(settings)
     app.state.session_store = SQLiteSessionStore(settings.session_db_path)
     await app.state.session_store.initialize()

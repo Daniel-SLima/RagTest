@@ -548,3 +548,37 @@ introdução citada terminada em ":". As mesmas isenções valem para a poda det
 (dificuldade #36), embora todas as afirmações tivessem fonte.
 **Impacto:** o gate continua exigindo citação em toda afirmação isolada; testes negativos cobrem
 passo com subitens sem citação, item longo e introdução sem citação.
+
+
+## D051 — Normalizar citações do GPT-OSS com referência de linha
+
+**Data:** 2026-09-28
+**Mudança:** `normalize_citation_markup` converte `【n†...】` (ex.: `【3†L5-L7】`) em `[n]`, além do
+`【n】` já tratado desde a dificuldade #21. Marcadores sem número não são alterados.
+**Motivo:** no teste real da mamografia a primeira geração usou esse formato e foi reprovada inteira
+por "sem citação verificável", forçando um repair desnecessário.
+**Impacto:** menos chamadas de repair com o provider Groq; IDs continuam validados contra as fontes.
+
+
+## D052 — Critério mínimo de retrieval e holdout v3
+
+**Data:** 2026-09-28
+**Mudança:** `ragtest-evaluate-retrieval` aceita `--min-pass-rate` e `--min-mrr` e sai com código 1
+quando algum modo avaliado fica abaixo (`app/evaluation/gate.py`). O script de avaliação aplica
+PassRate ≥ 0.90 e MRR ≥ 0.75 ao hybrid no dev v2 e roda o novo holdout v3 congelado.
+**Motivo:** transformar a avaliação em critério de aprovação da versão (F6) e recuperar uma medida
+independente depois que o holdout v2 foi usado para diagnóstico.
+**Impacto:** o critério roda no ambiente com os modelos reais (Docker), não na CI, porque depende do
+modelo de embeddings baixado.
+
+
+## D053 — Homologação com sobreposição de produção e Caddy
+
+**Data:** 2026-09-28
+**Mudança:** `docker-compose.prod.yml` fecha as portas do Qdrant e da API, adiciona Caddy com HTTPS
+automático (`deploy/Caddyfile`), força `ENVIRONMENT=production` e exige `API_KEYS`. A API também
+recusa subir em produção sem chaves (`ensure_production_security`). Guia em `docs/DEPLOY.md`.
+**Motivo:** F6 — permitir que o orientador e o app integrador testem a API fora do computador do
+autor sem expor o banco vetorial nem aceitar requisições anônimas.
+**Impacto:** o ambiente de desenvolvimento não muda. A sobreposição usa `!reset` (Docker Compose
+2.24+). Validação com `docker compose config` e deploy real ficam com o autor.

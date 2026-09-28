@@ -42,3 +42,13 @@ def test_validate_citations_accepts_unicode_bracket_variant() -> None:
 
     assert result.valid is True
     assert result.citation_ids == (1,)
+
+
+def test_normalizes_gpt_oss_line_reference_citations() -> None:
+    answer = "Evite desodorante no dia do exame【3†L5-L7】【4†L17-L18】."
+
+    assert normalize_citation_markup(answer) == "Evite desodorante no dia do exame[3][4]."
+
+
+def test_does_not_normalize_non_numeric_brackets() -> None:
+    assert normalize_citation_markup("Texto【nota】.") == "Texto【nota】."

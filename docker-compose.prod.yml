@@ -1,0 +1,32 @@
+services:
+  qdrant:
+    ports: !reset []
+
+  api:
+    ports: !reset []
+    expose:
+      - "8000"
+    environment:
+      ENVIRONMENT: production
+      API_KEYS: "${API_KEYS:?Defina API_KEYS no .env antes do deploy}"
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      RAGTEST_DOMAIN: "${RAGTEST_DOMAIN:?Defina RAGTEST_DOMAIN no .env}"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
