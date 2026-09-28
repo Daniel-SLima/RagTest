@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 _CITATION_PATTERN = re.compile(r"\[(\d+)\]")
-_UNICODE_CITATION_PATTERN = re.compile(r"【(\d+)】")
+_UNICODE_CITATION_PATTERN = re.compile(r"【(\d+)(?:†[^】]*)?】")
 
 
 @dataclass(frozen=True, slots=True)

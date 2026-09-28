@@ -548,3 +548,13 @@ introdução citada terminada em ":". As mesmas isenções valem para a poda det
 (dificuldade #36), embora todas as afirmações tivessem fonte.
 **Impacto:** o gate continua exigindo citação em toda afirmação isolada; testes negativos cobrem
 passo com subitens sem citação, item longo e introdução sem citação.
+
+
+## D051 — Normalizar citações do GPT-OSS com referência de linha
+
+**Data:** 2026-09-28
+**Mudança:** `normalize_citation_markup` converte `【n†...】` (ex.: `【3†L5-L7】`) em `[n]`, além do
+`【n】` já tratado desde a dificuldade #21. Marcadores sem número não são alterados.
+**Motivo:** no teste real da mamografia a primeira geração usou esse formato e foi reprovada inteira
+por "sem citação verificável", forçando um repair desnecessário.
+**Impacto:** menos chamadas de repair com o provider Groq; IDs continuam validados contra as fontes.

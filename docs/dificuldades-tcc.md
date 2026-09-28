@@ -491,6 +491,10 @@ de lista sem citação é aceito quando **todos** os subitens informativos dele 
 curtos (até 10 palavras) herdam a citação de uma introdução citada terminada em ":". Itens longos,
 passos com subitens sem citação e introduções sem citação continuam reprovados.
 
+Validação (`docs/resultados/diagnostico_mamografia_2.txt`): após a D050 a pergunta passou a
+responder `grounded=true` (4/4 blocos citados no repair). A primeira tentativa revelou outro formato
+de citação do GPT-OSS, `【3†L5-L7】`, que o normalizador não reconhecia; corrigido na D051.
+
 Aprendizado técnico: um validador estrutural precisa entender a hierarquia do Markdown que o modelo
 realmente produz; contar linhas isoladas pune respostas bem organizadas e empurra o sistema para o
 fallback.
