@@ -570,3 +570,15 @@ PassRate ≥ 0.90 e MRR ≥ 0.75 ao hybrid no dev v2 e roda o novo holdout v3 co
 independente depois que o holdout v2 foi usado para diagnóstico.
 **Impacto:** o critério roda no ambiente com os modelos reais (Docker), não na CI, porque depende do
 modelo de embeddings baixado.
+
+
+## D053 — Homologação com sobreposição de produção e Caddy
+
+**Data:** 2026-09-28
+**Mudança:** `docker-compose.prod.yml` fecha as portas do Qdrant e da API, adiciona Caddy com HTTPS
+automático (`deploy/Caddyfile`), força `ENVIRONMENT=production` e exige `API_KEYS`. A API também
+recusa subir em produção sem chaves (`ensure_production_security`). Guia em `docs/DEPLOY.md`.
+**Motivo:** F6 — permitir que o orientador e o app integrador testem a API fora do computador do
+autor sem expor o banco vetorial nem aceitar requisições anônimas.
+**Impacto:** o ambiente de desenvolvimento não muda. A sobreposição usa `!reset` (Docker Compose
+2.24+). Validação com `docker compose config` e deploy real ficam com o autor.
