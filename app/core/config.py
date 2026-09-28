@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     sparse_embedding_model: str = "Qdrant/bm25"
     sparse_embedding_language: str = "portuguese"
 
-    retrieval_mode: Literal["dense", "dense-rerank", "hybrid"] = "dense-rerank"
+    retrieval_mode: Literal["dense", "dense-rerank", "hybrid"] = "hybrid"
     retrieval_merge_same_page: bool = True
     retrieval_max_group_chars: int = 5000
     retrieval_auto_decompose: bool = True

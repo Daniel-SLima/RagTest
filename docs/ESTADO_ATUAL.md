@@ -15,10 +15,11 @@
 | Item | Valor |
 |---|---|
 | Versão | **0.8.0** (backend e frontend) |
-| Etapa atual | Ordem headless — passos 2 a 5 ✅ · aguardando a avaliação v2 do autor |
+| Etapa atual | Avaliação v2 executada (28/09): hybrid virou padrão (D046), contexto nos chunks do catálogo (D047) · aguardando nova sincronização |
 | Branch de trabalho | `feature/dominio-0.8.0` (a partir de `feature/audit-0.7.0`) |
-| Testes | backend `306 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
-| Qdrant | Inalterado (767 chunks). Catálogo **não sincronizado** — o agente não tem Docker nem acesso ao HuggingFace. |
+| Testes | backend `307 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Avaliação v2 | hybrid: dev 15/15 (MRR 0.833), holdout 23/25 (MRR 0.853) · dense-rerank: 9/15 e 21/25 — ver `docs/avaliacao-retrieval.md` |
+| Qdrant | 773 chunks sincronizados em 28/09 (catálogo incluído). A D047 muda 2–4 chunks do catálogo: precisa de nova sincronização. |
 
 **Escopo do corpus (decisão do autor):** só os documentos de `data/source`.
 **Stack do orientador:** FastAPI ✅ · Qdrant ✅ · LangChain ✅ (uso seletivo) · React Native via REST ✅ · Docker Compose ✅.
@@ -50,12 +51,12 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [ ] Rodar `scripts/avaliar_dominio.ps1` (corrigido em 28/09 após falha no PowerShell 5.1 — dificuldade #33) no PowerShell (Docker Desktop ligado). Se o
-      PowerShell bloquear scripts: `powershell -ExecutionPolicy Bypass -File scripts/avaliar_dominio.ps1`.
-- [ ] Se a calibração sugerir um valor, colocar `RETRIEVAL_MIN_SCORE=<valor>` no `.env` e
-      `docker compose up -d`.
-- [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env` (ex.: `seucuida:<chave-longa>`).
-- [ ] (Opcional) Testar o cliente de referência: `cd frontend && npm install && npm run web`.
+- [x] Rodar `scripts/avaliar_dominio.ps1` (28/09, resultado em `docs/resultados/`).
+- [ ] **Rodar o script de novo** para sincronizar os chunks alterados do catálogo (D047) e recriar a
+      API com `RETRIEVAL_MODE=hybrid` (o `.env` local já foi alterado pelo agente, só essa linha).
+      O holdout dessa rodada não conta como independente.
+- [ ] (Opcional) Teste do chat com o provider real — comandos no histórico da conversa / seção 5.
+- [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env`.
 - [ ] `git push -u origin feature/audit-0.7.0 feature/dominio-0.8.0` e abrir os PRs (seção 6).
 
 ## 4. Próxima tarefa para o agente (ordem headless)
@@ -74,8 +75,9 @@
 
 **Próximas tarefas (depois da ordem headless):**
 
-6. Com a avaliação v2 em mãos: registrar métricas, analisar falhas do dev, calibrar
-   `RETRIEVAL_MIN_SCORE` e transformar os mínimos em critério de aprovação (F6 item 3).
+6. ✅ Avaliação v2 registrada; hybrid padrão (D046); calibração sem separação (limiar desligado).
+   Próximo: congelar **holdout v3** (perguntas novas) e transformar mínimos em critério de
+   aprovação (`--min-passrate`), usando o dev v2 como referência.
 7. Rubrica manual das respostas (`docs/avaliacao-respostas.md`) com o provider real.
 8. `docker-compose.prod.yml` + deploy de homologação com `API_KEYS` (F6 item 4).
 9. Monografia: capítulos de arquitetura, guardrails e resultados a partir de `decisoes-tecnicas.md`

@@ -302,7 +302,7 @@ memória, sugestões). O trabalho passa a ser no contrato:
 |---|---|---|
 | F0 | Consolidar repositório | 🟡 feito localmente; falta push/PRs |
 | F1 | Corpus de domínio (catálogo, CHATSCM liberado) | ✅ código; falta sincronizar Qdrant |
-| F2 | Avaliação v2 | 🟡 dataset pronto; falta executar |
+| F2 | Avaliação v2 | ✅ executada; hybrid 15/15 dev, 23/25 holdout (D046) |
 | F3 | Triagem de urgência + fora de escopo | ✅ (limiar a calibrar) |
 | F4 | Ações estruturadas | ✅ |
 | F5 | Backend headless | ✅ lógica na API (D042) + contrato congelado (D043) |

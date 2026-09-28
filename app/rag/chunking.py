@@ -20,4 +20,9 @@ def split_documents(
         chunk_overlap=chunk_overlap,
         add_start_index=True,
     )
-    return splitter.split_documents(documents)
+    chunks = splitter.split_documents(documents)
+    for chunk in chunks:
+        context = chunk.metadata.get("chunk_context")
+        if context and not chunk.page_content.startswith(context):
+            chunk.page_content = f"{context}\n{chunk.page_content}"
+    return chunks

@@ -182,6 +182,7 @@ def load_service_catalog_documents(path: Path, source_dir: Path) -> list[Documen
                 "audience": service.audience,
                 "doc_type": "servico",
                 "service_id": service.id,
+                "chunk_context": f"Serviço: {service.nome}",
                 "catalog_version": catalog.versao,
                 "extraction_method": "catalog",
             },

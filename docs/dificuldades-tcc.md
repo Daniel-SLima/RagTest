@@ -431,3 +431,23 @@ Correção: o script passou a executar cada comando via `cmd /c "... 2>&1"`, dec
 
 Aprendizado técnico: em automação no Windows, sucesso de programas nativos deve ser verificado pelo
 código de saída, não pela presença de texto em stderr.
+
+
+## 34. O modo padrão de retrieval acertou só 60% das perguntas do domínio
+
+Planejado: avaliar o dataset de domínio v2 esperando manter o `dense-rerank` (D006) como padrão.
+
+Observado: dense-rerank teve PassRate@5 0.600 no dev e 0.840 no holdout; hybrid teve 1.000 e 0.920.
+As falhas do denso eram perguntas coloquiais respondidas pelo FAQ do CHATSCM ("onde eu marco o
+preventivo", "achei um caroço no peito", "o que é o DIU e dói pra colocar?").
+
+Diagnóstico: o benchmark que escolheu o dense-rerank usava perguntas bem formadas sobre documentos
+oficiais. Perguntas de usuária dependem de termos exatos ("preventivo", "implanon") que o BM25
+recupera melhor que o modelo denso pequeno. Além disso, a calibração mostrou que o score denso não
+separa perguntas do domínio de perguntas fora de escopo.
+
+Correção: hybrid como padrão (D046); limiar de fora de escopo desligado; contexto do serviço em
+todos os chunks do catálogo (D047).
+
+Aprendizado técnico: a estratégia de retrieval precisa ser escolhida com perguntas representativas
+do público real; uma avaliação com perguntas "de especialista" pode indicar o modo errado.

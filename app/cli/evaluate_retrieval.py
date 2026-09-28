@@ -333,7 +333,7 @@ async def run(
     try:
         print("RagTest retrieval benchmark")
         print(
-            f"Dataset: {EVALUATION_DATASET_VERSION} | "
+            f"Dataset: {dataset or EVALUATION_DATASET_VERSION} | "
             f"Cases: {len(cases)} | k={limit} | source={source_label}"
         )
         print(f"Label semantics: {label_mode}")

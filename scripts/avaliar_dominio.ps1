@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Continue"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
 $stamp = Get-Date -Format "yyyy-MM-dd_HHmm"
@@ -12,7 +13,7 @@ function Log($text) {
 
 function Run($title, $cmd) {
     Log "`n===== $title ====="
-    cmd /c "$cmd 2>&1" | ForEach-Object { Log "$_" }
+    cmd /c "chcp 65001>NUL & $cmd 2>&1" | ForEach-Object { Log "$_" }
     if ($LASTEXITCODE -ne 0) {
         Log "FALHOU: '$title' terminou com codigo $LASTEXITCODE"
         Log "Resultado parcial salvo em $out"

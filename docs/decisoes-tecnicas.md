@@ -483,3 +483,30 @@ funciona com um banco vetorial real sem depender de rede externa, cota de LLM ou
 **Impacto:** regressões de integração (payload do Qdrant, `service_id` nas fontes, dependências
 da rota) passam a quebrar a CI. A qualidade semântica continua medida pela avaliação v2 com os
 modelos reais.
+
+
+## D046 — Hybrid (denso + BM25) passa a ser o modo padrão de retrieval
+
+**Data:** 2026-09-28
+**Mudança:** `RETRIEVAL_MODE` padrão de `dense-rerank` para `hybrid` (config, docker-compose,
+`.env.example` e `.env` local).
+**Motivo:** no dataset de domínio v2, hybrid obteve PassRate@5 1.000 no dev (dense-rerank 0.600) e
+0.920 no holdout (dense-rerank 0.840), com MRR 0.833/0.853 contra 0.567/0.770. A escolha foi feita
+pelo dev; o holdout confirmou. A D006 continua válida para o corpus genérico antigo, onde hybrid
+tinha MRR menor, mas o domínio do TCC é a prioridade (perguntas coloquiais com termos exatos).
+**Impacto:** cada consulta passa a usar também o embedding esparso BM25 (já indexado); nenhuma
+reindexação é necessária. Os perfis dense e dense-rerank continuam disponíveis para comparação.
+**Complemento à D041:** a calibração não encontrou limiar que separe domínio e fora de escopo;
+`RETRIEVAL_MIN_SCORE` permanece desligado.
+
+
+## D047 — Contexto do serviço em todos os chunks do catálogo
+
+**Data:** 2026-09-28
+**Mudança:** documentos do catálogo levam `chunk_context="Serviço: <nome>"` e `split_documents`
+prefixa esse contexto em todo chunk que não começa com ele.
+**Motivo:** o serviço `preventivo` gerava 2 chunks e o segundo (documentos e preparo) não citava o
+serviço, falhando em "o que evitar antes do preventivo".
+**Impacto:** os pontos do catálogo mudam (id depende do conteúdo); `ragtest-sync-ingestion --apply`
+troca os chunks afetados sem recriar a collection. Mudança motivada por falha do holdout v2 — ver
+a nota metodológica em `avaliacao-retrieval.md`.

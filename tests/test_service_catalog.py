@@ -102,3 +102,19 @@ def test_real_catalog_covers_core_domain() -> None:
 
     assert {"preventivo", "mamografia", "prenatal", "urgencia_obstetrica"} <= ids
     assert all(service.fontes for service in catalog.servicos)
+
+
+def test_every_catalog_chunk_keeps_the_service_context() -> None:
+    from app.rag.chunking import split_documents
+
+    report = load_source_documents(REAL_CATALOG.parent)
+    catalog_docs = [doc for doc in report.documents if doc.metadata.get("doc_type") == "servico"]
+    chunks = split_documents(catalog_docs, chunk_size=1000, chunk_overlap=200)
+
+    preventivo = [chunk for chunk in chunks if chunk.metadata["service_id"] == "preventivo"]
+    assert len(preventivo) >= 2
+    assert all(
+        chunk.page_content.startswith("Serviço: Exame preventivo do câncer do colo do útero")
+        for chunk in preventivo
+    )
+    assert all(chunk.metadata["chunk_context"] for chunk in preventivo)
