@@ -68,7 +68,13 @@ documental suficiente. Não buscar nem adicionar fontes externas sem pedido expl
 
 ## 6. Push / GitHub
 
-(atualizado ao final da sessão)
+Em 28/09 o agente **não conseguiu fazer push**: o ambiente dele não tem credencial do GitHub, e o
+terminal do Windows só aceita cliques. O autor deve rodar no PowerShell, na pasta do projeto:
+
+    git push -u origin feature/audit-0.7.0 feature/dominio-0.8.0
+
+Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, PR
+`feature/dominio-0.8.0` → `main`. Quando feito, trocar esta seção por "branches enviadas em DD/MM".
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
