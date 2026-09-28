@@ -18,7 +18,7 @@ def test_session_defaults_are_bounded_and_local() -> None:
 
 
 def test_release_version_is_0_6_0() -> None:
-    assert Settings(_env_file=None).app_version == "0.6.0"
+    assert Settings(_env_file=None).app_version == "0.8.0"
 
 
 @pytest.mark.parametrize(
