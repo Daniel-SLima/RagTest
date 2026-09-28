@@ -508,3 +508,21 @@ Correção: `charset=utf-8` em todas as respostas JSON (D049).
 
 Aprendizado técnico: declarar o charset é parte do contrato; clientes diferentes assumem padrões
 diferentes quando ele falta.
+
+## 38. Testes passavam no computador do autor e falhavam na CI
+
+Planejado: abrir o PR da 0.7.0 com a suíte verde localmente.
+
+Observado: na CI, `test_validation_error_is_a_single_pre_route_chat_failed` e
+`test_request_id_exists_on_validation_error` receberam 503 em vez de 422.
+
+Diagnóstico: esses testes usam o app real. Localmente o `.env` tinha chave de LLM; na CI não havia,
+então a dependência do provider falhava (503) antes da validação do corpo (422). Os testes dependiam
+do ambiente da máquina.
+
+Correção: `tests/conftest.py` fixa variáveis de ambiente falsas (provider, chaves fictícias,
+`API_KEYS` vazio) antes de importar o app. Além de tornar a suíte hermética, garante que nenhum
+teste use a chave real do autor.
+
+Aprendizado técnico: rodar a suíte num ambiente limpo (como a CI) é o único jeito de provar que
+ela não depende de configuração local.
