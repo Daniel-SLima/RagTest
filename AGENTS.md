@@ -31,6 +31,17 @@ providers ou modos de retrieval** sem que o `ESTADO_ATUAL.md` peça.
   `docs/PLANO_FINALIZACAO_TCC.md`** (o que foi feito, evidência de teste/comando, próxima tarefa exata).
   Não acumule várias etapas sem atualizar.
 
+## Divisão de trabalho (autor × agente)
+
+- O agente trabalha na pasta local, numa branch por etapa (`feature/<tema>-<versão>`), com TDD,
+  commits pequenos e documentação atualizada a cada etapa.
+- O autor faz o que exige credenciais ou a máquina dele: `git push`, abrir e mesclar PRs no GitHub,
+  rodar Docker, avaliações com os modelos reais e chamadas ao provider de LLM.
+- O agente escreve em `docs/ESTADO_ATUAL.md` (seção 3) os comandos exatos que o autor precisa rodar;
+  as saídas voltam para `docs/resultados/`, onde o agente as lê.
+- Fluxo de branch: 1 PR por branch → CI verde (lint, test, e2e-qdrant, frontend) → merge no `main`
+  → nova branch a partir do `main` atualizado.
+
 ## Git
 
 - Comece por `git status --short --branch` e `git log --oneline -5`.

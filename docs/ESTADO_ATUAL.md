@@ -7,16 +7,30 @@
 
 ---
 
+## 0. Decisões do autor que valem para todo o projeto
+
+| Data | Decisão |
+|---|---|
+| 28/09 | Não refazer o projeto; reorientar para o domínio do orientador (`PLANO_FINALIZACAO_TCC.md`). |
+| 28/09 | Corpus = apenas os documentos de `data/source`; sem fontes externas sem pedido explícito. |
+| 28/09 | CHATSCM liberado para desenvolvimento e avaliação (D038). |
+| 28/09 | **Backend headless**: o produto é a API; o Expo é cliente de referência congelado; toda regra e texto de exibição ficam no backend (D042). |
+| 28/09 | Stack do orientador mantida (FastAPI, Qdrant, LangChain, React Native via REST, Docker). |
+| 28/09 | Documentação atualizada a cada etapa (este arquivo + status no plano). |
+| 28/09 | Divisão de trabalho autor × agente e fluxo de branches/PRs: ver `AGENTS.md`. |
+| 28/09 | Metodologia: ajustes só com o dev; holdouts são rodados uma vez e nunca usados para ajustar (v2 consumido, v3 independente). |
+
 ## 1. Onde estamos
 
 > **Diretriz vigente: backend headless.** O produto é a API; o Expo é cliente de referência congelado.
 
 | Item | Valor |
 |---|---|
-| Versão | **0.8.0** no `main` (PR #22 mesclado em 28/09) · trabalho novo em `feature/qualidade-0.9.0` |
-| Branch de trabalho | `feature/qualidade-0.9.0` (a partir do `main`), **não enviada ao GitHub** |
-| Testes | backend `332 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
-| Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · holdout v2 24/25 (não independente) · **holdout v3 congelado, não executado** |
+| Versão | `main` com 0.8.0 + 0.9.0 (PRs #22 e #23) · trabalho novo em `feature/respostas-0.9.1` |
+| Branch de trabalho | `feature/respostas-0.9.1` (a partir do `main`), **não enviada ao GitHub** |
+| Testes | backend `334 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · **holdout v3 24/25 (MRR 0.801, independente)** · critério PASS |
+| Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas; 2 fallbacks de agendamento em diagnóstico; rubrica manual pendente |
 | Teste real | mamografia agora `grounded=true` (D050/D051) — `docs/resultados/diagnostico_mamografia_2.txt` |
 | Qdrant | 773 chunks, sincronizado em 28/09 |
 
@@ -49,23 +63,23 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [ ] `git push -u origin feature/qualidade-0.9.0`, abrir PR para `main`, esperar CI verde e fazer merge.
-- [ ] Rodar de novo `powershell -ExecutionPolicy Bypass -File scripts/avaliar_dominio.ps1`
-      (agora roda o **holdout v3** e o **critério de aprovação**).
-- [ ] Gerar a planilha da rubrica: ver `docs/avaliacao-respostas.md` (3 comandos) e pontuar as colunas.
-- [ ] (Quando quiser homologar) seguir `docs/DEPLOY.md` num servidor com domínio.
-- [ ] Antes de expor a API fora do seu computador, definir `API_KEYS` no `.env`.
+- [ ] `git push -u origin feature/respostas-0.9.1`, PR para `main`, CI verde, merge, `git switch main`, `git pull`.
+- [ ] Reconstruir e rodar o diagnóstico dos 2 fallbacks:
+      `docker compose up -d --build` e
+      `docker compose exec api ragtest-collect-answers --only v2-dev-onde-agendar-preventivo --only v2-dev-vaga-mamografia`
+      e depois `docker compose cp api:/app/state/respostas_modelo.csv docs\resultados\respostas_diagnostico.csv`.
+- [ ] Pontuar a rubrica em `docs/resultados/respostas_modelo.csv` (colunas de 0 a 2; ver `docs/avaliacao-respostas.md`).
+- [ ] (Quando quiser homologar) seguir `docs/DEPLOY.md`.
 
 ## 4. Próxima tarefa para o agente
 
-1. Quando existir o novo `docs/resultados/avaliacao_*.txt`: registrar holdout v3 e o resultado do
-   critério em `docs/avaliacao-retrieval.md` (sem ajustar nada olhando o v3).
-2. Quando existir `docs/resultados/respostas_modelo.csv` pontuado: calcular médias, taxas e
-   latência e preencher "Resultados" em `docs/avaliacao-respostas.md`.
-3. Falha conhecida do retrieval: "de quanto em quanto tempo repito o preventivo" (holdout v2).
-   Só investigar com perguntas do **dev**; considerar criar um caso dev equivalente.
-4. Monografia: usar `docs/monografia/ESQUELETO.md` como índice de evidências.
-5. Opcional (defesa): adaptador `BaseRetriever` do LangChain sobre o retriever próprio.
+1. ✅ Holdout v3 e critério registrados. ✅ Métricas automáticas das respostas registradas.
+2. Com `respostas_diagnostico.csv`: ler `blocos_sem_citacao` dos 2 fallbacks e corrigir.
+3. Com a rubrica pontuada: calcular médias/porcentagens em `docs/avaliacao-respostas.md`.
+4. Falhas conhecidas do retrieval: "repito o preventivo" (holdout v2) e "anticoncepcional ... vontade"
+   (holdout v3, sinônimo de libido). Só investigar com casos do **dev**; nunca ajustar pelo v3.
+5. Monografia: usar `docs/monografia/ESQUELETO.md` como índice de evidências.
+6. Opcional (defesa): adaptador `BaseRetriever` do LangChain sobre o retriever próprio.
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
 Ambiente remoto: `pytest tests -p no:cacheprovider --ignore=.pytest_cache`; o `tests/conftest.py`
@@ -95,6 +109,8 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-09-28 (7) — Claude (Cowork)**: holdout v3 = 24/25 (hybrid), critério PASS; coleta de
+  respostas: 11/13 verificadas, 4/4 recusas; coleta ganhou `--only`, pausa e blocos sem citação.
 - **2026-09-28 (6) — Claude (Cowork)**: 0.8.0 mesclada; branch `feature/qualidade-0.9.0`: citações
   【n†L】 (D051), critério mínimo + holdout v3 (D052), homologação com Caddy (D053), coleta de
   respostas para rubrica, esqueleto da monografia.

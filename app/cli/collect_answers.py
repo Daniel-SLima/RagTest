@@ -17,7 +17,18 @@ from app.rag.vector_store import QdrantVectorStore
 from app.services.qdrant_service import QdrantService
 
 
-async def run(datasets: list[str], output: Path) -> None:
+def select_cases(
+    cases: list[dict[str, object]], only: list[str] | None
+) -> list[dict[str, object]]:
+    if not only:
+        return cases
+    wanted = set(only)
+    return [case for case in cases if case.get("id") in wanted]
+
+
+async def run(
+    datasets: list[str], output: Path, only: list[str] | None, pause_seconds: float
+) -> None:
     settings = get_settings()
     profile = get_profile(settings.retrieval_mode)
     qdrant = QdrantService(settings)
@@ -27,8 +38,12 @@ async def run(datasets: list[str], output: Path) -> None:
         store = QdrantVectorStore(qdrant.client, settings.qdrant_collection)
         llm = create_llm_provider(settings)
         rows = []
-        cases = [case for name in datasets for case in load_packaged_dataset(name)]
+        cases = select_cases(
+            [case for name in datasets for case in load_packaged_dataset(name)], only
+        )
         for number, case in enumerate(cases, start=1):
+            if number > 1 and pause_seconds > 0:
+                await asyncio.sleep(pause_seconds)
             started = time.monotonic()
             result = await answer_with_rag(
                 str(case["query"]),
@@ -65,8 +80,15 @@ def main() -> None:
         help="Dataset empacotado (repetível). Padrão: dominio-v2-dev e dominio-v2-fora-escopo.",
     )
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--only", action="append", default=None, help="Id do caso (repetível).")
+    parser.add_argument(
+        "--pause-seconds",
+        type=float,
+        default=15.0,
+        help="Pausa entre perguntas para não estourar o limite por minuto do provider.",
+    )
     args = parser.parse_args()
     settings = get_settings()
     output = args.output or Path(settings.session_db_path).parent / "respostas_modelo.csv"
     datasets = args.dataset or ["dominio-v2-dev", "dominio-v2-fora-escopo"]
-    asyncio.run(run(datasets, output))
+    asyncio.run(run(datasets, output, args.only, args.pause_seconds))

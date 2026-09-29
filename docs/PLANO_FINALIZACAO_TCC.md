@@ -59,7 +59,10 @@ O problema real não é a arquitetura — é **direção**:
 
 ---
 
-## 2. Estado atual
+## 2. Estado atual (fotografia da análise inicial de 28/09 — **histórico**)
+
+> Esta seção descreve o projeto **antes** da reorientação. O estado vigente está em
+> `docs/ESTADO_ATUAL.md` e o status das fases na seção 6 abaixo.
 
 ### 2.1 Git: local × GitHub
 

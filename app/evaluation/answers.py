@@ -16,6 +16,14 @@ def _sources(result: ChatResult) -> str:
     return " | ".join(parts)
 
 
+def _uncited(result: ChatResult) -> str:
+    return " || ".join(
+        f"{attempt.stage}: {block}"
+        for attempt in result.citation_validation_attempts
+        for block in attempt.uncited_blocks
+    )
+
+
 def answer_row(case: dict[str, Any], result: ChatResult, latency_ms: float) -> dict[str, Any]:
     row: dict[str, Any] = {
         "id": case.get("id", ""),
@@ -29,6 +37,7 @@ def answer_row(case: dict[str, Any], result: ChatResult, latency_ms: float) -> d
         "model": result.model,
         "answer": result.answer,
         "sources": _sources(result),
+        "blocos_sem_citacao": _uncited(result),
     }
     row.update({column: "" for column in RUBRIC_COLUMNS})
     return row
