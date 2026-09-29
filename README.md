@@ -1,79 +1,151 @@
-# RagTest — módulo RAG para o Se Cuida Mulher
+# RagTest — RAG para o Se Cuida Mulher
 
-Módulo conversacional baseado em RAG (Retrieval-Augmented Generation) para apoiar o letramento em
-saúde da mulher e a orientação de agendamento de serviços (preventivo, mamografia, pré-natal e
-urgência). TCC do curso de ADS. Integração prevista: app **Se Cuida Mulher**.
+<div align="center">
 
-> Para agentes de IA e continuidade: leia `AGENTS.md` e `docs/ESTADO_ATUAL.md`.
+**Módulo conversacional com recuperação aumentada por geração para apoio ao letramento em saúde da mulher.**
+
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20DB-DC244C)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Status](https://img.shields.io/badge/projeto-TCC-6B7280)
+
+</div>
+
+## Sobre o projeto
+
+O **RagTest** é o módulo conversacional desenvolvido para o TCC de Análise e Desenvolvimento de Sistemas, com integração prevista ao aplicativo **Se Cuida Mulher**.
+
+A solução usa **RAG (Retrieval-Augmented Generation)** para recuperar informações de uma base documental controlada antes de gerar a resposta. O projeto dá atenção especial a rastreabilidade, citações, avaliação de retrieval, privacidade e comportamento seguro fora do escopo.
+
+> Para continuidade técnica e agentes de IA, consulte `AGENTS.md` e `docs/ESTADO_ATUAL.md`.
+
+## O que o projeto demonstra
+
+- API REST versionada com FastAPI
+- Retrieval denso e esparso
+- Qdrant como banco vetorial
+- Reranking e multi-query retrieval
+- Respostas fundamentadas em fontes
+- Gate de citações e fallback seguro
+- Triagem determinística para situações de urgência
+- Suporte a múltiplos providers de LLM
+- Sessões locais e auditoria estruturada
+- Cliente demo em React Native / Expo
+- Testes automatizados e quality gates
+- Docker Compose e GitHub Actions
+- Documentação de decisões arquiteturais e avaliação
 
 ## Arquitetura
 
-```
-Cliente (Expo demo / app integrador)
-        │  REST /v1/chat
-        ▼
-FastAPI ── triagem de urgência (regras) ──► resposta fixa + ação 192
-   │
-   ├─ retrieval: FastEmbed (denso) + BM25 (esparso) no Qdrant, rerank, multi-query
-   ├─ geração: Gemini / Groq / Ollama, com gate de citações e fallback seguro
-   ├─ ações: links e lembretes do catálogo de serviços citado
-   └─ sessões (SQLite) e auditoria estruturada sem conteúdo
+```text
+Cliente Expo / app integrador
+            │
+            │  REST /v1/chat
+            ▼
+         FastAPI
+            │
+            ├── Triagem de urgência
+            ├── Retrieval híbrido
+            │     ├── FastEmbed
+            │     ├── BM25
+            │     ├── Qdrant
+            │     └── rerank / multi-query
+            │
+            ├── Geração
+            │     ├── Gemini
+            │     ├── Groq
+            │     └── Ollama
+            │
+            ├── Gate de grounding/citações
+            └── Sessões + auditoria
 ```
 
-| Camada | Tecnologia |
+## Stack
+
+| Camada | Tecnologias |
 |---|---|
-| API | Python 3.12, FastAPI, Pydantic |
-| Vetores | Qdrant 1.19 (denso + esparso) |
-| Embeddings | FastEmbed `paraphrase-multilingual-MiniLM-L12-v2`, BM25 |
-| Orquestração | LangChain (text splitter, prompt templates) |
-| LLM | Gemini, Groq (GPT-OSS 120B) ou Ollama (Qwen3 8B) |
-| Cliente demo | Expo / React Native / TypeScript |
+| Backend | Python 3.12, FastAPI, Pydantic |
+| Vetores | Qdrant 1.19 |
+| Retrieval | FastEmbed, BM25, reranking, multi-query |
+| Orquestração | LangChain |
+| LLM | Gemini, Groq ou Ollama |
+| Frontend demo | Expo, React Native, TypeScript |
+| Testes | Pytest, Jest, Testing Library |
+| Qualidade | Ruff, TypeScript |
 | Infra | Docker Compose, GitHub Actions |
 
-## Base documental (`data/source`)
+## Base documental
 
-Cartilhas e cadernetas do Ministério da Saúde, calendários de vacinação, contracepção, direitos
-da pessoa usuária, o FAQ do Se Cuida Mulher (`chatscm/`) e o catálogo estruturado de serviços
-(`servicos/catalogo_servicos.json`).
+A base em `data/source` utiliza materiais controlados, incluindo documentos do Ministério da Saúde, calendários de vacinação, materiais sobre contracepção, direitos da pessoa usuária, FAQ do Se Cuida Mulher e catálogo estruturado de serviços.
 
-## Como rodar
+O pipeline de ingestão transforma esse conteúdo em representações pesquisáveis no Qdrant.
+
+## Executando com Docker
 
 ```bash
-cp .env.example .env              # coloque a chave do provider escolhido
+cp .env.example .env
 docker compose up -d --build
+
 curl http://localhost:8000/ready
+
 docker compose exec api ragtest-plan-ingestion-sync
 docker compose exec api ragtest-sync-ingestion --apply
-curl -X POST http://localhost:8000/v1/chat -H "Content-Type: application/json" \
+```
+
+Exemplo de consulta:
+
+```bash
+curl -X POST http://localhost:8000/v1/chat \
+  -H "Content-Type: application/json" \
   -d '{"message":"Quando devo fazer o preventivo?"}'
 ```
 
-Cliente demo: `cd frontend && npm install && npm run web`.
-Avaliação completa no Windows: `scripts/avaliar_dominio.ps1` (salva em `docs/resultados/`).
+Frontend demo:
 
-## Desenvolvimento
+```bash
+cd frontend
+npm install
+npm run web
+```
+
+## Desenvolvimento e testes
 
 ```bash
 python -m pip install -e ".[dev]"
-pytest && ruff check .          # inclui tests/e2e (Qdrant em memória)
-cd frontend && npm test && npm run typecheck
+pytest
+ruff check .
 ```
 
-## Documentação
+Frontend:
+
+```bash
+cd frontend
+npm test
+npm run typecheck
+```
+
+## Documentação técnica
 
 | Documento | Conteúdo |
 |---|---|
-| `docs/ESTADO_ATUAL.md` | estado atual e próximos passos |
-| `docs/PLANO_FINALIZACAO_TCC.md` | plano por fases |
-| `docs/INTEGRACAO.md` | contrato da API para o app integrador |
-| `docs/contrato/openapi-v1.json` | contrato OpenAPI congelado (gera clientes) |
-| `docs/decisoes-tecnicas.md` | decisões arquiteturais (D001–D045) |
-| `docs/dificuldades-tcc.md` | problemas reais e aprendizados |
-| `docs/avaliacao-retrieval.md` | metodologia e resultados de avaliação |
-| `docs/historico/` | contexto e README anteriores à reorientação |
+| `docs/ESTADO_ATUAL.md` | Estado atual e próximos passos |
+| `docs/PLANO_FINALIZACAO_TCC.md` | Plano de finalização |
+| `docs/INTEGRACAO.md` | Contrato para integração |
+| `docs/contrato/openapi-v1.json` | Contrato OpenAPI |
+| `docs/decisoes-tecnicas.md` | Decisões arquiteturais |
+| `docs/dificuldades-tcc.md` | Problemas e aprendizados |
+| `docs/avaliacao-retrieval.md` | Metodologia de avaliação |
+| `docs/resultados/` | Resultados de avaliações |
 
-## Limitações
+## Limitações e uso responsável
 
-Ambiente demonstrativo: autenticação só por chave de API (`API_KEYS`), sem dados reais de usuárias. `grounded=true` significa
-que cada afirmação tem citação válida, não que houve validação clínica. As orientações não
-substituem a avaliação de profissionais de saúde.
+O projeto é um ambiente demonstrativo e acadêmico. Não utiliza dados reais de usuárias.
+
+`grounded=true` indica que a resposta passou pelas regras de fundamentação/citação definidas pelo sistema; isso **não representa validação clínica**.
+
+As informações geradas pelo sistema não substituem avaliação ou orientação de profissionais de saúde.
+
+---
+
+Desenvolvido por [Daniel Lima](https://github.com/Daniel-SLima) como projeto de TCC em Análise e Desenvolvimento de Sistemas.
