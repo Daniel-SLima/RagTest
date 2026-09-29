@@ -40,7 +40,7 @@ def test_answer_row_lists_uncited_blocks_from_all_attempts() -> None:
     attempt = CitationValidationAttempt(
         stage="initial", valid=False, syntax_valid=True, total_claim_blocks=2,
         cited_claim_blocks=1, uncited_claim_blocks=1, coverage=0.5,
-        reason="x", uncited_blocks=("Bloco sem fonte.",),
+        reason="x", uncited_blocks=("Bloco sem fonte.",), answer="Resposta bruta.",
     )
     result = ChatResult(
         answer="fallback", sources=[], model="m", grounded=False, citation_ids=[],
@@ -50,6 +50,7 @@ def test_answer_row_lists_uncited_blocks_from_all_attempts() -> None:
     row = answer_row({"id": "a", "query": "q"}, result, 1.0)
 
     assert row["blocos_sem_citacao"] == "initial: Bloco sem fonte."
+    assert row["resposta_rejeitada"] == "Resposta bruta."
 
 
 def test_select_cases_filters_by_id() -> None:

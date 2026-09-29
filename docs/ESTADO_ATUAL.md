@@ -26,11 +26,11 @@
 
 | Item | Valor |
 |---|---|
-| Versão | `main` com 0.8.0 + 0.9.0 (PRs #22 e #23) · trabalho novo em `feature/respostas-0.9.1` |
-| Branch de trabalho | `feature/respostas-0.9.1` (a partir do `main`), **não enviada ao GitHub** |
-| Testes | backend `334 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Versão | `main` com 0.8.0 + 0.9.0 + 0.9.1 (PRs #22–#24) · trabalho novo em `feature/robustez-0.9.2` |
+| Branch de trabalho | `feature/robustez-0.9.2` (a partir do `main`), **não enviada ao GitHub** |
+| Testes | backend `339 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
 | Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · **holdout v3 24/25 (MRR 0.801, independente)** · critério PASS |
-| Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas; 2 fallbacks de agendamento em diagnóstico; rubrica manual pendente |
+| Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas; 2 fallbacks de agendamento diagnosticados e corrigidos (D054), falta repetir a coleta; rubrica manual pendente |
 | Teste real | mamografia agora `grounded=true` (D050/D051) — `docs/resultados/diagnostico_mamografia_2.txt` |
 | Qdrant | 773 chunks, sincronizado em 28/09 |
 
@@ -63,18 +63,18 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [ ] `git push -u origin feature/respostas-0.9.1`, PR para `main`, CI verde, merge, `git switch main`, `git pull`.
-- [ ] Reconstruir e rodar o diagnóstico dos 2 fallbacks:
-      `docker compose up -d --build` e
-      `docker compose exec api ragtest-collect-answers --only v2-dev-onde-agendar-preventivo --only v2-dev-vaga-mamografia`
-      e depois `docker compose cp api:/app/state/respostas_modelo.csv docs\resultados\respostas_diagnostico.csv`.
-- [ ] Pontuar a rubrica em `docs/resultados/respostas_modelo.csv` (colunas de 0 a 2; ver `docs/avaliacao-respostas.md`).
+- [ ] `git push -u origin feature/robustez-0.9.2`, PR para `main`, CI verde, merge, `git switch main`, `git pull`.
+- [ ] Repetir a coleta completa (agora com pausa de 15 s entre perguntas, ~6 minutos):
+      `docker compose up -d --build`, `docker compose exec api ragtest-collect-answers` e
+      `docker compose cp api:/app/state/respostas_modelo.csv docs\resultados\respostas_modelo_2.csv`.
+- [ ] Pontuar a rubrica em `docs/resultados/respostas_modelo_2.csv` (colunas de 0 a 2; ver `docs/avaliacao-respostas.md`).
 - [ ] (Quando quiser homologar) seguir `docs/DEPLOY.md`.
 
 ## 4. Próxima tarefa para o agente
 
 1. ✅ Holdout v3 e critério registrados. ✅ Métricas automáticas das respostas registradas.
-2. Com `respostas_diagnostico.csv`: ler `blocos_sem_citacao` dos 2 fallbacks e corrigir.
+2. ✅ Fallbacks diagnosticados e corrigidos (D054). Com `respostas_modelo_2.csv`: recalcular as
+   métricas automáticas (grounded/fallback/recusa/latência sem 429) e comparar com a execução 1.
 3. Com a rubrica pontuada: calcular médias/porcentagens em `docs/avaliacao-respostas.md`.
 4. Falhas conhecidas do retrieval: "repito o preventivo" (holdout v2) e "anticoncepcional ... vontade"
    (holdout v3, sinônimo de libido). Só investigar com casos do **dev**; nunca ajustar pelo v3.
@@ -109,6 +109,8 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-09-28 (8) — Claude (Cowork)**: decisões do autor consolidadas (seção 0) e divisão de trabalho
+  no AGENTS.md; fallbacks de agendamento corrigidos com poda de itens curtos e normalização ampla (D054).
 - **2026-09-28 (7) — Claude (Cowork)**: holdout v3 = 24/25 (hybrid), critério PASS; coleta de
   respostas: 11/13 verificadas, 4/4 recusas; coleta ganhou `--only`, pausa e blocos sem citação.
 - **2026-09-28 (6) — Claude (Cowork)**: 0.8.0 mesclada; branch `feature/qualidade-0.9.0`: citações

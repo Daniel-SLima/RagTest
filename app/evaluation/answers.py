@@ -38,6 +38,10 @@ def answer_row(case: dict[str, Any], result: ChatResult, latency_ms: float) -> d
         "answer": result.answer,
         "sources": _sources(result),
         "blocos_sem_citacao": _uncited(result),
+        "resposta_rejeitada": next(
+            (attempt.answer for attempt in result.citation_validation_attempts if not attempt.valid),
+            "",
+        ),
     }
     row.update({column: "" for column in RUBRIC_COLUMNS})
     return row
