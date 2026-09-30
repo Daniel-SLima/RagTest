@@ -4,10 +4,12 @@ Vale para qualquer agente de IA (Claude Code, Codex, Cowork etc.).
 
 ## Antes de qualquer coisa, leia nesta ordem
 
-1. `docs/ESTADO_ATUAL.md` — **onde o trabalho parou e qual é a próxima tarefa** (fonte autoritativa);
-2. `docs/PLANO_FINALIZACAO_TCC.md` — plano por fases e o porquê da reorientação;
-3. `docs/decisoes-tecnicas.md` e `docs/dificuldades-tcc.md` — só as entradas ligadas à tarefa;
-4. o código e os testes da área que vai mexer.
+1. `docs/ROTEIRO_EXECUCAO.md` — **briefing completo + micro-etapas numeradas até a v1.0.0**
+   (siga a próxima micro-etapa não marcada);
+2. `docs/ESTADO_ATUAL.md` — onde o trabalho parou, decisões do autor (§0) e pendências (§3);
+3. `docs/PLANO_FINALIZACAO_TCC.md` — plano por fases e o porquê da reorientação;
+4. `docs/decisoes-tecnicas.md` e `docs/dificuldades-tcc.md` — só as entradas ligadas à tarefa;
+5. o código e os testes da área que vai mexer.
 
 `docs/historico/` guarda o contexto antigo (até a 0.7.0). Consulte apenas se precisar de um
 detalhe histórico; não atualize esses arquivos.

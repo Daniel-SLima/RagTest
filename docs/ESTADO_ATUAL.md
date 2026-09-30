@@ -1,6 +1,7 @@
 # Estado atual — handoff entre agentes
 
 > Documento **autoritativo e curto**. Todo agente lê este arquivo primeiro e o atualiza ao terminar.
+> **Roteiro passo a passo até a v1.0.0: `docs/ROTEIRO_EXECUCAO.md`** (seguir a próxima micro-etapa não marcada).
 > Plano completo: `docs/PLANO_FINALIZACAO_TCC.md`. Histórico até a 0.7.0: `docs/historico/`.
 
 Última atualização: **2026-09-28** — Claude (Cowork), sessão de reorientação para o domínio.
@@ -72,14 +73,8 @@
 
 ## 4. Próxima tarefa para o agente
 
-1. ✅ Holdout v3 e critério registrados. ✅ Métricas automáticas das respostas registradas.
-2. ✅ Fallbacks diagnosticados e corrigidos (D054). Com `respostas_modelo_2.csv`: recalcular as
-   métricas automáticas (grounded/fallback/recusa/latência sem 429) e comparar com a execução 1.
-3. Com a rubrica pontuada: calcular médias/porcentagens em `docs/avaliacao-respostas.md`.
-4. Falhas conhecidas do retrieval: "repito o preventivo" (holdout v2) e "anticoncepcional ... vontade"
-   (holdout v3, sinônimo de libido). Só investigar com casos do **dev**; nunca ajustar pelo v3.
-5. Monografia: usar `docs/monografia/ESQUELETO.md` como índice de evidências.
-6. Opcional (defesa): adaptador `BaseRetriever` do LangChain sobre o retriever próprio.
+Seguir `docs/ROTEIRO_EXECUCAO.md`: próxima micro-etapa do agente é **1.1.5** (após o autor
+concluir 1.1.1–1.1.4), depois **1.2.4** (`ragtest-summarize-answers`).
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
 Ambiente remoto: `pytest tests -p no:cacheprovider --ignore=.pytest_cache`; o `tests/conftest.py`
@@ -109,6 +104,8 @@ Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, P
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-09-29 — Claude (Cowork)**: criado `docs/ROTEIRO_EXECUCAO.md` (briefing + Etapas 0–10 em
+  micro-etapas até a v1.0.0); AGENTS e estado apontam para ele. `main` remoto tem commit do autor no README (`9712362`).
 - **2026-09-28 (8) — Claude (Cowork)**: decisões do autor consolidadas (seção 0) e divisão de trabalho
   no AGENTS.md; fallbacks de agendamento corrigidos com poda de itens curtos e normalização ampla (D054).
 - **2026-09-28 (7) — Claude (Cowork)**: holdout v3 = 24/25 (hybrid), critério PASS; coleta de

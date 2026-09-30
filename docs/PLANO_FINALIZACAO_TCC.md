@@ -330,4 +330,4 @@ Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RA
 
 ## 8. Próximas ações
 
-Ver a seção 4 de `docs/ESTADO_ATUAL.md` (sempre atualizada).
+Micro-etapas detalhadas até a v1.0.0: `docs/ROTEIRO_EXECUCAO.md`. Estado vivo: `docs/ESTADO_ATUAL.md`.
