@@ -28,7 +28,7 @@
 | Item | Valor |
 |---|---|
 | Versão | `main` público em `42c8f7f` (PR #25: README de portfólio + D054 + documentação de continuidade); código ainda declara `0.8.0` |
-| Branch de trabalho | `main` sincronizado com `origin/main` em 05/10; o fechamento documental está em `feature/fechamento-transferencia-0.9.2` até seu PR ser mesclado |
+| Branch de trabalho | `main` sincronizado com `origin/main` em 05/10; PRs #25 e #26 mesclados |
 | Testes | 05/10: backend `339 passed` (inclui 5 ponta a ponta), Ruff 0.16.8 limpo · frontend Jest `19 passed`, TypeScript sem erro |
 | Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · **holdout v3 24/25 (MRR 0.801, independente)** · critério PASS |
 | Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas na coleta 1; 2 fallbacks de agendamento motivaram D054, falta repetir a coleta; rubrica manual pendente |
@@ -97,7 +97,7 @@ O [PR #25](https://github.com/Daniel-SLima/RagTest/pull/25) foi mesclado em 05/1
 `42c8f7f` após os quatro checks verdes (`lint`, `test`, `e2e-qdrant`, `frontend-test`). O `main`
 local foi atualizado por fast-forward para o mesmo commit. A branch de transferência partiu
 do README público (`9712362`) e reaplicou a D054 e o roteiro antes de acrescentar o guia.
-O PR de fechamento documental atualiza somente o registro de conclusão desta etapa.
+O PR #26 mesclou o registro de conclusão desta etapa; somente README e documentação foram alterados.
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
