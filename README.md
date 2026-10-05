@@ -180,7 +180,8 @@ npm run typecheck
 
 Para uma leitura rápida: **guia de continuidade → estudos → decisões/dificuldades → resultados
 brutos → código e testes**. O [histórico anterior à 0.7.0](docs/historico/) está preservado para
-consulta, mas não descreve o estado vigente.
+consulta, mas não descreve o estado vigente. Um antigo prompt de retomada e o guia da interface
+0.5.x foram retirados da árvore atual por estarem desatualizados; continuam no histórico do Git.
 
 ## Limitações e uso responsável
 

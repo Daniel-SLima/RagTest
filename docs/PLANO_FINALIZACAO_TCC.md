@@ -320,6 +320,11 @@ organiza o material para o orientador ou um futuro estudante. O PR #25 foi mescl
 checks da CI passarem; isso não conclui a F7 nem substitui
 coleta, rubrica, validação com usuárias e monografia.
 
+**Organização do repositório (05/10/2026):** retirados dois documentos de execução antigos que
+poderiam ser confundidos com instruções vigentes (`docs/frontend-demo.md` e o prompt de retomada
+da 0.7.0). Permanecem no histórico Git; o corpus, os resultados, as decisões e as dificuldades
+continuam na árvore atual. O status da F7 não muda.
+
 Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RAGAS (fica a rubrica manual).
 **Não corte** triagem, ações, contrato congelado nem autenticação.
 

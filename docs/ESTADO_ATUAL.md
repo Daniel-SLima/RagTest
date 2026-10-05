@@ -101,6 +101,13 @@ O PR #26 mesclou o registro de conclusão desta etapa; somente README e document
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-10-05 — Codex, organização do repositório**: auditoria dos 252 arquivos versionados.
+  Removidos da árvore atual apenas `docs/frontend-demo.md` (cliente 0.5.x) e o antigo
+  `docs/historico/PROMPT_RETOMADA_ate_0.7.0.md`, que se apresentava como estado vigente.
+  O conteúdo permanece recuperável pelo Git; corpus, resultados, decisões, dificuldades,
+  testes e especificações foram preservados. A continuidade usa README e GUIA_CONTINUIDADE.
+  Verificação local: 339 testes backend, Ruff limpo, 19 testes frontend, TypeScript sem erro e
+  links internos dos guias sem caminhos quebrados.
 - **2026-10-05 — Codex, fechamento**: PR #25 mesclado (`42c8f7f`), quatro checks da CI verdes;
   `main` local e remoto alinhados. Roteiro 0.1.4 e 1.1.1–1.1.5 concluídos. Próximo trabalho,
   caso o TCC prossiga: segunda coleta de respostas e rubrica.
