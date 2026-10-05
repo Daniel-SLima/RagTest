@@ -304,20 +304,20 @@ memória, sugestões). O trabalho passa a ser no contrato:
 | Fase | Conteúdo | Status (28/09) |
 |---|---|---|
 | F0 | Consolidar repositório | ✅ 0.8.0 no `main` (PR #22) |
-| F1 | Corpus de domínio (catálogo, CHATSCM liberado) | ✅ código; falta sincronizar Qdrant |
+| F1 | Corpus de domínio (catálogo, CHATSCM liberado) | ✅ catálogo e FAQ indexados; 773 chunks sincronizados em 28/09 |
 | F2 | Avaliação v2 | ✅ executada; hybrid 15/15 dev, 23/25 holdout (D046) |
 | F3 | Triagem de urgência + fora de escopo | ✅ (limiar a calibrar) |
 | F4 | Ações estruturadas | ✅ |
 | F5 | Backend headless | ✅ lógica na API (D042) + contrato congelado (D043) |
-
-| F6 | Robustez e integração | ✅ auth (D044), e2e (D045), critério de avaliação (D052), homologação (D053, deploy real pendente) |
-| F7 | Usabilidade + monografia | 🟡 rubrica de respostas pronta para rodar; esqueleto da monografia criado; guia de continuidade e mapa de evidências preparados em 05/10, publicação no `main` ainda a conferir |
+| F6 | Robustez e integração | 🟡 auth (D044), e2e (D045) e critério de avaliação (D052) implementados; homologação real pendente |
+| F7 | Usabilidade + monografia | 🟡 rubrica de respostas pronta para rodar; esqueleto da monografia criado; guia de continuidade e mapa de evidências publicados no `main` pelo PR #25 (05/10) |
 
 **Transferência para continuidade (05/10/2026):** o README público do autor foi preservado na
 branch `feature/transferencia-0.9.2` e ampliado com links para
 `docs/GUIA_CONTINUIDADE.md`, `docs/ESTUDOS_E_RESULTADOS.md` e
 `docs/FONTES_E_REFERENCIAS.md`. A branch também contém a D054 e o roteiro de execução. Isso
-organiza o material para o orientador ou um futuro estudante; não conclui a F7 nem substitui
+organiza o material para o orientador ou um futuro estudante. O PR #25 foi mesclado após os quatro
+checks da CI passarem; isso não conclui a F7 nem substitui
 coleta, rubrica, validação com usuárias e monografia.
 
 Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RAGAS (fica a rubrica manual).

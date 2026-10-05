@@ -29,10 +29,9 @@ Se Cuida Mulher final. A versão declarada no pacote Python ainda é `0.8.0`; os
 identificam etapas de trabalho. A release `1.0.0`, a monografia, a integração com o app real e a
 validação com usuárias **não foram concluídas**.
 
-O trabalho local da etapa 0.9.2 inclui a correção [D054](docs/decisoes-tecnicas.md) para respostas
-de agendamento e o roteiro de execução. A coleta completa de respostas **ainda precisa ser repetida**
-após essa correção. Quem continuar deve conferir o [estado da branch](docs/ESTADO_ATUAL.md) antes
-de considerar esses commits publicados no `main`.
+A etapa 0.9.2 foi incorporada ao `main` pelo [PR #25](https://github.com/Daniel-SLima/RagTest/pull/25).
+Ela inclui a correção [D054](docs/decisoes-tecnicas.md) para respostas de agendamento e o roteiro
+de execução. A coleta completa de respostas **ainda precisa ser repetida** após essa correção.
 
 ## O que o projeto demonstra
 
