@@ -199,15 +199,19 @@ Armadilhas conhecidas:
 
 ### 1.1 Publicar a branch atual
 
-- [ ] 1.1.1 [Autor] Enviar a branch: `git push -u origin feature/robustez-0.9.2`.
-- [ ] 1.1.2 [Autor] Criar o PR `feature/robustez-0.9.2` → `main`.
-  - Título: "0.9.2 — robustez das respostas e roteiro".
-  - Se o GitHub acusar conflito com o commit do README do autor, **parar e chamar o agente**.
+> Atualização de 05/10/2026: a branch `feature/transferencia-0.9.2` foi criada do `main`
+> público (`9712362`) e recebeu a D054 e este roteiro. Ela também contém a documentação
+> de transferência. Use essa branch para **um único PR**; a antiga
+> `feature/robustez-0.9.2` permanece apenas como referência local.
+
+- [ ] 1.1.1 [Autor] Enviar a branch: `git push -u origin feature/transferencia-0.9.2`.
+- [ ] 1.1.2 [Autor] Criar o PR `feature/transferencia-0.9.2` → `main`.
+  - Título: "0.9.2 — robustez das respostas e documentação de continuidade".
 - [ ] 1.1.3 [Autor] Esperar os 4 checks da CI ficarem verdes. Se algum ficar vermelho, copiar o log
   para `docs/resultados/ci_<data>.txt` e chamar o agente.
 - [ ] 1.1.4 [Autor] Fazer o merge, depois `git switch main` e `git pull`.
-- [ ] 1.1.5 [Agente] Conferir que o `main` contém `1e380c6` e o commit `9712362`. Atualizar o
-  `ESTADO_ATUAL.md` §1 e §6.
+- [ ] 1.1.5 [Agente] Conferir que o `main` contém o commit `9712362`, a mudança da D054
+  (reaplicada como `53cc70c`) e o guia de continuidade. Atualizar o `ESTADO_ATUAL.md` §1 e §6.
 
 ### 1.2 Coleta de respostas 2 (revalidar a D054)
 

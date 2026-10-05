@@ -311,7 +311,14 @@ memória, sugestões). O trabalho passa a ser no contrato:
 | F5 | Backend headless | ✅ lógica na API (D042) + contrato congelado (D043) |
 
 | F6 | Robustez e integração | ✅ auth (D044), e2e (D045), critério de avaliação (D052), homologação (D053, deploy real pendente) |
-| F7 | Usabilidade + monografia | 🟡 rubrica de respostas pronta para rodar; esqueleto da monografia criado |
+| F7 | Usabilidade + monografia | 🟡 rubrica de respostas pronta para rodar; esqueleto da monografia criado; guia de continuidade e mapa de evidências preparados em 05/10, publicação no `main` ainda a conferir |
+
+**Transferência para continuidade (05/10/2026):** o README público do autor foi preservado na
+branch `feature/transferencia-0.9.2` e ampliado com links para
+`docs/GUIA_CONTINUIDADE.md`, `docs/ESTUDOS_E_RESULTADOS.md` e
+`docs/FONTES_E_REFERENCIAS.md`. A branch também contém a D054 e o roteiro de execução. Isso
+organiza o material para o orientador ou um futuro estudante; não conclui a F7 nem substitui
+coleta, rubrica, validação com usuárias e monografia.
 
 Se o prazo apertar, corte na ordem: streaming → deploy de homologação → RAGAS (fica a rubrica manual).
 **Não corte** triagem, ações, contrato congelado nem autenticação.
