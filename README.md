@@ -192,4 +192,4 @@ As informações geradas pelo sistema não substituem avaliação ou orientaçã
 
 ---
 
-Desenvolvido por [Daniel Lima](https://github.com/Daniel-SLima) como projeto de TCC em Análise e Desenvolvimento de Sistemas.
+Desenvolvido por [Daniel Lima](https://github.com/Daniel-SLima) como inicio de um projeto de TCC em Análise e Desenvolvimento de Sistemas.
