@@ -27,8 +27,8 @@
 
 | Item | Valor |
 |---|---|
-| Versão | `main` público em `9712362` (README de portfólio); código ainda declara `0.8.0` · trabalho 0.9.2 em `feature/transferencia-0.9.2` |
-| Branch de trabalho | `feature/transferencia-0.9.2`, criada de `origin/main` e contendo a correção D054, o roteiro e a documentação de transferência; **publicação/merge ainda não verificados** |
+| Versão | `main` público em `42c8f7f` (PR #25: README de portfólio + D054 + documentação de continuidade); código ainda declara `0.8.0` |
+| Branch de trabalho | `main` sincronizado com `origin/main` em 05/10; o fechamento documental está em `feature/fechamento-transferencia-0.9.2` até seu PR ser mesclado |
 | Testes | 05/10: backend `339 passed` (inclui 5 ponta a ponta), Ruff 0.16.8 limpo · frontend Jest `19 passed`, TypeScript sem erro |
 | Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · **holdout v3 24/25 (MRR 0.801, independente)** · critério PASS |
 | Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas na coleta 1; 2 fallbacks de agendamento motivaram D054, falta repetir a coleta; rubrica manual pendente |
@@ -68,9 +68,6 @@ separam resultados medidos de trabalho pendente; não mudam o escopo funcional.
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [ ] Publicar `feature/transferencia-0.9.2` no GitHub, abrir PR para `main`, conferir os quatro
-      checks da CI e mesclar. A branch contém o README público (`9712362`) e a D054/roteiro
-      reaplicados sobre ele; não publicar também a antiga `feature/robustez-0.9.2` como PR separado.
 - [ ] Repetir a coleta completa (agora com pausa de 15 s entre perguntas, ~6 minutos):
       `docker compose up -d --build`, `docker compose exec api ragtest-collect-answers` e
       `docker compose cp api:/app/state/respostas_modelo.csv docs\resultados\respostas_modelo_2.csv`.
@@ -79,8 +76,8 @@ separam resultados medidos de trabalho pendente; não mudam o escopo funcional.
 
 ## 4. Próxima tarefa para o agente
 
-Após publicação e merge da branch de transferência, conferir a presença do README público e da
-D054 no `main` (**1.1.5** do roteiro). Depois seguir **1.2.4** (`ragtest-summarize-answers`).
+Se o projeto for retomado, seguir **1.2.4** do roteiro (`ragtest-summarize-answers`) e analisar
+a segunda coleta quando o autor a entregar. O `main` já contém o README público, a D054 e o guia.
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
 Ambiente remoto: `pytest tests -p no:cacheprovider --ignore=.pytest_cache`; o `tests/conftest.py`
@@ -96,14 +93,17 @@ isola o `.env` local (chaves falsas).
 
 ## 6. Push / GitHub
 
-PRs #22–#24 estão no histórico do `main`. Em 05/10, o `main` público estava em `9712362`
-(README de portfólio). A branch local antiga `feature/robustez-0.9.2` partia de `81b5de1`;
-`feature/transferencia-0.9.2` partiu de `9712362` e recebeu os dois commits locais por
-cherry-pick, preservando o README do autor. Conferir no GitHub o estado da nova branch/PR
-antes de afirmar que a documentação está pública.
+O [PR #25](https://github.com/Daniel-SLima/RagTest/pull/25) foi mesclado em 05/10 no commit
+`42c8f7f` após os quatro checks verdes (`lint`, `test`, `e2e-qdrant`, `frontend-test`). O `main`
+local foi atualizado por fast-forward para o mesmo commit. A branch de transferência partiu
+do README público (`9712362`) e reaplicou a D054 e o roteiro antes de acrescentar o guia.
+O PR de fechamento documental atualiza somente o registro de conclusão desta etapa.
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-10-05 — Codex, fechamento**: PR #25 mesclado (`42c8f7f`), quatro checks da CI verdes;
+  `main` local e remoto alinhados. Roteiro 0.1.4 e 1.1.1–1.1.5 concluídos. Próximo trabalho,
+  caso o TCC prossiga: segunda coleta de respostas e rubrica.
 - **2026-10-05 — Codex**: material de continuidade organizado no próprio repositório. Branch
   `feature/transferencia-0.9.2` criada do `main` público (`9712362`), com D054 e roteiro
   reaplicados; README de portfólio preservado e ampliado com estudos, fontes e índice da documentação.

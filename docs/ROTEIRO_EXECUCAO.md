@@ -193,25 +193,24 @@ Armadilhas conhecidas:
 - [x] 0.1.1 [Agente] Criar este roteiro (`docs/ROTEIRO_EXECUCAO.md`) na branch `feature/robustez-0.9.2`.
 - [x] 0.1.2 [Agente] Colocar este roteiro no topo da ordem de leitura do `AGENTS.md` e do `ESTADO_ATUAL.md`.
 - [x] 0.1.3 [Agente] Commit "docs: roteiro de execução em micro-etapas até a v1.0.0".
-- [ ] 0.1.4 [Autor] Seguir a Etapa 1.1, que publica este roteiro junto com a D054.
+- [x] 0.1.4 [Autor] Seguir a Etapa 1.1, que publica este roteiro junto com a D054. (05/10/2026, PR #25)
 
 ## Etapa 1 — Fechar a 0.9.2 (robustez das respostas)
 
 ### 1.1 Publicar a branch atual
 
-> Atualização de 05/10/2026: a branch `feature/transferencia-0.9.2` foi criada do `main`
-> público (`9712362`) e recebeu a D054 e este roteiro. Ela também contém a documentação
-> de transferência. Use essa branch para **um único PR**; a antiga
-> `feature/robustez-0.9.2` permanece apenas como referência local.
+> Concluída em 05/10/2026: a branch `feature/transferencia-0.9.2` foi criada do `main`
+> público (`9712362`) e recebeu a D054, este roteiro e a documentação de transferência.
+> O PR #25 foi mesclado; a antiga `feature/robustez-0.9.2` permanece apenas como referência local.
 
-- [ ] 1.1.1 [Autor] Enviar a branch: `git push -u origin feature/transferencia-0.9.2`.
-- [ ] 1.1.2 [Autor] Criar o PR `feature/transferencia-0.9.2` → `main`.
+- [x] 1.1.1 [Autor] Enviar a branch: `git push -u origin feature/transferencia-0.9.2`. (05/10/2026)
+- [x] 1.1.2 [Autor] Criar o PR `feature/transferencia-0.9.2` → `main`. (PR #25, 05/10/2026)
   - Título: "0.9.2 — robustez das respostas e documentação de continuidade".
-- [ ] 1.1.3 [Autor] Esperar os 4 checks da CI ficarem verdes. Se algum ficar vermelho, copiar o log
-  para `docs/resultados/ci_<data>.txt` e chamar o agente.
-- [ ] 1.1.4 [Autor] Fazer o merge, depois `git switch main` e `git pull`.
-- [ ] 1.1.5 [Agente] Conferir que o `main` contém o commit `9712362`, a mudança da D054
-  (reaplicada como `53cc70c`) e o guia de continuidade. Atualizar o `ESTADO_ATUAL.md` §1 e §6.
+- [x] 1.1.3 [Autor] Conferir os 4 checks da CI verdes: `lint`, `test`, `e2e-qdrant` e
+  `frontend-test`. (05/10/2026, PR #25)
+- [x] 1.1.4 [Autor] Fazer o merge, depois `git switch main` e `git pull --ff-only`. (05/10/2026, merge `42c8f7f`)
+- [x] 1.1.5 [Agente] Conferir que o `main` contém o commit `9712362`, a mudança da D054
+  (reaplicada como `53cc70c`) e o guia de continuidade. (05/10/2026; estado §1 e §6 atualizados)
 
 ### 1.2 Coleta de respostas 2 (revalidar a D054)
 
