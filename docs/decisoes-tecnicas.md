@@ -582,3 +582,19 @@ recusa subir em produção sem chaves (`ensure_production_security`). Guia em `d
 autor sem expor o banco vetorial nem aceitar requisições anônimas.
 **Impacto:** o ambiente de desenvolvimento não muda. A sobreposição usa `!reset` (Docker Compose
 2.24+). Validação com `docker compose config` e deploy real ficam com o autor.
+
+
+## D054 — Poda de itens curtos de lista e normalização ampla de citações 【n…】
+
+**Data:** 2026-09-28
+**Mudança:** (1) o pós-processamento determinístico passa a aceitar a remoção de até 2 itens de
+lista curtos (≤ 10 palavras) sem citação quando há pelo menos 2 blocos citados, além da regra da
+D023 (1 bloco, cobertura ≥ 0,8). A resposta podada ainda precisa revalidar em 100%. (2)
+`normalize_citation_markup` converte qualquer `【n…】` iniciado por número (ex.: `【1:0†source】`) em
+`[n]`. (3) Cada tentativa guarda o texto bruto (`CitationValidationAttempt.answer`), exposto só na
+coleta local (coluna `resposta_rejeitada`), nunca na API nem na auditoria.
+**Motivo:** diagnóstico dos 2 fallbacks de agendamento (`docs/resultados/respostas_diagnostico.csv`):
+no preventivo, só o item "- Cartão Nacional de Saúde (Cartão SUS)" ficava sem citação e derrubava a
+resposta inteira; na mamografia, a primeira geração teve 0 citações reconhecidas nos 4 passos.
+**Impacto:** itens longos continuam exigindo citação (o caso de 25% da D026 segue reprovado);
+remover um item curto sem fonte é preferível a inventar suporte ou cair no fallback.

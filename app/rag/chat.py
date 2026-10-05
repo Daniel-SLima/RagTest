@@ -6,6 +6,7 @@ from app.rag.decomposition import decompose_question
 from app.rag.embeddings.base import EmbeddingProvider, SparseEmbeddingProvider
 from app.rag.grounding import (
     CitationCoverage,
+    is_short_list_item,
     prune_uncited_claim_blocks,
     validate_citation_coverage,
 )
@@ -32,6 +33,7 @@ class CitationValidationAttempt:
     coverage: float
     reason: str | None
     uncited_blocks: tuple[str, ...] = ()
+    answer: str = ""
 
     @classmethod
     def from_coverage(
@@ -39,6 +41,7 @@ class CitationValidationAttempt:
         coverage: CitationCoverage,
         *,
         stage: str,
+        answer: str = "",
     ) -> "CitationValidationAttempt":
         return cls(
             stage=stage,
@@ -50,6 +53,7 @@ class CitationValidationAttempt:
             coverage=coverage.coverage,
             reason=coverage.reason,
             uncited_blocks=coverage.uncited_blocks,
+            answer=answer,
         )
 
 
@@ -84,12 +88,18 @@ _GROUNDING_FALLBACK = (
 )
 
 
+_MAX_PRUNED_SHORT_ITEMS = 2
+
+
 def _can_postprocess_safely(validation: CitationCoverage) -> bool:
+    if not validation.syntax_valid or validation.cited_claim_blocks == 0:
+        return False
+    if validation.uncited_claim_blocks == 1 and validation.coverage >= 0.8:
+        return True
     return (
-        validation.syntax_valid
-        and validation.uncited_claim_blocks == 1
-        and validation.cited_claim_blocks > 0
-        and validation.coverage >= 0.8
+        0 < validation.uncited_claim_blocks <= _MAX_PRUNED_SHORT_ITEMS
+        and validation.cited_claim_blocks >= 2
+        and all(is_short_list_item(block) for block in validation.uncited_blocks)
     )
 
 
@@ -128,6 +138,7 @@ async def _generate_with_validated_citations(
     first_attempt = CitationValidationAttempt.from_coverage(
         validation,
         stage="initial",
+        answer=answer,
     )
 
     if is_refusal(answer):
@@ -177,6 +188,7 @@ async def _generate_with_validated_citations(
     second_attempt = CitationValidationAttempt.from_coverage(
         repaired_validation,
         stage="repair",
+        answer=repaired_answer,
     )
     attempts = (first_attempt, second_attempt)
 

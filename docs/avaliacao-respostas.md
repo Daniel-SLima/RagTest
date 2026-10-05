@@ -55,8 +55,9 @@ Métricas automáticas (a rubrica manual ainda não foi preenchida):
 | Repair necessário | 2 de 13 |
 
 Fallbacks: "onde eu marco o preventivo" e "como consigo vaga pra mamografia se o posto não faz o
-exame" — ambos de agendamento, com as fontes certas recuperadas. Diagnóstico pendente: a coleta
-passou a registrar os blocos sem citação (`blocos_sem_citacao`).
+exame" — ambos de agendamento, com as fontes certas recuperadas. Diagnóstico
+(`respostas_diagnostico.csv`): no preventivo, um item curto de lista sem citação; na mamografia, a
+nova execução já saiu `verified` após repair. Correção na D054; falta repetir a coleta completa.
 
 Latência: **não usar esta execução como medida de desempenho**. A cota gratuita da Groq (8 mil
 tokens/minuto) gerou 429 em quase todas as perguntas e os retries somaram até 37 s. Execuções

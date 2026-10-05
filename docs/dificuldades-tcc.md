@@ -549,3 +549,23 @@ por indisponibilidade.
 
 Aprendizado técnico: métricas de desempenho precisam separar o tempo do sistema do tempo de espera
 imposto por cotas externas.
+
+
+## 40. Um item de lista sem citação derrubava respostas de agendamento inteiras
+
+Planejado: responder "onde eu marco o preventivo" e "vaga pra mamografia" com as fontes certas.
+
+Observado (`docs/resultados/respostas_diagnostico.csv`): no preventivo, as duas tentativas só
+falharam por "- Cartão Nacional de Saúde (Cartão SUS)" sem citação (os outros itens citados); a
+poda não era permitida porque a resposta tinha poucos blocos e a cobertura ficava abaixo de 0,8.
+Na mamografia, a primeira geração não teve nenhuma citação reconhecida e o repair resolveu.
+
+Diagnóstico: a regra de poda da D023 foi calibrada para respostas longas; em listas curtas de
+documentos, um único item vale mais de 20% dos blocos. Sem o texto bruto da primeira tentativa
+não era possível ver o formato das citações não reconhecidas.
+
+Correção: D054 (poda de até 2 itens curtos com revalidação, normalização de qualquer `【n…】` e
+registro local do texto rejeitado).
+
+Aprendizado técnico: limiares proporcionais (cobertura ≥ 0,8) se comportam mal em respostas
+curtas; regras estruturais (tipo e tamanho do bloco) são mais estáveis.

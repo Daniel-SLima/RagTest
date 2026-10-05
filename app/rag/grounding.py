@@ -119,6 +119,10 @@ def _structural_exemptions(lines: list[str], source_count: int) -> set[int]:
     return exempt
 
 
+def is_short_list_item(block: str) -> bool:
+    return bool(_LIST_ITEM_PATTERN.match(block)) and _word_count(block) <= _MAX_INHERITED_ITEM_WORDS
+
+
 def _is_list_intro(lines: list[str], index: int) -> bool:
     normalized = _normalized_block(lines[index])
     if not normalized.endswith(":"):

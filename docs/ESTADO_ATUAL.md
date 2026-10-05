@@ -1,9 +1,10 @@
 # Estado atual — handoff entre agentes
 
 > Documento **autoritativo e curto**. Todo agente lê este arquivo primeiro e o atualiza ao terminar.
+> **Roteiro passo a passo até a v1.0.0: `docs/ROTEIRO_EXECUCAO.md`** (seguir a próxima micro-etapa não marcada).
 > Plano completo: `docs/PLANO_FINALIZACAO_TCC.md`. Histórico até a 0.7.0: `docs/historico/`.
 
-Última atualização: **2026-09-28** — Claude (Cowork), sessão de reorientação para o domínio.
+Última atualização: **2026-10-05** — documentação de transferência para o orientador e futuro estudante.
 
 ---
 
@@ -26,15 +27,19 @@
 
 | Item | Valor |
 |---|---|
-| Versão | `main` com 0.8.0 + 0.9.0 (PRs #22 e #23) · trabalho novo em `feature/respostas-0.9.1` |
-| Branch de trabalho | `feature/respostas-0.9.1` (a partir do `main`), **não enviada ao GitHub** |
-| Testes | backend `334 passed` (inclui 5 ponta a ponta), `ruff` limpo · frontend Jest `19 passed`, `tsc` ok (28/09) |
+| Versão | `main` público em `9712362` (README de portfólio); código ainda declara `0.8.0` · trabalho 0.9.2 em `feature/transferencia-0.9.2` |
+| Branch de trabalho | `feature/transferencia-0.9.2`, criada de `origin/main` e contendo a correção D054, o roteiro e a documentação de transferência; **publicação/merge ainda não verificados** |
+| Testes | 05/10: backend `339 passed` (inclui 5 ponta a ponta), Ruff 0.16.8 limpo · frontend Jest `19 passed`, TypeScript sem erro |
 | Avaliação | hybrid: dev v2 15/15 (MRR 0.833) · **holdout v3 24/25 (MRR 0.801, independente)** · critério PASS |
-| Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas; 2 fallbacks de agendamento em diagnóstico; rubrica manual pendente |
+| Respostas | 11/13 verificadas, 2/2 triagens, 4/4 recusas corretas na coleta 1; 2 fallbacks de agendamento motivaram D054, falta repetir a coleta; rubrica manual pendente |
 | Teste real | mamografia agora `grounded=true` (D050/D051) — `docs/resultados/diagnostico_mamografia_2.txt` |
 | Qdrant | 773 chunks, sincronizado em 28/09 |
 
 **Escopo do corpus:** só `data/source`. **Stack do orientador:** FastAPI ✅ · Qdrant ✅ · LangChain ✅ (uso seletivo) · React Native via REST ✅ · Docker Compose ✅.
+
+**Leitura para transferência:** `README.md` → `docs/GUIA_CONTINUIDADE.md` →
+`docs/ESTUDOS_E_RESULTADOS.md` e `docs/FONTES_E_REFERENCIAS.md`. Esses documentos
+separam resultados medidos de trabalho pendente; não mudam o escopo funcional.
 
 ## 2. O que já foi feito (verificado por teste)
 
@@ -63,23 +68,19 @@
 
 ## 3. Pendências que dependem do autor (Theniels)
 
-- [ ] `git push -u origin feature/respostas-0.9.1`, PR para `main`, CI verde, merge, `git switch main`, `git pull`.
-- [ ] Reconstruir e rodar o diagnóstico dos 2 fallbacks:
-      `docker compose up -d --build` e
-      `docker compose exec api ragtest-collect-answers --only v2-dev-onde-agendar-preventivo --only v2-dev-vaga-mamografia`
-      e depois `docker compose cp api:/app/state/respostas_modelo.csv docs\resultados\respostas_diagnostico.csv`.
-- [ ] Pontuar a rubrica em `docs/resultados/respostas_modelo.csv` (colunas de 0 a 2; ver `docs/avaliacao-respostas.md`).
+- [ ] Publicar `feature/transferencia-0.9.2` no GitHub, abrir PR para `main`, conferir os quatro
+      checks da CI e mesclar. A branch contém o README público (`9712362`) e a D054/roteiro
+      reaplicados sobre ele; não publicar também a antiga `feature/robustez-0.9.2` como PR separado.
+- [ ] Repetir a coleta completa (agora com pausa de 15 s entre perguntas, ~6 minutos):
+      `docker compose up -d --build`, `docker compose exec api ragtest-collect-answers` e
+      `docker compose cp api:/app/state/respostas_modelo.csv docs\resultados\respostas_modelo_2.csv`.
+- [ ] Pontuar a rubrica em `docs/resultados/respostas_modelo_2.csv` (colunas de 0 a 2; ver `docs/avaliacao-respostas.md`).
 - [ ] (Quando quiser homologar) seguir `docs/DEPLOY.md`.
 
 ## 4. Próxima tarefa para o agente
 
-1. ✅ Holdout v3 e critério registrados. ✅ Métricas automáticas das respostas registradas.
-2. Com `respostas_diagnostico.csv`: ler `blocos_sem_citacao` dos 2 fallbacks e corrigir.
-3. Com a rubrica pontuada: calcular médias/porcentagens em `docs/avaliacao-respostas.md`.
-4. Falhas conhecidas do retrieval: "repito o preventivo" (holdout v2) e "anticoncepcional ... vontade"
-   (holdout v3, sinônimo de libido). Só investigar com casos do **dev**; nunca ajustar pelo v3.
-5. Monografia: usar `docs/monografia/ESQUELETO.md` como índice de evidências.
-6. Opcional (defesa): adaptador `BaseRetriever` do LangChain sobre o retriever próprio.
+Após publicação e merge da branch de transferência, conferir a presença do README público e da
+D054 no `main` (**1.1.5** do roteiro). Depois seguir **1.2.4** (`ragtest-summarize-answers`).
 
 Sempre que mudar o contrato: `ragtest-export-openapi` e `cd frontend && npm run generate:api`.
 Ambiente remoto: `pytest tests -p no:cacheprovider --ignore=.pytest_cache`; o `tests/conftest.py`
@@ -95,20 +96,24 @@ isola o `.env` local (chaves falsas).
 
 ## 6. Push / GitHub
 
-0.8.0 mesclada no `main` pelo PR #22 (28/09); o PR #21 da 0.7.0 foi absorvido por ele.
-
-### Histórico
-
-Em 28/09 o agente **não conseguiu fazer push**: o ambiente dele não tem credencial do GitHub, e o
-terminal do Windows só aceita cliques. O autor deve rodar no PowerShell, na pasta do projeto:
-
-    git push -u origin feature/audit-0.7.0 feature/dominio-0.8.0
-
-Depois abrir, nesta ordem: PR `feature/audit-0.7.0` → `main`; após o merge, PR
-`feature/dominio-0.8.0` → `main`. Quando feito, trocar esta seção por "branches enviadas em DD/MM".
+PRs #22–#24 estão no histórico do `main`. Em 05/10, o `main` público estava em `9712362`
+(README de portfólio). A branch local antiga `feature/robustez-0.9.2` partia de `81b5de1`;
+`feature/transferencia-0.9.2` partiu de `9712362` e recebeu os dois commits locais por
+cherry-pick, preservando o README do autor. Conferir no GitHub o estado da nova branch/PR
+antes de afirmar que a documentação está pública.
 
 ## 7. Registro de sessões (mais recente no topo; 3–6 linhas cada)
 
+- **2026-10-05 — Codex**: material de continuidade organizado no próprio repositório. Branch
+  `feature/transferencia-0.9.2` criada do `main` público (`9712362`), com D054 e roteiro
+  reaplicados; README de portfólio preservado e ampliado com estudos, fontes e índice da documentação.
+  Verificação local: `.venv/Scripts/python.exe -m pytest tests -p no:cacheprovider --ignore=.pytest_cache -o addopts="" -q`
+  = 339 passed; `.venv/Scripts/ruff.exe check .` = All checks passed; `npm test -- --watch=false`
+  = 19 passed e `npm run typecheck` = saída sem erros.
+- **2026-09-29 — Claude (Cowork)**: criado `docs/ROTEIRO_EXECUCAO.md` (briefing + Etapas 0–10 em
+  micro-etapas até a v1.0.0); AGENTS e estado apontam para ele. `main` remoto tem commit do autor no README (`9712362`).
+- **2026-09-28 (8) — Claude (Cowork)**: decisões do autor consolidadas (seção 0) e divisão de trabalho
+  no AGENTS.md; fallbacks de agendamento corrigidos com poda de itens curtos e normalização ampla (D054).
 - **2026-09-28 (7) — Claude (Cowork)**: holdout v3 = 24/25 (hybrid), critério PASS; coleta de
   respostas: 11/13 verificadas, 4/4 recusas; coleta ganhou `--only`, pausa e blocos sem citação.
 - **2026-09-28 (6) — Claude (Cowork)**: 0.8.0 mesclada; branch `feature/qualidade-0.9.0`: citações
